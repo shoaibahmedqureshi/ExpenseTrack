@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(rm -rf ~/.gradle/caches/transforms-3 && echo \"Cleared transforms-3 cache\")",
+      "Bash(flutter clean *)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(flutter --version)",
+      "Bash(flutter upgrade *)",
+      "Bash(ls ~/.gradle/wrapper/dists/)",
+      "Bash(rm -rf ~/.gradle/caches/ && echo \"done\")",
+      "Bash(rm -rf ~/.gradle/wrapper/dists/gradle-8.0-all ~/.gradle/wrapper/dists/gradle-8.0-bin ~/.gradle/wrapper/dists/gradle-8.0.0-all ~/.gradle/wrapper/dists/gradle-8.3-all ~/.gradle/wrapper/dists/gradle-8.6-all ~/.gradle/wrapper/dists/gradle-8.14-all ~/.gradle/wrapper/dists/gradle-9.0-all && echo \"done\")",
+      "Bash(rm -rf ~/.gradle/caches && rm -rf ~/.gradle/daemon && echo \"done\")",
+      "Bash(rm -rf ~/Library/Android/sdk/ndk/26.1.10909125 && echo \"done\")",
+      "Bash(rm -rf ~/Library/Android/sdk/ndk/26.1.10909125 ~/Library/Android/sdk/ndk/27.0.12077973 && echo \"done\")",
+      "Bash(pkill -f GradleDaemon)",
+      "Bash(pkill -f gradle-launcher)",
+      "Bash(cat ~/.pub-cache/hosted/pub.dev/supabase_flutter-2.8.4/pubspec.yaml 2>/dev/null | grep app_links || find ~/.pub-cache -name \"pubspec.yaml\" -path \"*/supabase_flutter*\" | head -1 | xargs grep app_links 2>/dev/null)",
+      "Bash(flutter build *)",
+      "Bash(keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android)",
+      "Bash(adb devices *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Required by image_picker to expose camera capture files on Android 11+ -->
+    <external-files-path name="images" path="Pictures/"/>
+    <cache-path name="cache" path="."/>
+    <external-cache-path name="external_cache" path="."/>
+</paths>
