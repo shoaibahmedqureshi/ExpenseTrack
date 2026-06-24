@@ -59,13 +59,21 @@
     <p>Your Expense Tracker account is verified and ready to use.</p>
     <p>If the app is installed on this device, it should open automatically. Otherwise, open the
        <strong>Expense Tracker</strong> app on your phone and sign in with your email and password.</p>
-    <a class="button" id="openApp" href="io.supabase.expensetracker://login-callback">Open Expense Tracker</a>
+    <a class="button" id="openApp" href="#">Open Expense Tracker</a>
     <p class="hint">You can close this page and switch to the app.</p>
   </div>
   <script>
+    // Supabase appends the auth code/tokens as query or hash params on this
+    // page's URL — they must be forwarded into the deep link, otherwise the
+    // app opens with no code to exchange and just falls back to whatever
+    // session it already had.
+    var params = window.location.hash || window.location.search;
+    var deepLink = "io.supabase.expensetracker://login-callback" + params;
+    document.getElementById("openApp").href = deepLink;
+
     // Best-effort attempt to hand off to the app if it's installed on this device.
     setTimeout(function () {
-      window.location.href = "io.supabase.expensetracker://login-callback";
+      window.location.href = deepLink;
     }, 400);
   </script>
 </body>
