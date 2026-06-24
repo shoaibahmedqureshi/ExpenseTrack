@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Confirmed - Expense Tracker</title>
+<style>
+  body {
+    font-family: -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f7;
+    margin: 0;
+    padding: 40px 20px;
+    text-align: center;
+    color: #1c1c1e;
+  }
+  .card {
+    max-width: 420px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .check {
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 12px;
+  }
+  p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #555;
+    margin: 0 0 16px;
+  }
+  a.button {
+    display: inline-block;
+    background: #6C63FF;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .hint {
+    font-size: 13px;
+    color: #888;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="check">&#9989;</div>
+    <h1>Email confirmed!</h1>
+    <p>Your Expense Tracker account is verified and ready to use.</p>
+    <p>If the app is installed on this device, it should open automatically. Otherwise, open the
+       <strong>Expense Tracker</strong> app on your phone and sign in with your email and password.</p>
+    <a class="button" id="openApp" href="io.supabase.expensetracker://login-callback">Open Expense Tracker</a>
+    <p class="hint">You can close this page and switch to the app.</p>
+  </div>
+  <script>
+    // Best-effort attempt to hand off to the app if it's installed on this device.
+    setTimeout(function () {
+      window.location.href = "io.supabase.expensetracker://login-callback";
+    }, 400);
+  </script>
+</body>
+</html>
