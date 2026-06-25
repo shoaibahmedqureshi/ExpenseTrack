@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/utils/error_translator.dart';
 import '../domain/subscription_status.dart';
 
 class SubscriptionService extends ChangeNotifier {
@@ -78,7 +79,7 @@ class SubscriptionService extends ChangeNotifier {
       }
       _products = response.productDetails;
     } catch (e) {
-      _error = e.toString();
+      _error = friendlyErrorMessage(e);
     }
   }
 

@@ -51,13 +51,26 @@ class ExpenseLocalDatasource {
   Future<void> update(ExpenseModel model) async {
     await _db.update(
       AppConstants.expensesTable,
-      model.toMap(),
+      {...model.toMap(), 'is_synced': 0},
       where: 'id = ?',
       whereArgs: [model.id],
     );
   }
 
   Future<void> delete(int id) async {
+    final rows = await _db.query(
+      AppConstants.expensesTable,
+      columns: ['remote_id'],
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    final remoteId = rows.isNotEmpty ? rows.first['remote_id'] as String? : null;
+    if (remoteId != null) {
+      await _db.insert(AppConstants.pendingDeletesTable, {
+        'table_name': AppConstants.expensesTable,
+        'remote_id': remoteId,
+      });
+    }
     await _db.delete(
       AppConstants.expensesTable,
       where: 'id = ?',

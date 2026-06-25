@@ -34,7 +34,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<void> update(Category category) async {
     await _db.update(
       AppConstants.categoriesTable,
-      CategoryModel.fromEntity(category).toMap(),
+      {...CategoryModel.fromEntity(category).toMap(), 'is_synced': 0},
       where: 'id = ?',
       whereArgs: [category.id],
     );
@@ -42,6 +42,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<void> delete(int id) async {
+    final rows = await _db.query(
+      AppConstants.categoriesTable,
+      columns: ['remote_id'],
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    final remoteId = rows.isNotEmpty ? rows.first['remote_id'] as String? : null;
+    if (remoteId != null) {
+      await _db.insert(AppConstants.pendingDeletesTable, {
+        'table_name': AppConstants.categoriesTable,
+        'remote_id': remoteId,
+      });
+    }
     await _db.delete(
       AppConstants.categoriesTable,
       where: 'id = ?',

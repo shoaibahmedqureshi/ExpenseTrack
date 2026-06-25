@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../data/receipt_scanner_service.dart';
 import '../../domain/receipt_scan_result.dart';
 import 'receipt_review_sheet.dart';
@@ -43,7 +44,7 @@ class _ScanFabState extends State<ScanFab> {
       if (!mounted) return;
       _openForm(confirmed ? result : null);
     } catch (e) {
-      if (mounted) _showSnack('Scan failed: $e');
+      if (mounted) _showSnack('Scan failed: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _scanning = false);
     }

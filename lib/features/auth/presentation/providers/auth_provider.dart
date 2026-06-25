@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -17,27 +18,41 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (e) {
-        debugPrint('[AuthProvider] stream error: $e');
         _status = AuthStatus.unauthenticated;
-        _error = _friendly(e.toString());
+        _error = friendlyErrorMessage(e);
         notifyListeners();
       },
     );
+    _recoverySub = _repository.passwordRecoveryRequested.listen((_) {
+      _isPasswordRecovery = true;
+      notifyListeners();
+    });
   }
 
   final AuthRepository _repository;
   StreamSubscription<UserProfile?>? _sub;
+  StreamSubscription<void>? _recoverySub;
 
   AuthStatus _status = AuthStatus.unknown;
   UserProfile? _profile;
   bool _loading = false;
   String? _error;
+  bool _isPasswordRecovery = false;
 
   AuthStatus get status => _status;
   UserProfile? get profile => _profile;
   bool get loading => _loading;
   String? get error => _error;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
+
+  /// True once a password-recovery deep link has been processed; the UI
+  /// should show the set-new-password screen instead of routing normally.
+  bool get isPasswordRecovery => _isPasswordRecovery;
+
+  Future<void> updatePassword(String newPassword) => _run(() async {
+        await _repository.updatePassword(newPassword);
+        _isPasswordRecovery = false;
+      });
 
   Future<void> signUp(String email, String password, String name) =>
       _run(() => _repository.signUpWithEmail(email, password, name));
@@ -72,31 +87,17 @@ class AuthProvider extends ChangeNotifier {
     try {
       await fn();
     } catch (e) {
-      _error = _friendly(e.toString());
+      _error = friendlyErrorMessage(e);
     } finally {
       _loading = false;
       notifyListeners();
     }
   }
 
-  String _friendly(String raw) {
-    debugPrint('[AuthProvider] error: $raw');
-    if (raw.contains('Invalid login credentials')) return 'Incorrect email or password.';
-    if (raw.contains('User already registered')) return 'An account with this email already exists.';
-    if (raw.contains('Email not confirmed')) return 'Please confirm your email before signing in.';
-    if (raw.contains('cancelled')) return 'Sign-in was cancelled.';
-    if (raw.contains('network') || raw.contains('SocketException')) return 'No internet connection.';
-    if (raw.contains('does not exist') || raw.contains('relation')) {
-      return 'Database not set up. Please run the schema SQL in your Supabase dashboard.';
-    }
-    // Show raw error in debug so it's easy to diagnose
-    if (kDebugMode) return raw;
-    return 'Something went wrong. Please try again.';
-  }
-
   @override
   void dispose() {
     _sub?.cancel();
+    _recoverySub?.cancel();
     super.dispose();
   }
 }

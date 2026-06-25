@@ -60,8 +60,12 @@ alter table public.categories enable row level security;
 alter table public.expenses  enable row level security;
 
 -- Profiles: users can read and update only their own row
+drop policy if exists "profiles_select" on public.profiles;
+drop policy if exists "profiles_update" on public.profiles;
+drop policy if exists "profiles_insert" on public.profiles;
 create policy "profiles_select" on public.profiles for select using (auth.uid() = id);
 create policy "profiles_update" on public.profiles for update using (auth.uid() = id);
+create policy "profiles_insert" on public.profiles for insert with check (auth.uid() = id);
 
 -- Categories: full CRUD on own rows
 create policy "categories_all" on public.categories for all using (auth.uid() = user_id);

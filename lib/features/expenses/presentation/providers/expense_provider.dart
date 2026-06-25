@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../domain/entities/expense.dart';
 import '../../domain/usecases/get_expenses_usecase.dart';
 import '../../domain/usecases/manage_expense_usecase.dart';
@@ -63,7 +64,7 @@ class ExpenseProvider extends ChangeNotifier {
     try {
       await fn();
     } catch (e) {
-      _error = e.toString();
+      _error = friendlyErrorMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();

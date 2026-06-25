@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/error_translator.dart';
 import '../../data/receipt_scanner_service.dart';
 import '../../domain/receipt_scan_result.dart';
 
@@ -29,7 +30,7 @@ class _ScanReceiptButtonState extends State<ScanReceiptButton> {
         widget.onScanned(result);
       }
     } catch (e) {
-      if (mounted) _showSnack('Scan failed: $e');
+      if (mounted) _showSnack('Scan failed: ${friendlyErrorMessage(e)}');
     } finally {
       if (mounted) setState(() => _scanning = false);
     }
