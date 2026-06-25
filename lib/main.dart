@@ -12,7 +12,6 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/data/auth_repository_impl.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/auth/presentation/screens/reset_password_screen.dart';
 
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/presentation/providers/category_provider.dart';
@@ -34,13 +33,6 @@ void main() async {
   await Supabase.initialize(
     url: SupabaseConfig.url,
     publishableKey: SupabaseConfig.anonKey,
-    // Implicit flow lets signup confirmation / password reset links be
-    // opened on a different device than the one that requested them —
-    // the link itself (single-use, time-limited) is the credential,
-    // rather than requiring a device-local PKCE verifier.
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.implicit,
-    ),
   );
 
   final db = await DatabaseHelper.instance.database;
@@ -121,61 +113,19 @@ class _RootRouter extends StatefulWidget {
 
 class _RootRouterState extends State<_RootRouter> {
   late bool _onboardingDone;
-  late AuthProvider _auth;
-  late bool _wasAuthenticated;
 
   @override
   void initState() {
     super.initState();
     _onboardingDone = widget.onboardingDone;
     _listenConnectivity();
-
-    _auth = context.read<AuthProvider>();
-    _wasAuthenticated = _auth.isAuthenticated;
-    if (_wasAuthenticated) {
-      _runSyncForCurrentUser();
-    }
-    _auth.addListener(_onAuthChanged);
-  }
-
-  @override
-  void dispose() {
-    _auth.removeListener(_onAuthChanged);
-    super.dispose();
-  }
-
-  void _onAuthChanged() {
-    final isAuthenticated = _auth.isAuthenticated;
-    if (isAuthenticated && !_wasAuthenticated) {
-      _runSyncForCurrentUser();
-    }
-    _wasAuthenticated = isAuthenticated;
-  }
-
-  /// Clears local data if a different account just logged in on this
-  /// device, then pulls fresh data for whoever is logged in now.
-  Future<void> _runSyncForCurrentUser() async {
-    final userId = _auth.profile?.id;
-    if (userId == null) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final lastUserId = prefs.getString(AppConstants.prefLastUserId);
-    if (lastUserId != userId) {
-      await DatabaseHelper.instance.resetForNewUser();
-      await prefs.setString(AppConstants.prefLastUserId, userId);
-    }
-    _runSync();
-  }
-
-  void _runSync() {
-    SyncService(widget.db, Supabase.instance.client).run();
   }
 
   void _listenConnectivity() {
     Connectivity().onConnectivityChanged.listen((results) {
       final online = results.any((r) => r != ConnectivityResult.none);
       if (online) {
-        _runSync();
+        SyncService(widget.db, Supabase.instance.client).run();
       }
     });
   }
@@ -187,10 +137,6 @@ class _RootRouterState extends State<_RootRouter> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-
-    if (auth.isPasswordRecovery) {
-      return const ResetPasswordScreen();
-    }
 
     return switch (auth.status) {
       AuthStatus.unknown => const Scaffold(

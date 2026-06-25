@@ -20,10 +20,6 @@ class AuthRepositoryImpl implements AuthRepository {
       });
 
   @override
-  Stream<void> get passwordRecoveryRequested => _client.auth.onAuthStateChange
-      .where((event) => event.event == AuthChangeEvent.passwordRecovery);
-
-  @override
   UserProfile? get currentUser {
     final user = _client.auth.currentUser;
     if (user == null) return null;
@@ -44,13 +40,17 @@ class AuthRepositoryImpl implements AuthRepository {
       emailRedirectTo: SupabaseConfig.redirectUrl,
     );
     final user = res.user;
-    if (user == null || res.session == null) {
+    if (user == null) {
       // Email confirmation is enabled — account created, awaiting confirmation.
-      // The `handle_new_user` DB trigger already created the profile row;
-      // there's no authenticated session yet to write with from here.
       throw Exception(
-          'Account created! Check your email ($email) to confirm before signing in.');
+          'Account created! Check your email (${email}) to confirm before signing in.');
     }
+    // Upsert profile (trigger may already have created the row).
+    await _client.from('profiles').upsert({
+      'id': user.id,
+      'name': name,
+      'email': email,
+    });
     return _fetchProfile(user);
   }
 
@@ -98,11 +98,6 @@ class AuthRepositoryImpl implements AuthRepository {
         email,
         redirectTo: SupabaseConfig.redirectUrl,
       );
-
-  @override
-  Future<void> updatePassword(String newPassword) async {
-    await _client.auth.updateUser(UserAttributes(password: newPassword));
-  }
 
   Future<UserProfile> _fetchProfile(User user) async {
     final data = await _client

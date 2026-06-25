@@ -49,7 +49,6 @@ class DatabaseHelper {
     ''');
 
     await _seedCategories(db);
-    await _createPendingDeletesTable(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -64,32 +63,6 @@ class DatabaseHelper {
       await db.execute(
           'ALTER TABLE ${AppConstants.expensesTable} ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0');
     }
-    if (oldVersion < 3) {
-      // Tombstones for remote deletes introduced in v3.
-      await _createPendingDeletesTable(db);
-    }
-  }
-
-  Future<void> _createPendingDeletesTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS ${AppConstants.pendingDeletesTable} (
-        table_name TEXT NOT NULL,
-        remote_id  TEXT NOT NULL
-      )
-    ''');
-  }
-
-  /// Wipes all locally cached data and reseeds defaults.
-  ///
-  /// Local tables aren't scoped by user id, so switching accounts on the
-  /// same device must clear the previous account's rows before syncing —
-  /// otherwise stale data from the old account lingers and gets mixed in.
-  Future<void> resetForNewUser() async {
-    final db = await database;
-    await db.delete(AppConstants.expensesTable);
-    await db.delete(AppConstants.categoriesTable);
-    await db.delete(AppConstants.pendingDeletesTable);
-    await _seedCategories(db);
   }
 
   Future<void> _seedCategories(Database db) async {
