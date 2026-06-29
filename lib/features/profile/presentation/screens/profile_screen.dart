@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../subscription/data/subscription_service.dart';
 import '../../../subscription/presentation/screens/paywall_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -42,12 +43,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) setState(() => _editing = false);
   }
 
-  static const _privacyPolicyUrl =
-      'https://shoaibahmedqureshi.github.io/ExpenseTrack/privacy.html';
-
-  Future<void> _openPrivacyPolicy() async {
-    final uri = Uri.parse(_privacyPolicyUrl);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  void _openPrivacyPolicy() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+    );
   }
 
   Future<void> _requestAccountDeletion() async {
@@ -305,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   leading: const Icon(Icons.privacy_tip_outlined,
                       color: AppTheme.primaryColor),
                   title: const Text('Privacy Policy'),
-                  trailing: const Icon(Icons.open_in_new, size: 16),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
                   onTap: _openPrivacyPolicy,
                 ),
                 const Divider(height: 1),
