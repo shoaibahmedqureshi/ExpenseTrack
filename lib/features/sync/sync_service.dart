@@ -19,8 +19,10 @@ class SyncService {
     try {
       await _pushPendingCategories();
       await _pushPendingExpenses();
+      await _pushPendingBudgets();
       await _pullRemoteCategories();
       await _pullRemoteExpenses();
+      await _pullRemoteBudgets();
     } catch (_) {
       // Sync is best-effort; failures are silent and retried next time.
     }
@@ -86,6 +88,41 @@ class SyncService {
     }
   }
 
+  Future<void> _pushPendingBudgets() async {
+    final rows = await _db.query(
+      AppConstants.budgetsTable,
+      where: 'is_synced = 0',
+    );
+    for (final row in rows) {
+      int? remCatId;
+      if (row['category_id'] != null) {
+        final catRows = await _db.query(
+          AppConstants.categoriesTable,
+          where: 'id = ?',
+          whereArgs: [row['category_id']],
+        );
+        remCatId = catRows.isNotEmpty
+            ? int.tryParse(catRows.first['remote_id']?.toString() ?? '')
+            : null;
+      }
+
+      final remote = await _client.from('budgets').upsert({
+        'user_id': _uid,
+        'local_id': row['id'],
+        'category_id': remCatId,
+        'month': row['month'],
+        'amount': row['amount'],
+      }).select().single();
+
+      await _db.update(
+        AppConstants.budgetsTable,
+        {'remote_id': remote['id'].toString(), 'is_synced': 1},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
+  }
+
   // ── Pull ────────────────────────────────────────────────────
 
   Future<void> _pullRemoteCategories() async {
@@ -144,6 +181,42 @@ class SyncService {
           'type': row['type'],
           'category_id': localCatId,
           'note': row['note'],
+          'remote_id': row['id'].toString(),
+          'is_synced': 1,
+        });
+      }
+    }
+  }
+
+  Future<void> _pullRemoteBudgets() async {
+    final remote = await _client
+        .from('budgets')
+        .select()
+        .eq('user_id', _uid!);
+
+    for (final row in remote) {
+      final exists = await _db.query(
+        AppConstants.budgetsTable,
+        where: 'remote_id = ?',
+        whereArgs: [row['id'].toString()],
+      );
+      if (exists.isEmpty) {
+        // Find the local category id by matching remote category id, if any.
+        int? localCatId;
+        if (row['category_id'] != null) {
+          final cats = await _db.query(
+            AppConstants.categoriesTable,
+            where: 'remote_id = ?',
+            whereArgs: [row['category_id'].toString()],
+          );
+          if (cats.isEmpty) continue;
+          localCatId = cats.first['id'] as int?;
+        }
+
+        await _db.insert(AppConstants.budgetsTable, {
+          'category_id': localCatId,
+          'month': row['month'],
+          'amount': row['amount'],
           'remote_id': row['id'].toString(),
           'is_synced': 1,
         });

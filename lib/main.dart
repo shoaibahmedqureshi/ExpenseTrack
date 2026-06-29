@@ -22,8 +22,15 @@ import 'features/expenses/domain/usecases/get_expenses_usecase.dart';
 import 'features/expenses/domain/usecases/manage_expense_usecase.dart';
 import 'features/expenses/presentation/providers/expense_provider.dart';
 
+import 'features/budgets/data/datasources/budget_local_datasource.dart';
+import 'features/budgets/data/repositories/budget_repository_impl.dart';
+import 'features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'features/budgets/domain/usecases/manage_budget_usecase.dart';
+import 'features/budgets/presentation/providers/budget_provider.dart';
+
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'features/reports/presentation/providers/reports_provider.dart';
 import 'features/sync/sync_service.dart';
 import 'features/subscription/data/subscription_service.dart';
 
@@ -63,8 +70,27 @@ void main() async {
             );
           },
         ),
+        ChangeNotifierProvider(
+          create: (_) {
+            final datasource = ExpenseLocalDatasource(db);
+            final repo = ExpenseRepositoryImpl(datasource);
+            return ReportsProvider(getExpenses: GetExpensesUsecase(repo));
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            final budgetRepo = BudgetRepositoryImpl(BudgetLocalDatasource(db));
+            final expenseRepo =
+                ExpenseRepositoryImpl(ExpenseLocalDatasource(db));
+            return BudgetProvider(
+              getBudgets: GetBudgetsUsecase(budgetRepo),
+              manageBudget: ManageBudgetUsecase(budgetRepo),
+              getExpenses: GetExpensesUsecase(expenseRepo),
+            );
+          },
+        ),
       ],
-      child: ExpenseTrackerApp(
+      child: OutlayApp(
         db: db,
         onboardingDone: onboardingDone,
       ),
@@ -72,8 +98,8 @@ void main() async {
   );
 }
 
-class ExpenseTrackerApp extends StatefulWidget {
-  const ExpenseTrackerApp({
+class OutlayApp extends StatefulWidget {
+  const OutlayApp({
     super.key,
     required this.db,
     required this.onboardingDone,
@@ -83,10 +109,10 @@ class ExpenseTrackerApp extends StatefulWidget {
   final bool onboardingDone;
 
   @override
-  State<ExpenseTrackerApp> createState() => _ExpenseTrackerAppState();
+  State<OutlayApp> createState() => _OutlayAppState();
 }
 
-class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
+class _OutlayAppState extends State<OutlayApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

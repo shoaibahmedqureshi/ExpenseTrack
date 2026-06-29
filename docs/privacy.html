@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlay — Privacy Policy</title>
+<style>
+  body {
+    font-family: -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f7;
+    margin: 0;
+    padding: 40px 20px;
+    color: #1c1c1e;
+  }
+  .card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 4px;
+  }
+  .updated {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 28px;
+  }
+  h2 {
+    font-size: 18px;
+    margin: 28px 0 10px;
+    color: #6C63FF;
+  }
+  p, li {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+  }
+  ul { margin: 0 0 12px; padding-left: 20px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+  }
+  th { color: #888; font-weight: 600; }
+  a { color: #6C63FF; }
+  .contact {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Outlay — Privacy Policy</h1>
+    <p class="updated">Last updated: June 29, 2026</p>
+
+    <p>Outlay ("the app") is an expense-tracking app developed by the Outlay team. This
+    policy explains exactly what data we collect, how it's stored, and how you can remove it.</p>
+
+    <h2>What we collect</h2>
+    <table>
+      <tr><th>Data</th><th>Why</th><th>Where it's stored</th></tr>
+      <tr><td>Email address</td><td>Account sign-in</td><td>Supabase (cloud)</td></tr>
+      <tr><td>Name, preferred currency, avatar URL</td><td>Personalize the app</td><td>Device + Supabase</td></tr>
+      <tr><td>Expense &amp; income records (title, amount, date, category, note)</td><td>Core app function</td><td>Device + Supabase</td></tr>
+      <tr><td>Budgets (category, month, amount)</td><td>Core app function</td><td>Device + Supabase</td></tr>
+      <tr><td>Receipt photos</td><td>Auto-fill expense fields via on-device text recognition</td><td>Device only — never uploaded</td></tr>
+    </table>
+
+    <h2>What we don't collect</h2>
+    <ul>
+      <li>No analytics, advertising, or crash-reporting SDKs are included in the app.</li>
+      <li>No location data.</li>
+      <li>No contacts, calendar, or microphone access.</li>
+      <li>Receipt photos are processed entirely on your device using on-device text
+      recognition (Google ML Kit). The photo itself is never uploaded — only the merchant
+      name, amount, and date extracted from it are saved.</li>
+    </ul>
+
+    <h2>How your data is stored</h2>
+    <p>Your data is kept locally on your device (SQLite) and synced to a private Supabase
+    project so it's available across your devices and backed up if you reinstall the app.
+    Row-level security ensures only you can read or write your own records — not even we
+    can browse them through the app.</p>
+
+    <h2>In-app purchases</h2>
+    <p>Subscription payments are processed entirely by Apple App Store / Google Play. We
+    never see or store your payment card details.</p>
+
+    <h2>Third parties</h2>
+    <p>We share data with exactly one processor: <a href="https://supabase.com/privacy" target="_blank">Supabase</a>,
+    which hosts our database and authentication. We do not sell or share your data with
+    advertisers or data brokers.</p>
+
+    <h2>Your rights</h2>
+    <ul>
+      <li><strong>Access &amp; export:</strong> use the in-app Reports export (CSV/PDF) to download your data.</li>
+      <li><strong>Deletion:</strong> request account and data deletion by emailing us at the address below — we will delete your account and all associated records within 30 days.</li>
+    </ul>
+
+    <h2>Children's privacy</h2>
+    <p>Outlay is not directed at children under 13, and we do not knowingly collect data from them.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes, we'll update the "Last updated" date above and, for material
+    changes, notify you in the app.</p>
+
+    <div class="contact">
+      <h2>Contact</h2>
+      <p>Questions about this policy or a deletion request? Email
+      <a href="mailto:08bitsaqureshi@seecs.edu.pk">08bitsaqureshi@seecs.edu.pk</a>.</p>
+    </div>
+  </div>
+</body>
+</html>

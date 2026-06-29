@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../budgets/presentation/screens/budgets_screen.dart';
 import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../receipt_scanner/presentation/widgets/scan_fab.dart';
+import '../../../reports/presentation/screens/reports_screen.dart';
 import '../widgets/summary_card.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -31,6 +33,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.pie_chart_outline),
+            tooltip: 'Budgets',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'Reports',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportsScreen()),
+            ),
+          ),
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               final initial = (auth.profile?.name?.isNotEmpty == true

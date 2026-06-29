@@ -54,10 +54,23 @@ create table if not exists public.expenses (
   updated_at  timestamptz not null default now()
 );
 
+-- ── Budgets ──────────────────────────────────────────────────
+create table if not exists public.budgets (
+  id          bigserial primary key,
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  local_id    integer,          -- SQLite row id on the originating device
+  category_id bigint references public.categories(id) on delete set null,
+  month       date not null,    -- first day of the budgeted month
+  amount      numeric(12,2) not null,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
 -- ── Row Level Security ───────────────────────────────────────
 alter table public.profiles  enable row level security;
 alter table public.categories enable row level security;
 alter table public.expenses  enable row level security;
+alter table public.budgets   enable row level security;
 
 -- Profiles: users can read and update only their own row
 create policy "profiles_select" on public.profiles for select using (auth.uid() = id);
@@ -69,7 +82,12 @@ create policy "categories_all" on public.categories for all using (auth.uid() = 
 -- Expenses: full CRUD on own rows
 create policy "expenses_all" on public.expenses for all using (auth.uid() = user_id);
 
+-- Budgets: full CRUD on own rows
+create policy "budgets_all" on public.budgets for all using (auth.uid() = user_id);
+
 -- ── Indexes ──────────────────────────────────────────────────
 create index if not exists idx_expenses_user   on public.expenses(user_id);
 create index if not exists idx_expenses_date   on public.expenses(date desc);
 create index if not exists idx_categories_user on public.categories(user_id);
+create index if not exists idx_budgets_user    on public.budgets(user_id);
+create index if not exists idx_budgets_month   on public.budgets(month desc);

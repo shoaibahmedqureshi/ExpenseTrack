@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../subscription/data/subscription_service.dart';
@@ -39,6 +40,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
           currency: _currency,
         );
     if (mounted) setState(() => _editing = false);
+  }
+
+  static const _privacyPolicyUrl =
+      'https://shoaibahmedqureshi.github.io/ExpenseTrack/privacy.html';
+
+  Future<void> _openPrivacyPolicy() async {
+    final uri = Uri.parse(_privacyPolicyUrl);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _requestAccountDeletion() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and all your data '
+          '(expenses, budgets, categories). This cannot be undone. '
+          'We\'ll email you to confirm before deleting.',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Request Deletion')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final email = context.read<AuthProvider>().profile?.email ?? '';
+    final uri = Uri(
+      scheme: 'mailto',
+      path: '08bitsaqureshi@seecs.edu.pk',
+      query:
+          'subject=Outlay account deletion request&body=Please delete my Outlay account and all associated data.%0A%0AAccount email: $email',
+    );
+    await launchUrl(uri);
   }
 
   Future<void> _signOut() async {
@@ -253,7 +295,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+
+          // Legal / account actions
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined,
+                      color: AppTheme.primaryColor),
+                  title: const Text('Privacy Policy'),
+                  trailing: const Icon(Icons.open_in_new, size: 16),
+                  onTap: _openPrivacyPolicy,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading:
+                      const Icon(Icons.delete_forever_outlined, color: Colors.red),
+                  title: const Text('Delete Account',
+                      style: TextStyle(color: Colors.red)),
+                  onTap: _requestAccountDeletion,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
 
           // Sign out
           OutlinedButton.icon(

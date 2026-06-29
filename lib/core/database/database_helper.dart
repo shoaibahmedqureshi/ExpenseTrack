@@ -48,6 +48,18 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE ${AppConstants.budgetsTable} (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER,
+        month       TEXT    NOT NULL,
+        amount      REAL    NOT NULL,
+        remote_id   TEXT,
+        is_synced   INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (category_id) REFERENCES ${AppConstants.categoriesTable}(id)
+      )
+    ''');
+
     await _seedCategories(db);
   }
 
@@ -62,6 +74,20 @@ class DatabaseHelper {
           'ALTER TABLE ${AppConstants.expensesTable} ADD COLUMN remote_id TEXT');
       await db.execute(
           'ALTER TABLE ${AppConstants.expensesTable} ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 3) {
+      // Add budgets table introduced in v3.
+      await db.execute('''
+        CREATE TABLE ${AppConstants.budgetsTable} (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          category_id INTEGER,
+          month       TEXT    NOT NULL,
+          amount      REAL    NOT NULL,
+          remote_id   TEXT,
+          is_synced   INTEGER NOT NULL DEFAULT 0,
+          FOREIGN KEY (category_id) REFERENCES ${AppConstants.categoriesTable}(id)
+        )
+      ''');
     }
   }
 
