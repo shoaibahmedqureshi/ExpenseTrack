@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  static const Color primaryColor = Color(0xFF6C63FF);
-  static const Color accentColor = Color(0xFFFF6584);
+  static const Color primaryColor = Color(0xFF0F766E);
+  static const Color accentColor = Color(0xFFFB7156);
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color cardColor = Colors.white;
   static const Color textPrimary = Color(0xFF2D3142);

@@ -154,8 +154,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             // ── Category picker ───────────────────────────────────────
             Consumer<CategoryProvider>(
               builder: (context, catProvider, _) {
+                // _category may hold a Category instance from the tapped
+                // Expense (a different object than the provider's list even
+                // when it represents the same row), so resolve the dropdown
+                // value by id rather than relying on identity equality.
+                cat.Category? value;
+                for (final c in catProvider.categories) {
+                  if (c.id == _category?.id) {
+                    value = c;
+                    break;
+                  }
+                }
                 return DropdownButtonFormField<cat.Category>(
-                  value: _category,
+                  value: value,
                   decoration: const InputDecoration(labelText: 'Category'),
                   items: catProvider.categories
                       .map((c) => DropdownMenuItem<cat.Category>(

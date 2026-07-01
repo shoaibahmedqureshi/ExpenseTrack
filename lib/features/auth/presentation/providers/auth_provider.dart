@@ -85,6 +85,9 @@ class AuthProvider extends ChangeNotifier {
     if (raw.contains('User already registered')) return 'An account with this email already exists.';
     if (raw.contains('Email not confirmed')) return 'Please confirm your email before signing in.';
     if (raw.contains('cancelled')) return 'Sign-in was cancelled.';
+    if (raw.contains('TimeoutException')) {
+      return 'The connection timed out. Check your internet and try again.';
+    }
     if (raw.contains('network') || raw.contains('SocketException')) return 'No internet connection.';
     if (raw.contains('does not exist') || raw.contains('relation')) {
       return 'Database not set up. Please run the schema SQL in your Supabase dashboard.';

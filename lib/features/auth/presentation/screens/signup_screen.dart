@@ -36,6 +36,10 @@ class _SignupScreenState extends State<SignupScreen> {
         );
   }
 
+  Future<void> _signUpWithGoogle() async {
+    await context.read<AuthProvider>().signInWithGoogle();
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -55,7 +59,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Join ExpenseTrack',
+                Text('Join Outlay',
                     style: Theme.of(context)
                         .textTheme
                         .headlineSmall
@@ -136,6 +140,31 @@ class _SignupScreenState extends State<SignupScreen> {
                                 strokeWidth: 2, color: Colors.white),
                           )
                         : const Text('Create Account'),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                Row(children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text('or',
+                        style: TextStyle(color: Colors.grey.shade400)),
+                  ),
+                  const Expanded(child: Divider()),
+                ]),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: auth.loading ? null : _signUpWithGoogle,
+                    icon: const Text('G',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF4285F4))),
+                    label: const Text('Continue with Google'),
                   ),
                 ),
                 const SizedBox(height: 20),

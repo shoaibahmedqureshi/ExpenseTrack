@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         .headlineMedium
                         ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
-                Text('Sign in to your ExpenseTrack account',
+                Text('Sign in to your Outlay account',
                     style: TextStyle(color: Colors.grey.shade500)),
                 const SizedBox(height: 32),
 

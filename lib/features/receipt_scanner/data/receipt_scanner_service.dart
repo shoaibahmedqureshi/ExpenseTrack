@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +28,8 @@ class ReceiptScannerService {
 
     final inputImage = InputImage.fromFile(File(file.path));
     final recognized = await _recognizer.processImage(inputImage);
+    dev.log('=== RAW OCR TEXT ===\n${recognized.text}\n=== END OCR ===',
+        name: 'ReceiptScanner');
     return ReceiptParser.parse(recognized.text);
   }
 

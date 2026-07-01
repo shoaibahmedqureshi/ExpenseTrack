@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
@@ -9,6 +10,8 @@ import '../../core/constants/app_constants.dart';
 class SyncService {
   SyncService(this._db, this._client);
 
+  static const _timeout = Duration(seconds: 20);
+
   final Database _db;
   final SupabaseClient _client;
 
@@ -17,14 +20,18 @@ class SyncService {
   Future<void> run() async {
     if (_uid == null) return;
     try {
-      await _pushPendingCategories();
-      await _pushPendingExpenses();
-      await _pushPendingBudgets();
-      await _pullRemoteCategories();
-      await _pullRemoteExpenses();
-      await _pullRemoteBudgets();
-    } catch (_) {
-      // Sync is best-effort; failures are silent and retried next time.
+      await Future(() async {
+        await _pushPendingCategories();
+        await _pushPendingExpenses();
+        await _pushPendingBudgets();
+        await _pullRemoteCategories();
+        await _pullRemoteExpenses();
+        await _pullRemoteBudgets();
+      }).timeout(_timeout);
+    } catch (e) {
+      // Sync is best-effort; failures (including a timed-out attempt) are
+      // silent and retried on the next connectivity change or app start.
+      debugPrint('[SyncService] sync attempt failed/timed out: $e');
     }
   }
 

@@ -4,7 +4,7 @@
     "1. Go to https://console.cloud.google.com/",
     "2. Create/select a project",
     "3. APIs & Services → Credentials → Create OAuth 2.0 Client ID → Android",
-    "4. Package name: com.example.expense_tracker",
+    "4. Package name: com.outlay.app",
     "5. SHA-1 (debug): A3:75:11:93:17:CD:8B:7E:9B:76:0E:94:F9:13:CE:59:DE:96:53:8F",
     "6. Download google-services.json and replace this file"
   ],
@@ -18,7 +18,7 @@
       "client_info": {
         "mobilesdk_app_id": "REPLACE",
         "android_client_info": {
-          "package_name": "com.example.expense_tracker"
+          "package_name": "com.outlay.app"
         }
       },
       "oauth_client": [
@@ -26,7 +26,7 @@
           "client_id": "REPLACE.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.expense_tracker",
+            "package_name": "com.outlay.app",
             "certificate_hash": "REPLACE"
           }
         }

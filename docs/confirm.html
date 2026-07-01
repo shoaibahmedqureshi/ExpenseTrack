@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expense Tracker</title>
+<title>Outlay</title>
 <style>
   body {
     font-family: -apple-system, Roboto, Helvetica, Arial, sans-serif;
@@ -116,10 +116,10 @@
       card.innerHTML =
         '<div class="icon">&#9989;</div>' +
         '<h1>Email confirmed!</h1>' +
-        '<p>Your Expense Tracker account is verified and ready to use.</p>' +
+        '<p>Your Outlay account is verified and ready to use.</p>' +
         '<p>If the app is installed on this device, it should open automatically. Otherwise, open the ' +
-        '<strong>Expense Tracker</strong> app on your phone and sign in with your email and password.</p>' +
-        '<a class="button" href="' + deepLink + '">Open Expense Tracker</a>' +
+        '<strong>Outlay</strong> app on your phone and sign in with your email and password.</p>' +
+        '<a class="button" href="' + deepLink + '">Open Outlay</a>' +
         '<p class="hint">You can close this page and switch to the app.</p>';
     }
 
@@ -127,7 +127,7 @@
       card.innerHTML =
         '<div class="icon">&#128272;</div>' +
         '<h1>Set a new password</h1>' +
-        '<p>Choose a new password for your Expense Tracker account.</p>' +
+        '<p>Choose a new password for your Outlay account.</p>' +
         '<div class="form-section">' +
         '  <input type="password" id="pw1" placeholder="New password" minlength="6" />' +
         '  <input type="password" id="pw2" placeholder="Confirm new password" minlength="6" />' +
@@ -166,7 +166,7 @@
           card.innerHTML =
             '<div class="icon">&#9989;</div>' +
             '<h1>Password updated!</h1>' +
-            '<p>You can now sign in with your new password in the Expense Tracker app.</p>';
+            '<p>You can now sign in with your new password in the Outlay app.</p>';
         });
       });
     }

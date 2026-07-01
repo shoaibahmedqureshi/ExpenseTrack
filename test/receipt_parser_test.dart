@@ -258,4 +258,265 @@ Total            2,148.00
       expect(r.total, 2148.00);
     });
   });
+
+  // ── Real Pakistani POS receipts (Marhaba Supermarket) ────────────────────
+  //
+  // These simulate what Google ML Kit OCR produces from the actual receipt
+  // photos shared by the user. The layout is a typical FBR-POS receipt:
+  //   • Merchant logo (often OCR'd as garbled text) + "SUPERMARKET" below
+  //   • Address line
+  //   • Gross Total → (-) Item Disc → POS Service Fee → Net Total
+  //   • CashReceived → CashBack   (must NOT be picked as the total)
+  //   • G.S.T Value: at the bottom (dots in name, must still be read as tax)
+  group('ReceiptParser — Pakistani FBR-POS receipts', () {
+    test('Marhaba receipt 1 — toy purchase, zero GST, discount applied', () {
+      // Merchant: MARHABA SUPERMARKET
+      // Net Total: 365.00  (Gross 455 − Disc 91 + POS fee 1)
+      // CashReceived: 1,000.00  ← must NOT be total
+      // G.S.T Value: 0.00
+      const raw = '''
+MARHABAIQIO
+SUPERMARKET
+Block-A Fortune Arcade Jamshoro Road
+Qasim Chowk Hyderabad
+022-2100624
+NTN # 8024130
+Sale Receipt                    Original
+Bill No: SV-107-020634C
+Do No: 12826296016
+Date: 30-Jun-2026          Time: 22:57:48
+Sr. Description   Price  Qty  GST Rate  GST  DISC  Total
+BABY TOYS FANCY
+1  218694
+Qty: 1
+Gross Tota:
+(-) Item Disc:
+POS Service Fee:
+Net Totak
+CashRecelved:
+Cash Back:
+You Saved
+G.S.T Value:
+User: COUNTER12
+THANK YOU
+Have A Nice Day
+Tota
+455.00
+91.00
+364.00
+455.00
+91.00
+1.00
+365.00
+1,000.00
+635.00
+91.00
+0.00
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 1 ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 365.00, reason: 'Net Total 365, not CashReceived 1000');
+      expect(r.date, DateTime(2026, 6, 30));
+    });
+
+    test('Marhaba receipt 2 — ACTUAL OCR output from device', () {
+      // This is the actual text ML Kit produced, read from the debug panel.
+      // Labels and amounts are in separate columns — amounts appear at the
+      // bottom as a bare column under "Tota".
+      // Net Total: 401.00, CashReceived: 1,001.00, G.S.T: 24.41
+      const raw = '''
+M
+Shop No 7 at l Village Housng Scheme. nca
+Isra Univ ersiy lala Naku Road liyderabad
+Date:
+Sr. Description
+Bill No: SV12UUGL09
+PuNO: 1207293036
+1 181394
+MARHASAINOi0
+MIRINDA 1LTR
+Oty:
+2 8964000 10131
+G.S.T Value:
+MARHABA BAKERY CHIKEN PATTIES
+UPE MARKAR
+10-Jun-2026
+02-2100624
+NT8024130
+5
+Saleg
+Price Qty GST Rate
+60.00
+160.00
+User: ISRAPOS3
+4.000
+Time:
+1.000
+Gross Tota:
+POS Service Fee:
+Net Totak
+CashRecelved:
+0.00
+24.41
+Cash Back:
+No Of Item:
+THANK YOU
+Have A Nice Day
+Origina
+18:09:13
+GS) DISC
+0.00
+0.00
+18.00 0.00
+Tota
+240.00
+160.00
+400.00
+1.00
+401.00
+1,001.00
+600.00
+24.41
+Cuunter: ISRAPO
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 2 (actual OCR) ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 401.00, reason: 'Net Total 401, not CashReceived 1001');
+      expect(r.tax, 24.41,   reason: 'G.S.T Value 24.41 — last in amounts column');
+      expect(r.date, DateTime(2026, 6, 10));
+    });
+
+    test('Indian receipt — CGST + SGST summed into one tax figure', () {
+      const raw = '''
+RELIANCE FRESH
+MG Road, Bengaluru
+GSTIN: 29AABCR1234Z1Z5
+Date: 15-Jun-2026  Time: 14:23
+
+TATA TEA GOLD 500G        185.00
+AMUL BUTTER 500G          280.00
+BREAD BRITANNIA            45.00
+
+Subtotal                  510.00
+CGST @2.5%                 12.75
+SGST @2.5%                 12.75
+Grand Total               535.50
+
+Cash Paid                 600.00
+Change                     64.50
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 3 (Indian CGST+SGST) ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 535.50);
+      expect(r.tax, closeTo(25.50, 0.01),
+          reason: 'CGST 12.75 + SGST 12.75 = 25.50');
+    });
+
+    test('UAE receipt — VAT 5%', () {
+      const raw = '''
+CARREFOUR UAE
+Dubai Mall, Dubai
+TRN: 100123456700003
+Date: 20-Jun-2026
+
+Mineral Water 1.5L         5.00
+Bread Loaf                 8.50
+Orange Juice              12.00
+
+Subtotal                  25.50
+VAT 5%                     1.28
+Total                     26.78
+
+Cash                      30.00
+Change                     3.22
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 4 (UAE VAT) ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 26.78);
+      expect(r.tax, 1.28);
+    });
+
+    test('US receipt — Sales Tax', () {
+      const raw = '''
+WALMART SUPERCENTER
+123 Commerce Blvd
+Austin, TX 78701
+Tel: 512-555-0100
+
+Date: 06/25/2026  Time: 10:15 AM
+
+GREAT VALUE MILK 1GL       3.98
+DORITOS NACHO               4.48
+COLGATE TOOTHPASTE          2.97
+BOUNTY PAPER TOWELS         9.97
+
+Subtotal                   21.40
+Sales Tax 8.25%             1.77
+Total                      23.17
+
+VISA ****1234              23.17
+Change Due                  0.00
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 5 (US Sales Tax) ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 23.17);
+      expect(r.tax, 1.77);
+      expect(r.date, DateTime(2026, 6, 25));
+    });
+
+    test('UK receipt — VAT at bottom', () {
+      const raw = '''
+TESCO EXPRESS
+14 High Street, London
+VAT Reg No: GB 123 4567 89
+
+05/07/2026  09:42
+
+SEMI-SKIMMED MILK 2PT      1.10
+HOVIS WHOLEMEAL BREAD      1.30
+WALKERS CRISPS             1.00
+HEINZ BAKED BEANS          0.90
+
+Subtotal                   4.30
+VAT                        0.43
+Total                      4.73
+
+CONTACTLESS               4.73
+''';
+      final r = ReceiptParser.parse(raw);
+      print('\n--- Receipt 6 (UK VAT) ---');
+      print('Merchant : ${r.merchant}');
+      print('Total    : ${r.total}');
+      print('Tax      : ${r.tax}');
+      print('Date     : ${r.date}');
+
+      expect(r.total, 4.73);
+      expect(r.tax, 0.43);
+    });
+  });
 }
