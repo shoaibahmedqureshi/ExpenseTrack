@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlay — Expense Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f7;
+    color: #1c1c1e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .hero {
+    text-align: center;
+    max-width: 540px;
+  }
+  .icon {
+    width: 96px;
+    height: 96px;
+    background: #0F766E;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 48px;
+  }
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #0F766E;
+  }
+  .tagline {
+    font-size: 18px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+    text-align: left;
+  }
+  .feature {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .feature .emoji { font-size: 22px; margin-bottom: 6px; display: block; }
+  .feature strong { font-size: 14px; display: block; margin-bottom: 4px; }
+  .feature span { font-size: 13px; color: #666; line-height: 1.4; }
+  .badge {
+    display: inline-block;
+    background: #0F766E;
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  .badge:hover { background: #0d6460; }
+  footer {
+    font-size: 13px;
+    color: #888;
+    text-align: center;
+  }
+  footer a { color: #0F766E; text-decoration: none; margin: 0 10px; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="icon">💸</div>
+    <h1>Outlay</h1>
+    <p class="tagline">A fast, private expense tracker. Log expenses, scan receipts, set budgets, and sync across your devices.</p>
+
+    <div class="features">
+      <div class="feature">
+        <span class="emoji">📷</span>
+        <strong>Receipt Scanner</strong>
+        <span>Auto-reads merchant, total, tax, and date from any receipt.</span>
+      </div>
+      <div class="feature">
+        <span class="emoji">💰</span>
+        <strong>Expense Tracking</strong>
+        <span>Log and categorise expenses quickly, on or offline.</span>
+      </div>
+      <div class="feature">
+        <span class="emoji">🎯</span>
+        <strong>Budgets</strong>
+        <span>Set monthly limits by category and stay on track.</span>
+      </div>
+      <div class="feature">
+        <span class="emoji">📊</span>
+        <strong>Reports</strong>
+        <span>Monthly summaries you can export in one tap.</span>
+      </div>
+    </div>
+
+    <a class="badge" href="https://play.google.com/store/apps/details?id=com.outlay.app">
+      Get it on Google Play
+    </a>
+
+    <footer>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="delete-account.html">Delete Account</a>
+      <a href="mailto:08bitsaqureshi@seecs.edu.pk">Contact</a>
+      <br><br>
+      © 2026 Outlay
+    </footer>
+  </div>
+</body>
+</html>
