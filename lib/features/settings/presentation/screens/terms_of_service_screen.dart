@@ -7,7 +7,7 @@ class TermsOfServiceScreen extends StatefulWidget {
   const TermsOfServiceScreen({super.key});
 
   static const url =
-      'https://shoaibahmedqureshi.github.io/ExpenseTrack/terms.html';
+      'https://shoaibahmedqureshi.github.io/ExpenseTrack/ios/terms.html';
 
   @override
   State<TermsOfServiceScreen> createState() => _TermsOfServiceScreenState();
@@ -39,7 +39,11 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
         children: [
           WebViewWidget(controller: _controller),
           if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+            const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor),
+              ),
+            ),
         ],
       ),
     );

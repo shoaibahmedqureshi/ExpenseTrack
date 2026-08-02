@@ -7,7 +7,7 @@ class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});
 
   static const url =
-      'https://shoaibahmedqureshi.github.io/ExpenseTrack/privacy.html';
+      'https://shoaibahmedqureshi.github.io/ExpenseTrack/ios/privacy.html';
 
   @override
   State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
@@ -39,7 +39,11 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
         children: [
           WebViewWidget(controller: _controller),
           if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+            const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor),
+              ),
+            ),
         ],
       ),
     );
