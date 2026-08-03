@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.0+42
 
 environment:
   sdk: ^3.5.3
@@ -36,12 +36,23 @@ dependencies:
   sqflite: ^2.3.3+1
   path: ^1.9.0
   intl: ^0.19.0
-  google_mlkit_text_recognition: ^0.13.1
+  google_mlkit_text_recognition: ^0.16.0
   image_picker: ^1.1.2
+  image: ^4.9.1
+  # Native guided capture: ML Kit Document Scanner UI on Android, VisionKit
+  # on iOS — live edge detection, auto-crop/perspective correction, flash.
+  # Raw ungated camera photos were the receipt scanner's dominant failure
+  # source (blur/framing/rotation), not the OCR or parsing stages.
+  flutter_doc_scanner: ^0.0.21
   supabase_flutter: ^2.8.4
   connectivity_plus: ^6.1.4
   shared_preferences: ^2.3.4
   google_sign_in: ^6.2.2
+  # Required by Apple Guideline 4.8 whenever a third-party sign-in (Google,
+  # here) is offered — Sign in with Apple must be offered as an equivalent
+  # option, or App Review rejects the submission outright.
+  sign_in_with_apple: ^6.1.4
+  crypto: ^3.0.3
   in_app_purchase: ^3.2.0
   fl_chart: ^0.69.2
   pdf: ^3.11.1
@@ -53,6 +64,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  sqflite_common_ffi: ^2.3.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -78,6 +90,14 @@ flutter_launcher_icons:
     generate: true
   macos:
     generate: true
+
+# sqflite_common_ffi 2.3.5's Windows setup imports package:sqlite3/open.dart,
+# which was removed/restructured in sqlite3 3.x even though its pubspec
+# constraint (>=2.3.0 <4.0.0) doesn't reflect that break. Pinning to a 2.x
+# release keeps sqflite_common_ffi (used only in tests, for an in-memory DB)
+# actually compiling.
+dependency_overrides:
+  sqlite3: ^2.4.6
 
 flutter_native_splash:
   color: "#ffffff"
@@ -114,22 +134,19 @@ flutter:
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  # Bundled locally rather than fetched at runtime via google_fonts — the
+  # runtime-fetch approach silently falls back to the platform default font
+  # if the device/simulator can't reach fonts.gstatic.com at first launch,
+  # with no error surfaced, which was masking whether Manrope was actually
+  # applying.
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Manrope-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Manrope-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-Bold.ttf
+          weight: 700
