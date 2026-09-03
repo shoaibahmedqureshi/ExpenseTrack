@@ -3,124 +3,277 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Outlay — Expense Tracker</title>
+<title>Outlay — Track Expenses, Scan Receipts, Stay on Budget</title>
+<meta name="description" content="A fast, private expense tracker for iOS and Android. Scan receipts, log expenses, set budgets, and see where your money goes.">
+<link rel="icon" href="assets/icon.png">
 <style>
+  :root {
+    --teal: #0F766E;
+    --teal-dark: #0d6460;
+    --ink: #1c1c1e;
+    --muted: #5b6169;
+    --bg: #f7f8f7;
+    --card: #ffffff;
+    --line: #e7e9e8;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, Roboto, Helvetica, Arial, sans-serif;
-    background: #f5f5f7;
-    color: #1c1c1e;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-  }
-  .hero {
-    text-align: center;
-    max-width: 540px;
-  }
-  .icon {
-    width: 96px;
-    height: 96px;
-    background: #0F766E;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
-    font-size: 48px;
-  }
-  h1 {
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #0F766E;
-  }
-  .tagline {
-    font-size: 18px;
-    color: #555;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
     line-height: 1.5;
+  }
+  a { color: var(--teal); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  nav .links { display: flex; gap: 28px; font-size: 14px; font-weight: 600; }
+  nav .links a { color: var(--muted); text-decoration: none; }
+  nav .links a:hover { color: var(--ink); }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 48px;
+    padding: 56px 0 88px;
+  }
+  .hero h1 {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin-bottom: 18px;
+  }
+  .hero h1 span { color: var(--teal); }
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
     margin-bottom: 32px;
   }
-  .features {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 36px;
-    text-align: left;
-  }
-  .feature {
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-  }
-  .feature .emoji { font-size: 22px; margin-bottom: 6px; display: block; }
-  .feature strong { font-size: 14px; display: block; margin-bottom: 4px; }
-  .feature span { font-size: 13px; color: #666; line-height: 1.4; }
-  .badge {
-    display: inline-block;
-    background: #0F766E;
+  .store-badges { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .store-badges a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ink);
     color: #fff;
     text-decoration: none;
-    padding: 14px 28px;
+    padding: 11px 20px;
     border-radius: 12px;
-    font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 32px;
+    font-weight: 700;
+    font-size: 14px;
   }
-  .badge:hover { background: #0d6460; }
-  footer {
-    font-size: 13px;
-    color: #888;
+  .store-badges a:hover { background: #000; }
+  .store-badges svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .trust { font-size: 13px; color: var(--muted); }
+
+  .hero-shot { display: flex; justify-content: center; }
+  .hero-shot img.hero-icon {
+    width: 220px;
+    height: 220px;
+    border-radius: 48px;
+    box-shadow: 0 24px 60px rgba(15,118,110,0.28), 0 0 0 1px var(--line);
+  }
+
+  .section-title { text-align: center; margin-bottom: 40px; }
+  .section-title h2 { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .section-title p { color: var(--muted); font-size: 16px; }
+
+  .features {
+    padding: 64px 0;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+  }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15,118,110,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .feature-card p { font-size: 14px; color: var(--muted); }
+
+  .cta {
+    background: var(--teal);
+    border-radius: 24px;
+    margin: 24px 0 72px;
+    padding: 56px 40px;
     text-align: center;
+    color: #fff;
   }
-  footer a { color: #0F766E; text-decoration: none; margin: 0 10px; }
-  footer a:hover { text-decoration: underline; }
+  .cta h2 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+  .cta p { color: rgba(255,255,255,0.85); margin-bottom: 28px; font-size: 16px; }
+  .cta .store-badges { justify-content: center; }
+  .cta .store-badges a { background: #fff; color: var(--ink); }
+  .cta .store-badges a:hover { background: #f0f0f0; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 32px 0 48px;
+  }
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+  .footer-links a { color: var(--muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--teal); }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; text-align: center; padding-top: 32px; }
+    .hero p { margin-left: auto; margin-right: auto; }
+    .store-badges { justify-content: center; }
+    .hero-shot { order: -1; }
+    .feature-grid { grid-template-columns: 1fr; }
+    nav .links { display: none; }
+  }
 </style>
 </head>
 <body>
-  <div class="hero">
-    <div class="icon">💸</div>
-    <h1>Outlay</h1>
-    <p class="tagline">A fast, private expense tracker. Log expenses, scan receipts, set budgets, and sync across your devices.</p>
+  <div class="wrap">
+    <nav>
+      <div class="brand"><img src="assets/icon.png" alt="Outlay"> Outlay</div>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="tools/index.html">Free Tools</a>
+        <a href="support.html">Support</a>
+      </div>
+    </nav>
 
-    <div class="features">
-      <div class="feature">
-        <span class="emoji">📷</span>
-        <strong>Receipt Scanner</strong>
-        <span>Auto-reads merchant, total, tax, and date from any receipt.</span>
+    <section class="hero">
+      <div>
+        <h1>Know exactly where <span>your money goes</span></h1>
+        <p>Point your camera at a receipt and Outlay reads the merchant, amount, and date for you. Log expenses, set budgets, and see clear monthly reports — free to start, on iOS and Android.</p>
+        <div class="store-badges">
+          <a href="https://apps.apple.com/app/id6790199113">
+            <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+            App Store
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.outlay.app">
+            <svg viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c17.6-11.8 17.6-46.3-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+            Google Play
+          </a>
+        </div>
+        <p class="trust">Free plan available · No credit card required to start</p>
       </div>
-      <div class="feature">
-        <span class="emoji">💰</span>
-        <strong>Expense Tracking</strong>
-        <span>Log and categorise expenses quickly, on or offline.</span>
+      <div class="hero-shot">
+        <img src="assets/icon.png" alt="Outlay app icon" class="hero-icon">
       </div>
-      <div class="feature">
-        <span class="emoji">🎯</span>
-        <strong>Budgets</strong>
-        <span>Set monthly limits by category and stay on track.</span>
-      </div>
-      <div class="feature">
-        <span class="emoji">📊</span>
-        <strong>Reports</strong>
-        <span>Monthly summaries you can export in one tap.</span>
-      </div>
-    </div>
+    </section>
 
-    <a class="badge" href="https://play.google.com/store/apps/details?id=com.outlay.app">
-      Get it on Google Play
-    </a>
+    <section class="features" id="features">
+      <div class="section-title">
+        <h2>Everything you need, nothing you don't</h2>
+        <p>Built to be fast enough that logging an expense never feels like a chore.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📷</div>
+          <div>
+            <h3>Receipt Scanner</h3>
+            <p>Snap a photo and Outlay reads the merchant, total, tax, and date automatically — no typing.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <div>
+            <h3>Expense Tracking</h3>
+            <p>Log and categorise income and expenses in seconds, online or offline.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <div>
+            <h3>Budgets</h3>
+            <p>Set monthly limits by category and see exactly how much you have left, in real time.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div>
+            <h3>Reports</h3>
+            <p>Clear monthly and yearly breakdowns you can export whenever you need them.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <div>
+            <h3>Cloud Sync</h3>
+            <p>Your data stays in sync across every device you use, automatically.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div>
+            <h3>Private by Design</h3>
+            <p>Your financial data is encrypted and never sold. It's yours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screenshot showcase deliberately left out for now — the current
+         screenshots have real personal data in them (see project notes).
+         Re-add a "screens" section here once clean demo screenshots exist. -->
+
+    <section class="cta">
+      <h2>Start tracking in under a minute</h2>
+      <p>Free to download on iOS and Android.</p>
+      <div class="store-badges">
+        <a href="https://apps.apple.com/app/id6790199113">
+          <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.outlay.app">
+          <svg viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c17.6-11.8 17.6-46.3-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </section>
 
     <footer>
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
-      <a href="delete-account.html">Delete Account</a>
-      <a href="mailto:08bitsaqureshi@seecs.edu.pk">Contact</a>
-      <br><br>
-      © 2026 Outlay
+      <div class="footer-row">
+        <div>© 2026 Outlay. All rights reserved.</div>
+        <div class="footer-links">
+          <a href="tools/index.html">Free Tools</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="delete-account.html">Delete Account</a>
+          <a href="support.html">Support</a>
+          <a href="mailto:contact@outlayapp.net">Contact</a>
+        </div>
+      </div>
     </footer>
   </div>
 </body>

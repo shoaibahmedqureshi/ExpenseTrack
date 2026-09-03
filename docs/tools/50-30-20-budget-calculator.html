@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>50/30/20 Budget Calculator — Free & No Signup | Outlay</title>
+<meta name="description" content="Free 50/30/20 budget calculator. Enter your monthly income and instantly see how much to spend on needs, wants, and savings.">
+<link rel="icon" href="../assets/icon.png">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .input-row select { border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 16px; background: #fff; }
+  input[type="number"] {
+    width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line);
+    font-size: 18px; font-family: inherit;
+  }
+  input[type="number"]:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .result .pct { font-size: 13px; font-weight: 700; color: var(--teal); }
+  .result .label { font-size: 13px; color: var(--muted); margin: 4px 0; }
+  .result .amount { font-size: 20px; font-weight: 800; }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p, .content li { font-size: 15px; color: #333; margin-bottom: 10px; }
+  .content ul { padding-left: 20px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .results { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <h1>50/30/20 Budget Calculator</h1>
+    <p class="lede">Enter your monthly take-home pay to split it into needs, wants, and savings using the classic 50/30/20 rule.</p>
+
+    <div class="card">
+      <label for="income">Monthly take-home income</label>
+      <div class="input-row">
+        <select id="currency">
+          <option value="$">$</option>
+          <option value="£">£</option>
+          <option value="€">€</option>
+          <option value="₹">₹</option>
+          <option value="₨">₨ (PKR)</option>
+        </select>
+        <input type="number" id="income" placeholder="e.g. 4000" min="0" step="1">
+      </div>
+
+      <div class="results" id="results" style="display:none;">
+        <div class="result">
+          <div class="pct">50% · Needs</div>
+          <div class="label">rent, bills, groceries</div>
+          <div class="amount" id="needs">—</div>
+        </div>
+        <div class="result">
+          <div class="pct">30% · Wants</div>
+          <div class="label">dining, hobbies, fun</div>
+          <div class="amount" id="wants">—</div>
+        </div>
+        <div class="result">
+          <div class="pct">20% · Savings</div>
+          <div class="label">savings &amp; debt payoff</div>
+          <div class="amount" id="savings">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>What is the 50/30/20 rule?</h2>
+      <p>The 50/30/20 rule is a simple budgeting framework: after taxes, split your income into
+      three buckets — 50% for needs (things you must pay, like rent, utilities, groceries, and
+      minimum debt payments), 30% for wants (dining out, entertainment, subscriptions, anything
+      discretionary), and 20% for savings and extra debt payoff.</p>
+
+      <h2>Is 50/30/20 right for everyone?</h2>
+      <p>It's a starting point, not a rule carved in stone. In high cost-of-living areas, needs
+      often exceed 50% — in that case, treat 20% savings as the priority to protect and trim
+      wants first. If you're debt-free with low fixed costs, you might comfortably push savings
+      well past 20%.</p>
+
+      <h2>Track where it actually goes</h2>
+      <p>A budget split is only useful if you know what you're actually spending. <a href="../index.html">Outlay</a>
+      scans receipts automatically and categorizes expenses so you can see needs vs. wants vs.
+      savings in real numbers, not estimates.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">All Tools</a> · <a href="../index.html">Home</a> · <a href="../privacy.html">Privacy</a>
+    </footer>
+  </div>
+
+  <script>
+    const incomeInput = document.getElementById('income');
+    const currencySelect = document.getElementById('currency');
+    const results = document.getElementById('results');
+
+    function format(n, symbol) {
+      return symbol + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function update() {
+      const income = parseFloat(incomeInput.value);
+      const symbol = currencySelect.value;
+      if (!income || income <= 0) {
+        results.style.display = 'none';
+        return;
+      }
+      document.getElementById('needs').textContent = format(income * 0.5, symbol);
+      document.getElementById('wants').textContent = format(income * 0.3, symbol);
+      document.getElementById('savings').textContent = format(income * 0.2, symbol);
+      results.style.display = 'grid';
+    }
+
+    incomeInput.addEventListener('input', update);
+    currencySelect.addEventListener('change', update);
+  </script>
+</body>
+</html>

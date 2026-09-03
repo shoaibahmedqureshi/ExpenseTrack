@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Savings Goal Calculator — How Much to Save Each Month | Outlay</title>
+<meta name="description" content="Free savings goal calculator. Enter your target amount and date to see exactly how much to save each month, with or without interest.">
+<link rel="icon" href="../assets/icon.png">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"], input[type="date"] { width: 100%; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .result-box {
+    background: #f0f9f8; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;
+    display: none;
+  }
+  .result-box .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .result-box .amount { font-size: 30px; font-weight: 800; color: var(--teal); }
+  .result-box .sub { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 15px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <h1>Savings Goal Calculator</h1>
+    <p class="lede">Figure out exactly how much to set aside each month to hit a savings target by a specific date.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency">
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₹">₹ INR</option>
+          <option value="₨">₨ PKR</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="goal">Goal amount</label>
+        <input type="number" id="goal" placeholder="e.g. 10000" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="current">Already saved</label>
+        <input type="number" id="current" placeholder="e.g. 1000" min="0" step="1" value="0">
+      </div>
+      <div class="field">
+        <label for="targetDate">Target date</label>
+        <input type="date" id="targetDate">
+      </div>
+      <div class="field">
+        <label for="rate">Expected annual interest/return (optional)</label>
+        <input type="number" id="rate" placeholder="e.g. 4" min="0" step="0.1" value="0">
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="label">You need to save</div>
+        <div class="amount" id="monthlyAmount">—</div>
+        <div class="sub" id="monthsSub"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>How this is calculated</h2>
+      <p>Without interest, it's simple: (goal − what you've already saved) ÷ number of months
+      remaining. If you add an expected annual return, the calculator accounts for compounding
+      on both your existing savings and each new monthly deposit, so the required monthly
+      amount comes out a little lower the higher the rate you enter.</p>
+
+      <h2>A note on estimates</h2>
+      <p>Investment returns aren't guaranteed — treat the interest-adjusted number as an optimistic
+      estimate, not a promise. For pure cash savings (a bank account), leave the rate at 0.</p>
+
+      <h2>Track your progress</h2>
+      <p><a href="../index.html">Outlay</a> lets you set real budgets and see your actual monthly
+      surplus, so you know if this target is realistic against what you actually spend.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">All Tools</a> · <a href="../index.html">Home</a> · <a href="../privacy.html">Privacy</a>
+    </footer>
+  </div>
+
+  <script>
+    const goalInput = document.getElementById('goal');
+    const currentInput = document.getElementById('current');
+    const dateInput = document.getElementById('targetDate');
+    const rateInput = document.getElementById('rate');
+    const currencySelect = document.getElementById('currency');
+    const resultBox = document.getElementById('resultBox');
+
+    function monthsBetween(now, target) {
+      const months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+      // Partial current month still counts as needing action this month.
+      return Math.max(1, months);
+    }
+
+    function update() {
+      const goal = parseFloat(goalInput.value);
+      const current = parseFloat(currentInput.value) || 0;
+      const annualRatePct = parseFloat(rateInput.value) || 0;
+      const symbol = currencySelect.value;
+      const dateVal = dateInput.value;
+
+      if (!goal || goal <= 0 || !dateVal) {
+        resultBox.style.display = 'none';
+        return;
+      }
+      const target = new Date(dateVal);
+      const now = new Date();
+      if (target <= now) {
+        resultBox.style.display = 'none';
+        return;
+      }
+      const n = monthsBetween(now, target);
+      const remaining = Math.max(0, goal - current);
+
+      let monthly;
+      if (annualRatePct > 0) {
+        const r = annualRatePct / 100 / 12; // monthly rate
+        // Future value of current savings after n months, compounding monthly.
+        const fvCurrent = current * Math.pow(1 + r, n);
+        const stillNeeded = Math.max(0, goal - fvCurrent);
+        // Solve ordinary annuity payment for future value = stillNeeded.
+        const annuityFactor = (Math.pow(1 + r, n) - 1) / r;
+        monthly = stillNeeded / annuityFactor;
+      } else {
+        monthly = remaining / n;
+      }
+
+      document.getElementById('monthlyAmount').textContent =
+        symbol + monthly.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' / month';
+      document.getElementById('monthsSub').textContent =
+        'over ' + n + ' month' + (n === 1 ? '' : 's');
+      resultBox.style.display = 'block';
+    }
+
+    [goalInput, currentInput, dateInput, rateInput, currencySelect].forEach(el =>
+      el.addEventListener('input', update));
+  </script>
+</body>
+</html>

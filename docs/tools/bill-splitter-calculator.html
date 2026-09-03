@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bill Splitter Calculator — Split a Bill with Tip | Outlay</title>
+<meta name="description" content="Free bill splitter calculator. Split a restaurant bill evenly (or unevenly) between friends, including tip, in seconds.">
+<link rel="icon" href="../assets/icon.png">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"] { width: 100%; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  .stepper { display: flex; align-items: center; gap: 12px; }
+  .stepper button {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 18px; font-weight: 700; cursor: pointer; color: var(--teal);
+  }
+  .stepper button:hover { background: #f0f9f8; }
+  .stepper .count { font-size: 20px; font-weight: 700; min-width: 28px; text-align: center; }
+  .tip-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tip-btn {
+    flex: 1; min-width: 60px; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .tip-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; display: none; }
+  .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .result .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .result .amount { font-size: 20px; font-weight: 800; color: var(--teal); }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 15px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .results { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <h1>Bill Splitter Calculator</h1>
+    <p class="lede">Split a bill evenly between friends, with tip included.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency">
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₹">₹ INR</option>
+          <option value="₨">₨ PKR</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bill">Bill amount</label>
+        <input type="number" id="bill" placeholder="e.g. 84.50" min="0" step="0.01">
+      </div>
+      <div class="field">
+        <label>Tip percentage</label>
+        <div class="tip-options" id="tipOptions">
+          <div class="tip-btn" data-tip="0">0%</div>
+          <div class="tip-btn" data-tip="10">10%</div>
+          <div class="tip-btn active" data-tip="15">15%</div>
+          <div class="tip-btn" data-tip="18">18%</div>
+          <div class="tip-btn" data-tip="20">20%</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Split between</label>
+        <div class="stepper">
+          <button type="button" id="minus">−</button>
+          <span class="count" id="peopleCount">2</span>
+          <button type="button" id="plus">+</button>
+          <span style="color:var(--muted); font-size:14px;">people</span>
+        </div>
+      </div>
+
+      <div class="results" id="results">
+        <div class="result">
+          <div class="label">Tip</div>
+          <div class="amount" id="tipAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">Total</div>
+          <div class="amount" id="totalAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">Per person</div>
+          <div class="amount" id="perPersonAmount">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>How the tip is calculated</h2>
+      <p>The tip is calculated on the full bill amount, then added to the bill to get the total. The
+      total is then divided evenly by the number of people splitting it. For an uneven split
+      (e.g. someone only had a drink), do the math on individual items separately and use this
+      tool just for the shared portion.</p>
+
+      <h2>Keep track after you pay</h2>
+      <p>Splitting the bill is the easy part — remembering who still owes you is the hard part.
+      <a href="../index.html">Outlay</a> logs your spending automatically so shared expenses like
+      this don't get lost in your monthly totals.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">All Tools</a> · <a href="../index.html">Home</a> · <a href="../privacy.html">Privacy</a>
+    </footer>
+  </div>
+
+  <script>
+    const billInput = document.getElementById('bill');
+    const currencySelect = document.getElementById('currency');
+    const tipOptions = document.getElementById('tipOptions');
+    const peopleCountEl = document.getElementById('peopleCount');
+    const results = document.getElementById('results');
+
+    let tipPct = 15;
+    let people = 2;
+
+    tipOptions.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tip-btn');
+      if (!btn) return;
+      tipOptions.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tipPct = parseFloat(btn.dataset.tip);
+      update();
+    });
+
+    document.getElementById('minus').addEventListener('click', () => {
+      people = Math.max(1, people - 1);
+      peopleCountEl.textContent = people;
+      update();
+    });
+    document.getElementById('plus').addEventListener('click', () => {
+      people = Math.min(50, people + 1);
+      peopleCountEl.textContent = people;
+      update();
+    });
+
+    function format(n, symbol) {
+      return symbol + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function update() {
+      const bill = parseFloat(billInput.value);
+      const symbol = currencySelect.value;
+      if (!bill || bill <= 0) {
+        results.style.display = 'none';
+        return;
+      }
+      const tip = bill * (tipPct / 100);
+      const total = bill + tip;
+      const perPerson = total / people;
+
+      document.getElementById('tipAmount').textContent = format(tip, symbol);
+      document.getElementById('totalAmount').textContent = format(total, symbol);
+      document.getElementById('perPersonAmount').textContent = format(perPerson, symbol);
+      results.style.display = 'grid';
+    }
+
+    billInput.addEventListener('input', update);
+    currencySelect.addEventListener('change', update);
+  </script>
+</body>
+</html>
