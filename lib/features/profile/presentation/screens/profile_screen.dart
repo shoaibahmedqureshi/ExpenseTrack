@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
@@ -166,27 +167,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     ListTile(
+                      // Tappable in both states — this is now the single
+                      // entry point for managing or upgrading a
+                      // subscription, since duplicating it in Settings too
+                      // just gave the two places a chance to drift out of
+                      // sync (see settings_screen.dart, which no longer has
+                      // its own Manage Subscription row).
+                      onTap: () => PaywallScreen.show(context),
                       leading: Icon(
                         isPro ? Icons.workspace_premium : Icons.lock_open_outlined,
                         color: isPro ? const Color(0xFFFFD700) : AppTheme.primaryColor,
                       ),
                       title: Text(isPro ? 'Pro Plan' : 'Free Plan'),
                       subtitle: Text(isPro
-                          ? 'Unlimited scans & reports'
+                          ? 'Unlimited scans & reports — tap to manage'
                           : '$scansLeft receipt scans remaining this month'),
                       trailing: isPro
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text('PRO',
-                                  style: TextStyle(
-                                      color: Color(0xFFB8860B),
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 12)),
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text('PRO',
+                                      style: TextStyle(
+                                          color: Color(0xFFB8860B),
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12)),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.chevron_right, size: 20),
+                              ],
                             )
                           : TextButton(
                               onPressed: () => PaywallScreen.show(context),
@@ -248,6 +264,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: const Text('Privacy, terms, account & sign out'),
               trailing: const Icon(Icons.chevron_right, size: 20),
               onTap: _openSettings,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              AppConstants.buildLabel,
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../providers/reports_provider.dart';
 
@@ -14,7 +15,10 @@ class CategoryBreakdownChart extends StatelessWidget {
     if (breakdown.isEmpty) {
       return const SizedBox(
         height: 160,
-        child: Center(child: Text('No expenses for this period')),
+        child: Center(
+          child: Text('No expenses for this period',
+              style: TextStyle(color: AppTheme.textSecondary)),
+        ),
       );
     }
 
@@ -58,17 +62,27 @@ class CategoryBreakdownChart extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(c.category.name,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.textPrimary)),
                     ),
                     Text(
                       '${(c.percent * 100).toStringAsFixed(0)}%',
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 12),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: AppTheme.onSurfaceVariant),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       CurrencyFormatter.formatCompact(c.total),
-                      style: const TextStyle(fontSize: 12),
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary),
                     ),
                   ],
                 ),

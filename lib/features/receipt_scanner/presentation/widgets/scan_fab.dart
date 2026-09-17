@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/review_prompt.dart';
 import '../../data/receipt_scanner_service.dart';
 import '../../domain/receipt_scan_result.dart';
 import 'receipt_review_sheet.dart';
@@ -17,20 +21,32 @@ class ScanFab extends StatefulWidget {
 
 class _ScanFabState extends State<ScanFab> {
   bool _scanning = false;
+  bool _overlayShowing = false;
 
   Future<void> _scan(ScanSource source) async {
     if (_scanning) return;
 
     final svc = context.read<SubscriptionService>();
-    final allowed = await svc.tryIncrementScan();
-    if (!allowed && mounted) {
+    // Soft, non-consuming check — the real, quota-consuming check happens
+    // in tryIncrementScan() below, only once the user actually keeps a
+    // scan. This local-cache read can be briefly stale (e.g. a scan just
+    // done on another device) but that's an acceptable gap for a pre-flight
+    // gate; it isn't the enforcement point.
+    if (!svc.status.canScan) {
       _showLimitSheet();
       return;
     }
 
     setState(() => _scanning = true);
+    // Covers the gap between the native scanner activity closing and the
+    // review sheet appearing (image normalization + on-device OCR, which
+    // can genuinely take a few seconds) with a visible loading state,
+    // rather than leaving whatever was behind the FAB on screen with only
+    // the small in-FAB spinner as feedback.
+    _showScanningOverlay();
     try {
       final result = await ReceiptScannerService.instance.scan(source);
+      _hideScanningOverlay();
       if (!mounted || result == null) return;
 
       if (!result.hasAnyData) {
@@ -41,11 +57,38 @@ class _ScanFabState extends State<ScanFab> {
 
       final confirmed = await ReceiptReviewSheet.show(context, result);
       if (!mounted) return;
+
+      // Only spend a scan credit once the user has actually kept the
+      // result — a receipt OCR couldn't read, or one the user discarded,
+      // shouldn't cost anything.
+      if (confirmed) {
+        await svc.tryIncrementScan();
+        unawaited(ReviewPrompt.onSuccessfulScan());
+      }
       _openForm(confirmed ? result : null);
     } catch (e) {
+      _hideScanningOverlay();
       if (mounted) _showSnack('Scan failed: $e');
     } finally {
       if (mounted) setState(() => _scanning = false);
+    }
+  }
+
+  void _showScanningOverlay() {
+    _overlayShowing = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: _ScanningOverlay(),
+      ),
+    ).then((_) => _overlayShowing = false);
+  }
+
+  void _hideScanningOverlay() {
+    if (_overlayShowing && mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
@@ -161,6 +204,7 @@ class _ScanFabState extends State<ScanFab> {
                     ?.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 8),
+              const _ScanTips(),
               ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.camera_alt)),
                 title: const Text('Take a photo'),
@@ -193,15 +237,90 @@ class _ScanFabState extends State<ScanFab> {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
+    // Plain circular FAB rather than extended/pill-shaped: this docks into
+    // a notch cut into the bottom nav bar (see MainShell), and
+    // CircularNotchedRectangle's notch geometry assumes a roughly round
+    // FAB — a wide extended button wouldn't sit in it cleanly. Deliberately
+    // keeps this shape and the centered/docked position even though the
+    // Stitch reference design shows a rounded-square FAB floating at
+    // bottom-right — matching that would fight the notch and was
+    // explicitly excluded from this restyle (position/shape stay as-is,
+    // only the icon glyph and color come from the reference).
+    return FloatingActionButton(
       onPressed: _scanning ? null : _showSourceSheet,
-      icon: _scanning
+      backgroundColor: AppTheme.primaryColor,
+      foregroundColor: Colors.white,
+      shape: const CircleBorder(),
+      child: _scanning
           ? const SizedBox(
               width: 20, height: 20,
               child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
             )
-          : const Icon(Icons.document_scanner_outlined),
-      label: Text(_scanning ? 'Scanning…' : 'Scan Receipt'),
+          : const Icon(Icons.qr_code_scanner),
+    );
+  }
+}
+
+/// Blocking loading state shown from the moment a scan starts until either
+/// the review sheet is ready or an error/empty result is handled — covers
+/// the native-scanner-return + on-device-OCR gap that otherwise has no
+/// visible feedback beyond the small spinner inside the FAB itself.
+class _ScanningOverlay extends StatelessWidget {
+  const _ScanningOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppTheme.primaryColor),
+            SizedBox(height: 16),
+            Text('Reading receipt…', textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Capture tips shown before the camera opens. OCR accuracy depends far
+/// more on the photo than on parsing: a flat, well-lit, fully-framed
+/// receipt reads near-perfectly, while shadows and skew produce the
+/// misreads no parser can fully recover from.
+class _ScanTips extends StatelessWidget {
+  const _ScanTips();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.tips_and_updates_outlined,
+              size: 18, color: Colors.blue.shade700),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Best results: lay the receipt flat in good light, hold your '
+              'phone 20–30 cm (8–12 in) above it so the text fills the '
+              'frame, and keep it upright — not sideways.',
+              style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

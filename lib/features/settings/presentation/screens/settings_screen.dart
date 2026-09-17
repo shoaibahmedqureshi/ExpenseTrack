@@ -55,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final email = context.read<AuthProvider>().profile?.email ?? '';
     final uri = Uri(
       scheme: 'mailto',
-      path: '08bitsaqureshi@seecs.edu.pk',
+      path: 'contact@outlayapp.net',
       query:
           'subject=Outlay account deletion request&body=Please delete my Outlay account and all associated data.%0A%0AAccount email: $email',
     );
@@ -95,6 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          // Subscription management lives on the Profile screen's
+          // subscription card now, not here — see profile_screen.dart.
           Card(
             child: Column(
               children: [

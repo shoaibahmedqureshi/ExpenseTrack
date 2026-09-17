@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -15,6 +16,7 @@ class ReportExporter {
   static Future<void> exportCsv({
     required List<Expense> expenses,
     required String periodLabel,
+    Rect? sharePositionOrigin,
   }) async {
     final buffer = StringBuffer('Date,Title,Category,Type,Amount\n');
     for (final e in expenses) {
@@ -34,6 +36,7 @@ class ReportExporter {
     await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'Outlay report — $periodLabel',
+      sharePositionOrigin: sharePositionOrigin,
     );
   }
 
@@ -42,6 +45,7 @@ class ReportExporter {
     required String periodLabel,
     required double totalIncome,
     required double totalExpense,
+    Rect? sharePositionOrigin,
   }) async {
     final doc = pw.Document();
     doc.addPage(
@@ -87,6 +91,7 @@ class ReportExporter {
     await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'Outlay report — $periodLabel',
+      sharePositionOrigin: sharePositionOrigin,
     );
   }
 

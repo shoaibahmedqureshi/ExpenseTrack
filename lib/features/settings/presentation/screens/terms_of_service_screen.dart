@@ -6,8 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 class TermsOfServiceScreen extends StatefulWidget {
   const TermsOfServiceScreen({super.key});
 
-  static const url =
-      'https://shoaibahmedqureshi.github.io/ExpenseTrack/ios/terms.html';
+  static const url = 'https://outlayapp.net/terms.html';
 
   @override
   State<TermsOfServiceScreen> createState() => _TermsOfServiceScreenState();

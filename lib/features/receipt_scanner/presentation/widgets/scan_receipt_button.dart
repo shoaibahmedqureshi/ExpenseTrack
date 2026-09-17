@@ -62,6 +62,32 @@ class _ScanReceiptButtonState extends State<ScanReceiptButton> {
               Text('Scan Receipt',
                   style: Theme.of(sheetCtx).textTheme.titleMedium),
               const SizedBox(height: 8),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.tips_and_updates_outlined,
+                        size: 18, color: Colors.blue.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Best results: lay the receipt flat in good light, '
+                        'hold your phone 20–30 cm (8–12 in) above it so the '
+                        'text fills the frame, and keep it upright — not '
+                        'sideways.',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.blue.shade900),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.camera_alt)),
                 title: const Text('Take a photo'),

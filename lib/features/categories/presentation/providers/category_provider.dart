@@ -20,4 +20,15 @@ class CategoryProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  /// Drops the in-memory list on sign-out, before any other account signs
+  /// in on this device — every local query is scoped by uid now (see
+  /// CategoryRepositoryImpl), so a fresh loadAll() would already return the
+  /// right thing regardless, but without this a screen that reads
+  /// categories before that first reload finishes could still flash
+  /// whichever account was previously signed in for a moment.
+  void clear() {
+    _categories = [];
+    notifyListeners();
+  }
 }

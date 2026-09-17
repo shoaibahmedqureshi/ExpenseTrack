@@ -114,14 +114,24 @@ class ReceiptReviewSheet extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Discard'),
+                    // Explicit textAlign matters here: these buttons sit in
+                    // Expanded halves of the sheet width, so on a narrower
+                    // screen or a bumped-up system font size "Use These
+                    // Values" can wrap to two lines. Flutter's Text widget
+                    // defaults to TextAlign.start for its own line layout —
+                    // the button only centers the label's bounding box as a
+                    // whole, not each wrapped line inside it — so without
+                    // this, wrapped text hugs the left edge even though the
+                    // button itself is centered.
+                    child: const Text('Discard', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Use These Values'),
+                    child: const Text('Use These Values',
+                        textAlign: TextAlign.center),
                   ),
                 ),
               ],

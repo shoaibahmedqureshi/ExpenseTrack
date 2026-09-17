@@ -15,7 +15,10 @@ class TrendBarChart extends StatelessWidget {
     if (buckets.isEmpty || buckets.every((b) => b.income == 0 && b.expense == 0)) {
       return const SizedBox(
         height: 180,
-        child: Center(child: Text('No data for this period')),
+        child: Center(
+          child: Text('No data for this period',
+              style: TextStyle(color: AppTheme.textSecondary)),
+        ),
       );
     }
 
@@ -53,7 +56,8 @@ class TrendBarChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(buckets[i].label,
-                        style: const TextStyle(fontSize: 11)),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppTheme.textSecondary)),
                   );
                 },
               ),

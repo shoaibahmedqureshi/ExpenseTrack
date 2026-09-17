@@ -6,8 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});
 
-  static const url =
-      'https://shoaibahmedqureshi.github.io/ExpenseTrack/ios/privacy.html';
+  static const url = 'https://outlayapp.net/privacy.html';
 
   @override
   State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();

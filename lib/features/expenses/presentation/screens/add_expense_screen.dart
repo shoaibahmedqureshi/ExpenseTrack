@@ -24,6 +24,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
+  final _taxCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
 
   late TransactionType _type;
@@ -48,6 +49,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         : p?.total != null
             ? p!.total!.toStringAsFixed(2)
             : '';
+    final tax = e?.tax ?? p?.tax;
+    _taxCtrl.text = tax != null ? tax.toStringAsFixed(2) : '';
     _noteCtrl.text = e?.note ?? '';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,6 +62,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void dispose() {
     _titleCtrl.dispose();
     _amountCtrl.dispose();
+    _taxCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
   }
@@ -71,10 +75,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       return;
     }
 
+    final taxText = _taxCtrl.text.trim();
     final expense = Expense(
       id: widget.expense?.id,
       title: _titleCtrl.text.trim(),
       amount: double.parse(_amountCtrl.text.trim()),
+      tax: taxText.isEmpty ? null : double.parse(taxText),
       date: _date,
       type: _type,
       category: _category!,
@@ -145,6 +151,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   const TextInputType.numberWithOptions(decimal: true),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';
+                if (double.tryParse(v.trim()) == null) return 'Invalid number';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: _taxCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Tax Paid (optional)',
+                helperText: 'Already included in Amount — for your records',
+                prefixText: '\$ ',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
                 if (double.tryParse(v.trim()) == null) return 'Invalid number';
                 return null;
               },
@@ -239,6 +262,7 @@ class _PrefillBanner extends StatelessWidget {
     final filled = [
       if (prefill.merchant != null) 'title',
       if (prefill.total != null) 'amount',
+      if (prefill.tax != null) 'tax',
       if (prefill.date != null) 'date',
     ];
     return Container(
