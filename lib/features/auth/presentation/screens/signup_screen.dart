@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/auth_error_banner.dart';
+import '../widgets/auth_success_dialog.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -29,15 +32,37 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
-    await context.read<AuthProvider>().signUp(
-          _emailCtrl.text.trim(),
-          _passCtrl.text,
-          _nameCtrl.text.trim(),
-        );
+    final auth = context.read<AuthProvider>();
+    await auth.signUp(
+      _emailCtrl.text.trim(),
+      _passCtrl.text,
+      _nameCtrl.text.trim(),
+    );
+    if (!mounted) return;
+    // signUpWithEmail deliberately throws its "check your email" message
+    // through the same `error` field a real failure would use (see
+    // AuthRepositoryImpl) — that's the one case here that isn't really an
+    // error, so it gets a popup instead of the inline banner below, and is
+    // cleared immediately so it doesn't also render as one.
+    final message = auth.error;
+    if (message != null && message.contains('Check your email')) {
+      auth.clearError();
+      await showAuthSuccessDialog(context,
+          title: 'Account created', message: message);
+      // The account has no active session yet (confirmation is pending),
+      // so there's nothing left to do on this screen — back to LoginScreen,
+      // which is what pushed this one, so the user lands somewhere they
+      // can actually act on next (sign in once they've confirmed).
+      if (mounted) Navigator.pop(context);
+    }
   }
 
   Future<void> _signUpWithGoogle() async {
     await context.read<AuthProvider>().signInWithGoogle();
+  }
+
+  Future<void> _signUpWithApple() async {
+    await context.read<AuthProvider>().signInWithApple();
   }
 
   @override
@@ -70,7 +95,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 28),
 
                 if (auth.error != null)
-                  _StatusBanner(message: auth.error!),
+                  AuthErrorBanner(message: auth.error!),
 
                 TextFormField(
                   controller: _nameCtrl,
@@ -167,6 +192,26 @@ class _SignupScreenState extends State<SignupScreen> {
                     label: const Text('Continue with Google'),
                   ),
                 ),
+                // Required by Apple Guideline 4.8: since Google Sign-In is
+                // offered, Sign in with Apple must be offered as an
+                // equivalent option — iOS only, since Android needs a
+                // separate web-based Services ID setup we haven't configured.
+                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: auth.loading ? null : _signUpWithApple,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        side: const BorderSide(color: Colors.black),
+                      ),
+                      icon: const Icon(Icons.apple, color: Colors.white, size: 20),
+                      label: const Text('Continue with Apple',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
 
                 Center(
@@ -194,42 +239,6 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final isConfirmation = message.contains('Check your email');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isConfirmation ? Colors.green.shade50 : Colors.red.shade50,
-        border: Border.all(
-            color: isConfirmation ? Colors.green.shade300 : Colors.red.shade200),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(children: [
-        Icon(
-          isConfirmation ? Icons.mark_email_read_outlined : Icons.error_outline,
-          color: isConfirmation ? Colors.green.shade700 : Colors.red.shade600,
-          size: 18,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(message,
-              style: TextStyle(
-                  color: isConfirmation
-                      ? Colors.green.shade800
-                      : Colors.red.shade700,
-                  fontSize: 13)),
-        ),
-      ]),
     );
   }
 }

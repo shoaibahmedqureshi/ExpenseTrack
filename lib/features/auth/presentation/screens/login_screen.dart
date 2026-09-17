@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/auth_error_banner.dart';
+import '../widgets/auth_success_dialog.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -33,6 +36,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signInGoogle() async {
     await context.read<AuthProvider>().signInWithGoogle();
+  }
+
+  Future<void> _signInApple() async {
+    await context.read<AuthProvider>().signInWithApple();
   }
 
   @override
@@ -88,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Error banner
                 if (auth.error != null)
-                  _ErrorBanner(message: auth.error!),
+                  AuthErrorBanner(message: auth.error!),
 
                 // Email
                 TextFormField(
@@ -173,6 +180,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: const Text('Continue with Google'),
                   ),
                 ),
+                // Required by Apple Guideline 4.8: since Google Sign-In is
+                // offered, Sign in with Apple must be offered as an
+                // equivalent option — iOS only, since the Android flow
+                // needs a separate web-based Services ID setup we haven't
+                // configured.
+                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: auth.loading ? null : _signInApple,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        side: const BorderSide(color: Colors.black),
+                      ),
+                      icon: const Icon(Icons.apple, color: Colors.white, size: 20),
+                      label: const Text('Continue with Apple',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 32),
 
                 // Sign up link
@@ -226,46 +254,23 @@ class _LoginScreenState extends State<LoginScreen> {
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await context
-                  .read<AuthProvider>()
-                  .sendPasswordReset(ctrl.text.trim());
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Password reset email sent. Check your inbox.')),
-                );
+              final auth = context.read<AuthProvider>();
+              await auth.sendPasswordReset(ctrl.text.trim());
+              if (!context.mounted) return;
+              // Unlike signup, sendPasswordReset doesn't throw its own
+              // success message through `error` — a null error here just
+              // means it genuinely worked. If it's non-null (rate-limited,
+              // no account for that email, etc.), the login screen's own
+              // AuthErrorBanner below already renders it — showing a fake
+              // "email sent" popup on top of a real failure is exactly the
+              // bug the signup screen once had.
+              if (auth.error == null) {
+                await showAuthSuccessDialog(context,
+                    title: 'Check your email',
+                    message: 'Password reset email sent. Check your inbox.');
               }
             },
             child: const Text('Send'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        border: Border.all(color: Colors.red.shade200),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: Colors.red.shade600, size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(message,
-                style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
           ),
         ],
       ),

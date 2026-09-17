@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,8 +30,8 @@ import 'features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'features/budgets/domain/usecases/manage_budget_usecase.dart';
 import 'features/budgets/presentation/providers/budget_provider.dart';
 
+import 'core/widgets/main_shell.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/reports/presentation/providers/reports_provider.dart';
 import 'features/sync/sync_service.dart';
 import 'features/subscription/data/subscription_service.dart';
@@ -139,21 +141,75 @@ class _RootRouter extends StatefulWidget {
 
 class _RootRouterState extends State<_RootRouter> {
   late bool _onboardingDone;
+  bool _hasSyncedThisSession = false;
+  Timer? _periodicSync;
+  AuthProvider? _auth;
 
   @override
   void initState() {
     super.initState();
     _onboardingDone = widget.onboardingDone;
     _listenConnectivity();
+    _auth = context.read<AuthProvider>()..addListener(_onAuthChanged);
+    _onAuthChanged();
+    // Belt-and-suspenders alongside the auth-changed and
+    // connectivity-restored triggers below: catches the case where the
+    // session's been open, online and idle long enough for another device
+    // to have pushed changes neither of those events would fire for.
+    _periodicSync = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (context.read<AuthProvider>().status == AuthStatus.authenticated) {
+        SyncService(widget.db, Supabase.instance.client)
+            .run()
+            .then((_) => _reloadAfterSync());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _auth?.removeListener(_onAuthChanged);
+    _periodicSync?.cancel();
+    super.dispose();
   }
 
   void _listenConnectivity() {
     Connectivity().onConnectivityChanged.listen((results) {
       final online = results.any((r) => r != ConnectivityResult.none);
       if (online) {
-        SyncService(widget.db, Supabase.instance.client).run();
+        SyncService(widget.db, Supabase.instance.client)
+            .run()
+            .then((_) => _reloadAfterSync());
       }
     });
+  }
+
+  // Sync doesn't just run on a connectivity-change *event* — a device that
+  // was already online before/during sign-in would otherwise never sync at
+  // all, since no connectivity transition ever fires for it. This is the
+  // trigger that actually covers "just signed in".
+  void _onAuthChanged() {
+    final status = _auth?.status;
+    if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
+      _hasSyncedThisSession = true;
+      SyncService(widget.db, Supabase.instance.client)
+          .run()
+          .then((_) => _reloadAfterSync());
+    } else if (status == AuthStatus.unauthenticated) {
+      _hasSyncedThisSession = false;
+      // Drops whatever the previous account had loaded — without this, a
+      // different account signing in next could briefly render the prior
+      // account's still-in-memory data until this reload replaces it.
+      context.read<CategoryProvider>().clear();
+      context.read<ExpenseProvider>().clear();
+      context.read<BudgetProvider>().clear();
+    }
+  }
+
+  Future<void> _reloadAfterSync() async {
+    if (!mounted) return;
+    await context.read<CategoryProvider>().loadAll();
+    await context.read<ExpenseProvider>().loadAll();
+    await context.read<BudgetProvider>().load();
   }
 
   void _onOnboardingDone() {
@@ -166,12 +222,16 @@ class _RootRouterState extends State<_RootRouter> {
 
     return switch (auth.status) {
       AuthStatus.unknown => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
+          body: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor),
+            ),
+          ),
         ),
       AuthStatus.unauthenticated => _onboardingDone
           ? const LoginScreen()
           : OnboardingScreen(onDone: _onOnboardingDone),
-      AuthStatus.authenticated => const DashboardScreen(),
+      AuthStatus.authenticated => const MainShell(),
     };
   }
 }
