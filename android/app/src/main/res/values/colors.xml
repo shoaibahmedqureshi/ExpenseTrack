@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches AppTheme.backgroundColor (0xFFFBF9F8) in lib/core/theme/app_theme.dart.
+         Used as the Android window background behind the Flutter surface so that
+         native Activity transitions (e.g. the ML Kit document scanner opening/
+         closing) show this color instead of a black or mismatched flash — the app
+         has no dark theme, so this must stay the same in both light and night
+         variants of NormalTheme. -->
+    <color name="flutter_window_background">#FBF9F8</color>
+</resources>

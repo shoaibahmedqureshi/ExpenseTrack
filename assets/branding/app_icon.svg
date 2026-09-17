@@ -1,0 +1,20 @@
+<svg viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Outlay logo</title>
+<desc>A rounded square badge in teal with a stylized wallet, coral coin, and upward trending arrow, with the wordmark Outlay below.</desc>
+
+<rect x="0" y="0" width="480" height="480" rx="64" fill="#0f766e"/>
+
+<g transform="translate(240,200)">
+  <rect x="-110" y="-60" width="220" height="140" rx="20" fill="#ffffff" opacity="0.95"/>
+  <rect x="-110" y="-60" width="220" height="40" rx="20" fill="#ffffff"/>
+  <rect x="-110" y="-30" width="220" height="10" fill="#0f766e" opacity="0.15"/>
+
+  <circle cx="80" cy="10" r="26" fill="#fb7156"/>
+  <text x="80" y="19" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff" text-anchor="middle">$</text>
+
+  <path d="M -90 50 L -50 5 L -15 35 L 50 -40" stroke="#fb7156" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 20 -40 L 50 -40 L 50 -10" stroke="#fb7156" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+
+<text x="240" y="400" font-family="Arial, sans-serif" font-size="50" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="1">Outlay</text>
+</svg>

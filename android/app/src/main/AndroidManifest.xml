@@ -8,9 +8,6 @@
     <!-- Needed on Android 10 and below for saving to gallery -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29"/>
-    <!-- Needed on Android 13+ (replaces READ_EXTERNAL_STORAGE) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-
     <application
         android:label="Outlay"
         android:name="${applicationName}"

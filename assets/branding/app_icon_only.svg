@@ -1,0 +1,18 @@
+<svg viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Outlay icon</title>
+<desc>A rounded square badge in teal with a stylized wallet, coral coin, and upward trending arrow.</desc>
+
+<rect x="0" y="0" width="480" height="480" rx="64" fill="#0f766e"/>
+
+<g transform="translate(240,240)">
+  <rect x="-130" y="-70" width="260" height="165" rx="24" fill="#ffffff" opacity="0.95"/>
+  <rect x="-130" y="-70" width="260" height="47" rx="24" fill="#ffffff"/>
+  <rect x="-130" y="-35" width="260" height="12" fill="#0f766e" opacity="0.15"/>
+
+  <circle cx="94" cy="12" r="31" fill="#fb7156"/>
+  <text x="94" y="23" font-family="Arial, sans-serif" font-size="31" font-weight="700" fill="#ffffff" text-anchor="middle">$</text>
+
+  <path d="M -106 59 L -59 6 L -18 41 L 59 -47" stroke="#fb7156" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 24 -47 L 59 -47 L 59 -12" stroke="#fb7156" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

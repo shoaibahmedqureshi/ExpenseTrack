@@ -5,6 +5,10 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
@@ -13,6 +17,11 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- The app has no dark theme (AppTheme.light is used unconditionally),
+             so this must match values/styles.xml's light background rather than
+             inheriting Theme.Black's colorBackground (black) — otherwise every
+             native Activity handoff (e.g. the ML Kit document scanner) flashes
+             black before Flutter's actual light UI redraws on top. -->
+        <item name="android:windowBackground">@color/flutter_window_background</item>
     </style>
 </resources>
