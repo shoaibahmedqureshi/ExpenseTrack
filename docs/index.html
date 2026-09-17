@@ -6,6 +6,26 @@
 <title>Outlay — Track Expenses, Scan Receipts, Stay on Budget</title>
 <meta name="description" content="A fast, private expense tracker for iOS and Android. Scan receipts, log expenses, set budgets, and see where your money goes.">
 <link rel="icon" href="assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/index.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/index.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Outlay — Track Expenses, Scan Receipts, Stay on Budget" />
+<meta property="og:description" content="A fast, private expense tracker for iOS and Android. Scan receipts, log expenses, set budgets, and see where your money goes." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Outlay — Track Expenses, Scan Receipts, Stay on Budget" />
+<meta name="twitter:description" content="A fast, private expense tracker for iOS and Android. Scan receipts, log expenses, set budgets, and see where your money goes." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/index.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/index.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/index.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/index.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/index.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/index.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/index.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/index.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/index.html">
 <style>
   :root {
     --teal: #0F766E;
@@ -35,9 +55,29 @@
   }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; }
   .brand img { width: 32px; height: 32px; border-radius: 8px; }
-  nav .links { display: flex; gap: 28px; font-size: 14px; font-weight: 600; }
+  nav .links { display: flex; align-items: center; gap: 28px; font-size: 14px; font-weight: 600; }
   nav .links a { color: var(--muted); text-decoration: none; }
   nav .links a:hover { color: var(--ink); }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
 
   .hero {
     display: grid;
@@ -159,6 +199,27 @@
     nav .links { display: none; }
   }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Outlay",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "iOS, Android",
+  "url": "https://outlayapp.net/index.html",
+  "image": "https://outlayapp.net/assets/icon.png",
+  "description": "A fast, private expense tracker for iOS and Android. Scan receipts, log expenses, set budgets, and see where your money goes.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "sameAs": [
+    "https://apps.apple.com/app/id6790199113",
+    "https://play.google.com/store/apps/details?id=com.outlay.app"
+  ]
+}
+</script>
 </head>
 <body>
   <div class="wrap">
@@ -168,6 +229,19 @@
         <a href="#features">Features</a>
         <a href="tools/index.html">Free Tools</a>
         <a href="support.html">Support</a>
+        <details class="lang-menu">
+        <summary>🌐 English</summary>
+        <div class="lang-options">
+          <a href="index.html" class="active">English</a>
+          <a href="ur/index.html">اردو</a>
+          <a href="hi/index.html">हिन्दी</a>
+          <a href="ar/index.html">العربية</a>
+          <a href="bn/index.html">বাংলা</a>
+          <a href="id/index.html">Bahasa Indonesia</a>
+          <a href="vi/index.html">Tiếng Việt</a>
+          <a href="fil/index.html">Filipino</a>
+        </div>
+      </details>
       </div>
     </nav>
 

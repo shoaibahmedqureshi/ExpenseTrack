@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>চক্রবৃদ্ধি সুদ ক্যালকুলেটর — মাসিক বিনিয়োগসহ | Outlay</title>
+<meta name="description" content="বিনামূল্যে চক্রবৃদ্ধি সুদ ক্যালকুলেটর। দেখুন আপনার সঞ্চয় বা বিনিয়োগ সময়ের সাথে কীভাবে বাড়ে, নিয়মিত মাসিক বিনিয়োগসহ।">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/bn/tools/compound-interest-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/bn/tools/compound-interest-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="চক্রবৃদ্ধি সুদ ক্যালকুলেটর — মাসিক বিনিয়োগসহ | Outlay" />
+<meta property="og:description" content="বিনামূল্যে চক্রবৃদ্ধি সুদ ক্যালকুলেটর। দেখুন আপনার সঞ্চয় বা বিনিয়োগ সময়ের সাথে কীভাবে বাড়ে, নিয়মিত মাসিক বিনিয়োগসহ।" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="চক্রবৃদ্ধি সুদ ক্যালকুলেটর — মাসিক বিনিয়োগসহ | Outlay" />
+<meta name="twitter:description" content="বিনামূল্যে চক্রবৃদ্ধি সুদ ক্যালকুলেটর। দেখুন আপনার সঞ্চয় বা বিনিয়োগ সময়ের সাথে কীভাবে বাড়ে, নিয়মিত মাসিক বিনিয়োগসহ।" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.7; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"] { width: 100%; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .result-box {
+    background: #f0f9f8; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;
+    display: none;
+  }
+  .result-box .label { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  .result-box .amount { font-size: 28px; font-weight: 800; color: var(--teal); }
+  .breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+  .breakdown .box { background: #fff; border-radius: 10px; padding: 12px; text-align: center; }
+  .breakdown .box .label { font-size: 13px; color: var(--muted); }
+  .breakdown .box .amount { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .chart-wrap { margin-top: 20px; display: none; }
+  #growthChart { width: 100%; height: 220px; display: block; }
+  .chart-legend { display: flex; justify-content: center; gap: 20px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .content h2 { font-size: 19px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 16px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 14px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "চক্রবৃদ্ধি সুদ কীভাবে কাজ করে",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "সুদ প্রতি মাসে হিসাব করা হয় এবং ব্যালেন্সে আবার যোগ করা হয়, তাই ভবিষ্যতের সুদ পূর্বের সুদের উপরও অর্জিত হয় — শুধু মূল পরিমাণের উপর নয়। এই ক্যালকুলেটর মাসিক ভিত্তিতে চক্রবৃদ্ধি হিসাব করে এবং ধরে নেয় যে প্রতিটি মাসিক বিনিয়োগ সেই মাসের শুরুতে যোগ করা হয়।"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "কেন তাড়াতাড়ি শুরু করা গুরুত্বপূর্ণ",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "যেহেতু সুদের উপর সুদ পাওয়া যায়, একটি দীর্ঘ সময়ের শেষের কয়েক বছর সাধারণত শুরুর বছরগুলোর চেয়ে বেশি মূল্য যোগ করে — এই কারণেই তাড়াতাড়ি শুরু করা, এমনকি অল্প পরিমাণ দিয়ে হলেও, পরে বেশি পরিমাণ দিয়ে শুরু করার চেয়ে ভালো ফলাফল দেয়।"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "রিটার্ন সম্পর্কে একটি নোট",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "বিনিয়োগের রিটার্ন বাস্তবে বছরে বছরে ওঠানামা করে; এই টুলটি সরলতার জন্য একটি স্থির হার ধরে নেয়। ফলাফলকে একটি মোটামুটি দীর্ঘমেয়াদী অনুমান হিসেবে বিবেচনা করুন, নিশ্চয়তা নয়।"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 বাংলা</summary>
+        <div class="lang-options">
+          <a href="../../tools/compound-interest-calculator.html">English</a>
+          <a href="../../ur/tools/compound-interest-calculator.html">اردو</a>
+          <a href="../../hi/tools/compound-interest-calculator.html">हिन्दी</a>
+          <a href="../../ar/tools/compound-interest-calculator.html">العربية</a>
+          <a href="compound-interest-calculator.html" class="active">বাংলা</a>
+          <a href="../../id/tools/compound-interest-calculator.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/compound-interest-calculator.html">Tiếng Việt</a>
+          <a href="../../fil/tools/compound-interest-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>চক্রবৃদ্ধি সুদ ক্যালকুলেটর</h1>
+    <p class="lede">দেখুন একটি একক পরিমাণ বা নিয়মিত মাসিক বিনিয়োগ সময়ের সাথে চক্রবৃদ্ধি সুদে কীভাবে বাড়ে।</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">মুদ্রা</label>
+        <select id="currency">
+          <option value="৳" selected>৳ (বাংলাদেশি টাকা)</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₹">₹ (ভারতীয় রুপি)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="principal">প্রাথমিক পরিমাণ</label>
+        <input type="number" id="principal" placeholder="যেমন 50000" min="0" step="1" value="50000">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="contribution">মাসিক বিনিয়োগ</label>
+          <input type="number" id="contribution" placeholder="যেমন 2000" min="0" step="1" value="2000">
+        </div>
+        <div class="field">
+          <label for="years">বছর</label>
+          <input type="number" id="years" placeholder="যেমন 20" min="1" step="1" value="20">
+        </div>
+      </div>
+      <div class="field">
+        <label for="rate">বার্ষিক সুদের হার (%)</label>
+        <input type="number" id="rate" placeholder="যেমন 7" min="0" step="0.1" value="7">
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="label">ভবিষ্যৎ মূল্য</div>
+        <div class="amount" id="futureValue">—</div>
+        <div class="breakdown">
+          <div class="box">
+            <div class="label">মোট বিনিয়োগকৃত পরিমাণ</div>
+            <div class="amount" id="totalContributed">—</div>
+          </div>
+          <div class="box">
+            <div class="label">মোট অর্জিত সুদ</div>
+            <div class="amount" id="totalInterest">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="growthChart"></canvas>
+        <div class="chart-legend">
+          <span><span class="swatch" style="background:#0F766E;"></span>বিনিয়োগকৃত পরিমাণ</span>
+          <span><span class="swatch" style="background:#5EEAD4;"></span>অর্জিত সুদ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>চক্রবৃদ্ধি সুদ কীভাবে কাজ করে</h2>
+      <p>সুদ প্রতি মাসে হিসাব করা হয় এবং ব্যালেন্সে আবার যোগ করা হয়, তাই ভবিষ্যতের সুদ পূর্বের সুদের
+      উপরও অর্জিত হয় — শুধু মূল পরিমাণের উপর নয়। এই ক্যালকুলেটর মাসিক ভিত্তিতে চক্রবৃদ্ধি হিসাব করে
+      এবং ধরে নেয় যে প্রতিটি মাসিক বিনিয়োগ সেই মাসের শুরুতে যোগ করা হয়।</p>
+
+      <h2>কেন তাড়াতাড়ি শুরু করা গুরুত্বপূর্ণ</h2>
+      <p>যেহেতু সুদের উপর সুদ পাওয়া যায়, একটি দীর্ঘ সময়ের শেষের কয়েক বছর সাধারণত শুরুর বছরগুলোর
+      চেয়ে বেশি মূল্য যোগ করে — এই কারণেই তাড়াতাড়ি শুরু করা, এমনকি অল্প পরিমাণ দিয়ে হলেও, পরে
+      বেশি পরিমাণ দিয়ে শুরু করার চেয়ে ভালো ফলাফল দেয়।</p>
+
+      <h2>রিটার্ন সম্পর্কে একটি নোট</h2>
+      <p>বিনিয়োগের রিটার্ন বাস্তবে বছরে বছরে ওঠানামা করে; এই টুলটি সরলতার জন্য একটি স্থির হার ধরে
+      নেয়। ফলাফলকে একটি মোটামুটি দীর্ঘমেয়াদী অনুমান হিসেবে বিবেচনা করুন, নিশ্চয়তা নয়।</p>
+
+      <h2>আপনার প্রকৃত বাজেট থেকে পরিকল্পনা অর্থায়ন করুন</h2>
+      <p>সঠিক হারের চেয়ে নিয়মিত বিনিয়োগ বেশি গুরুত্বপূর্ণ। <a href="../../index.html">Outlay</a>
+      আপনাকে আপনার খরচে প্রকৃত মাসিক উদ্বৃত্ত খুঁজে পেতে সাহায্য করে যাতে এই ধরনের বিনিয়োগ নিয়মিত থাকে।</p>
+    </div>
+
+    <footer>
+      <a href="index.html">সব টুলস</a> · <a href="../../index.html">হোম</a> · <a href="../../privacy.html">প্রাইভেসি</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      yearLabel: (yr) => 'বছর ' + yr,
+    };
+  </script>
+  <script src="../../assets/js/compound-interest.js"></script>
+</body>
+</html>

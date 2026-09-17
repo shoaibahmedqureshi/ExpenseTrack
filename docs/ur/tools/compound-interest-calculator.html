@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>کمپاؤنڈ سود کیلکولیٹر — ماہانہ سرمایہ کاری کے ساتھ | Outlay</title>
+<meta name="description" content="مفت کمپاؤنڈ سود کیلکولیٹر۔ دیکھیں کہ آپ کی بچت یا سرمایہ کاری وقت کے ساتھ کیسے بڑھتی ہے، باقاعدہ ماہانہ سرمایہ کاری سمیت۔">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/ur/tools/compound-interest-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/ur/tools/compound-interest-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="کمپاؤنڈ سود کیلکولیٹر — ماہانہ سرمایہ کاری کے ساتھ | Outlay" />
+<meta property="og:description" content="مفت کمپاؤنڈ سود کیلکولیٹر۔ دیکھیں کہ آپ کی بچت یا سرمایہ کاری وقت کے ساتھ کیسے بڑھتی ہے، باقاعدہ ماہانہ سرمایہ کاری سمیت۔" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="کمپاؤنڈ سود کیلکولیٹر — ماہانہ سرمایہ کاری کے ساتھ | Outlay" />
+<meta name="twitter:description" content="مفت کمپاؤنڈ سود کیلکولیٹر۔ دیکھیں کہ آپ کی بچت یا سرمایہ کاری وقت کے ساتھ کیسے بڑھتی ہے، باقاعدہ ماہانہ سرمایہ کاری سمیت۔" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Nastaliq Urdu", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 2; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 17px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 15px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"] { width: 100%; direction: ltr; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .result-box {
+    background: #f0f9f8; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;
+    display: none;
+  }
+  .result-box .label { font-size: 15px; color: var(--muted); margin-bottom: 4px; }
+  .result-box .amount { font-size: 28px; font-weight: 800; color: var(--teal); direction: ltr; }
+  .breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+  .breakdown .box { background: #fff; border-radius: 10px; padding: 12px; text-align: center; }
+  .breakdown .box .label { font-size: 13px; color: var(--muted); }
+  .breakdown .box .amount { font-size: 16px; font-weight: 700; color: var(--ink); direction: ltr; }
+  .chart-wrap { margin-top: 20px; display: none; }
+  #growthChart { width: 100%; height: 220px; display: block; }
+  .chart-legend { display: flex; justify-content: center; gap: 20px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .content h2 { font-size: 20px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 17px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 15px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "کمپاؤنڈنگ کیسے کام کرتی ہے",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "سود ہر ماہ شمار کیا جاتا ہے اور بیلنس میں واپس شامل کر دیا جاتا ہے، اس لیے مستقبل کا سود پچھلے سود پر بھی ملتا ہے — نہ کہ صرف اصل رقم پر۔ یہ کیلکولیٹر ماہانہ کمپاؤنڈ کرتا ہے اور فرض کرتا ہے کہ ہر ماہانہ سرمایہ کاری اس مہینے کے آغاز میں شامل ہوتی ہے۔"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "جلدی شروع کرنا کیوں اہم ہے",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "چونکہ سود پر سود ملتا ہے، ایک طویل مدت کے آخری چند سال عام طور پر پہلے چند سالوں سے زیادہ قیمت جمع کرتے ہیں — یہی وجہ ہے کہ جلدی شروع کرنا، چاہے تھوڑی رقم سے ہو، بعد میں زیادہ رقم سے شروع کرنے سے بہتر ثابت ہوتا ہے۔"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "منافع کے بارے میں ایک نوٹ",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "سرمایہ کاری کا منافع حقیقت میں سال بہ سال مختلف ہوتا ہے؛ یہ ٹول سادگی کے لیے ایک مستقل شرح فرض کرتا ہے۔ نتیجے کو ایک موٹا طویل مدتی تخمینہ سمجھیں، ضمانت نہیں۔"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 اردو</summary>
+        <div class="lang-options">
+          <a href="../../tools/compound-interest-calculator.html">English</a>
+          <a href="compound-interest-calculator.html" class="active">اردو</a>
+          <a href="../../hi/tools/compound-interest-calculator.html">हिन्दी</a>
+          <a href="../../ar/tools/compound-interest-calculator.html">العربية</a>
+          <a href="../../bn/tools/compound-interest-calculator.html">বাংলা</a>
+          <a href="../../id/tools/compound-interest-calculator.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/compound-interest-calculator.html">Tiếng Việt</a>
+          <a href="../../fil/tools/compound-interest-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>کمپاؤنڈ سود کیلکولیٹر</h1>
+    <p class="lede">دیکھیں کہ ایک یکمشت رقم یا باقاعدہ ماہانہ سرمایہ کاری کمپاؤنڈ سود کے ساتھ وقت کے ساتھ کیسے بڑھتی ہے۔</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">کرنسی</label>
+        <select id="currency">
+          <option value="₨" selected>₨ (پاکستانی روپیہ)</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₹">₹ (بھارتی روپیہ)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="principal">ابتدائی رقم</label>
+        <input type="number" id="principal" placeholder="مثلاً 500000" min="0" step="1" value="500000">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="contribution">ماہانہ سرمایہ کاری</label>
+          <input type="number" id="contribution" placeholder="مثلاً 20000" min="0" step="1" value="20000">
+        </div>
+        <div class="field">
+          <label for="years">سال</label>
+          <input type="number" id="years" placeholder="مثلاً 20" min="1" step="1" value="20">
+        </div>
+      </div>
+      <div class="field">
+        <label for="rate">سالانہ شرح سود (%)</label>
+        <input type="number" id="rate" placeholder="مثلاً 7" min="0" step="0.1" value="7">
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="label">متوقع مستقبل کی رقم</div>
+        <div class="amount" id="futureValue">—</div>
+        <div class="breakdown">
+          <div class="box">
+            <div class="label">کل جمع شدہ رقم</div>
+            <div class="amount" id="totalContributed">—</div>
+          </div>
+          <div class="box">
+            <div class="label">کل حاصل شدہ سود</div>
+            <div class="amount" id="totalInterest">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="growthChart"></canvas>
+        <div class="chart-legend">
+          <span><span class="swatch" style="background:#0F766E;"></span>جمع شدہ</span>
+          <span><span class="swatch" style="background:#5EEAD4;"></span>حاصل شدہ سود</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>کمپاؤنڈنگ کیسے کام کرتی ہے</h2>
+      <p>سود ہر ماہ شمار کیا جاتا ہے اور بیلنس میں واپس شامل کر دیا جاتا ہے، اس لیے مستقبل کا سود
+      پچھلے سود پر بھی ملتا ہے — نہ کہ صرف اصل رقم پر۔ یہ کیلکولیٹر ماہانہ کمپاؤنڈ کرتا ہے اور فرض
+      کرتا ہے کہ ہر ماہانہ سرمایہ کاری اس مہینے کے آغاز میں شامل ہوتی ہے۔</p>
+
+      <h2>جلدی شروع کرنا کیوں اہم ہے</h2>
+      <p>چونکہ سود پر سود ملتا ہے، ایک طویل مدت کے آخری چند سال عام طور پر پہلے چند سالوں سے زیادہ
+      قیمت جمع کرتے ہیں — یہی وجہ ہے کہ جلدی شروع کرنا، چاہے تھوڑی رقم سے ہو، بعد میں زیادہ رقم سے
+      شروع کرنے سے بہتر ثابت ہوتا ہے۔</p>
+
+      <h2>منافع کے بارے میں ایک نوٹ</h2>
+      <p>سرمایہ کاری کا منافع حقیقت میں سال بہ سال مختلف ہوتا ہے؛ یہ ٹول سادگی کے لیے ایک مستقل شرح
+      فرض کرتا ہے۔ نتیجے کو ایک موٹا طویل مدتی تخمینہ سمجھیں، ضمانت نہیں۔</p>
+
+      <h2>اپنے اصل بجٹ سے منصوبے کی مالی معاونت کریں</h2>
+      <p>درست شرح سے زیادہ اہم مستقل سرمایہ کاری ہے۔ <a href="../../index.html">Outlay</a> آپ کو اپنے
+      اخراجات میں حقیقی ماہانہ بچت تلاش کرنے میں مدد دیتا ہے تاکہ اس طرح کی سرمایہ کاری مستقل رہے۔</p>
+    </div>
+
+    <footer>
+      <a href="index.html">تمام ٹولز</a> · <a href="../../index.html">ہوم</a> · <a href="../../privacy.html">پرائیویسی</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      yearLabel: (yr) => 'سال ' + yr,
+    };
+  </script>
+  <script src="../../assets/js/compound-interest.js"></script>
+</body>
+</html>

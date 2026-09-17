@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlay — खर्च ट्रैक करें, रसीदें स्कैन करें, बजट में रहें</title>
+<meta name="description" content="iOS और Android के लिए तेज़, निजी खर्च ट्रैकर। रसीदें स्कैन करें, खर्च लॉग करें, बजट सेट करें, और देखें आपका पैसा कहां जाता है।">
+<link rel="icon" href="../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/hi/index.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/hi/index.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Outlay — खर्च ट्रैक करें, रसीदें स्कैन करें, बजट में रहें" />
+<meta property="og:description" content="iOS और Android के लिए तेज़, निजी खर्च ट्रैकर। रसीदें स्कैन करें, खर्च लॉग करें, बजट सेट करें, और देखें आपका पैसा कहां जाता है।" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Outlay — खर्च ट्रैक करें, रसीदें स्कैन करें, बजट में रहें" />
+<meta name="twitter:description" content="iOS और Android के लिए तेज़, निजी खर्च ट्रैकर। रसीदें स्कैन करें, खर्च लॉग करें, बजट सेट करें, और देखें आपका पैसा कहां जाता है।" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/index.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/index.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/index.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/index.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/index.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/index.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/index.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/index.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/index.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0F766E;
+    --teal-dark: #0d6460;
+    --ink: #1c1c1e;
+    --muted: #5b6169;
+    --bg: #f7f8f7;
+    --card: #ffffff;
+    --line: #e7e9e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Noto Sans Devanagari", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  a { color: var(--teal); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; font-family: -apple-system, sans-serif; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  nav .links { display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 600; }
+  nav .links a { color: var(--muted); text-decoration: none; }
+  nav .links a:hover { color: var(--ink); }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px; font-family: -apple-system, sans-serif;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 48px;
+    padding: 56px 0 88px;
+  }
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 18px;
+  }
+  .hero h1 span { color: var(--teal); }
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
+    margin-bottom: 32px;
+  }
+  .store-badges { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .store-badges a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ink);
+    color: #fff;
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: -apple-system, sans-serif;
+  }
+  .store-badges a:hover { background: #000; }
+  .store-badges svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .trust { font-size: 13px; color: var(--muted); }
+
+  .hero-shot { display: flex; justify-content: center; }
+  .hero-shot img.hero-icon {
+    width: 220px;
+    height: 220px;
+    border-radius: 48px;
+    box-shadow: 0 24px 60px rgba(15,118,110,0.28), 0 0 0 1px var(--line);
+  }
+
+  .section-title { text-align: center; margin-bottom: 40px; }
+  .section-title h2 { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+  .section-title p { color: var(--muted); font-size: 16px; }
+
+  .features {
+    padding: 64px 0;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+  }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15,118,110,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .feature-card p { font-size: 14px; color: var(--muted); }
+
+  .cta {
+    background: var(--teal);
+    border-radius: 24px;
+    margin: 24px 0 72px;
+    padding: 56px 40px;
+    text-align: center;
+    color: #fff;
+  }
+  .cta h2 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+  .cta p { color: rgba(255,255,255,0.85); margin-bottom: 28px; font-size: 16px; }
+  .cta .store-badges { justify-content: center; }
+  .cta .store-badges a { background: #fff; color: var(--ink); }
+  .cta .store-badges a:hover { background: #f0f0f0; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 32px 0 48px;
+  }
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+  .footer-links a { color: var(--muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--teal); }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; text-align: center; padding-top: 32px; }
+    .hero p { margin-left: auto; margin-right: auto; }
+    .store-badges { justify-content: center; }
+    .hero-shot { order: -1; }
+    .feature-grid { grid-template-columns: 1fr; }
+    nav .links { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <div class="brand"><img src="../assets/icon.png" alt="Outlay"> Outlay</div>
+      <div class="links">
+        <a href="#features">विशेषताएं</a>
+        <a href="tools/index.html">मुफ्त टूल्स</a>
+        <a href="../support.html">सपोर्ट</a>
+        <details class="lang-menu">
+          <summary>🌐 हिन्दी</summary>
+          <div class="lang-options">
+          <a href="../index.html">English</a>
+          <a href="../ur/index.html">اردو</a>
+          <a href="index.html" class="active">हिन्दी</a>
+          <a href="../ar/index.html">العربية</a>
+          <a href="../bn/index.html">বাংলা</a>
+          <a href="../id/index.html">Bahasa Indonesia</a>
+          <a href="../vi/index.html">Tiếng Việt</a>
+          <a href="../fil/index.html">Filipino</a>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <h1>बिल्कुल जानें <span>आपका पैसा कहां जाता है</span></h1>
+        <p>अपने कैमरे को रसीद की ओर रखें और Outlay अपने आप दुकानदार, राशि और तारीख पढ़ लेता है।
+        खर्च लॉग करें, बजट सेट करें, और स्पष्ट मासिक रिपोर्ट देखें — iOS और Android पर मुफ्त शुरू करें।</p>
+        <div class="store-badges">
+          <a href="https://apps.apple.com/app/id6790199113">
+            <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+            App Store
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.outlay.app">
+            <svg viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c17.6-11.8 17.6-46.3-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+            Google Play
+          </a>
+        </div>
+        <p class="trust">मुफ्त प्लान उपलब्ध है · शुरू करने के लिए क्रेडिट कार्ड की जरूरत नहीं</p>
+      </div>
+      <div class="hero-shot">
+        <img src="../assets/icon.png" alt="Outlay app icon" class="hero-icon">
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="section-title">
+        <h2>वो सब कुछ जो आपको चाहिए, कुछ भी अतिरिक्त नहीं</h2>
+        <p>इतना तेज़ बनाया गया है कि खर्च लॉग करना कभी बोझ न लगे।</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📷</div>
+          <div>
+            <h3>रसीद स्कैनर</h3>
+            <p>फोटो खींचें और Outlay अपने आप दुकानदार, कुल राशि, टैक्स और तारीख पढ़ लेता है — टाइपिंग की जरूरत नहीं।</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <div>
+            <h3>खर्च ट्रैकिंग</h3>
+            <p>सेकंडों में आय और खर्च लॉग और वर्गीकृत करें, ऑनलाइन या ऑफलाइन।</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <div>
+            <h3>बजट</h3>
+            <p>श्रेणी के अनुसार मासिक सीमा तय करें और रियल टाइम में देखें कि आपके पास कितना बचा है।</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div>
+            <h3>रिपोर्ट्स</h3>
+            <p>स्पष्ट मासिक और वार्षिक विवरण जिन्हें आप जब चाहें एक्सपोर्ट कर सकते हैं।</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <div>
+            <h3>क्लाउड सिंक</h3>
+            <p>आपका डेटा अपने आप आपके इस्तेमाल किए गए हर डिवाइस पर सिंक रहता है।</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div>
+            <h3>डिज़ाइन से ही निजी</h3>
+            <p>आपका वित्तीय डेटा एन्क्रिप्टेड है और कभी बेचा नहीं जाता। यह आपका है।</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>एक मिनट से कम में ट्रैकिंग शुरू करें</h2>
+      <p>iOS और Android पर मुफ्त डाउनलोड के लिए उपलब्ध।</p>
+      <div class="store-badges">
+        <a href="https://apps.apple.com/app/id6790199113">
+          <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.outlay.app">
+          <svg viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c17.6-11.8 17.6-46.3-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-row">
+        <div>© 2026 Outlay। सर्वाधिकार सुरक्षित।</div>
+        <div class="footer-links">
+          <a href="tools/index.html">मुफ्त टूल्स</a>
+          <a href="../privacy.html">प्राइवेसी पॉलिसी</a>
+          <a href="../terms.html">सेवा की शर्तें</a>
+          <a href="../delete-account.html">अकाउंट डिलीट करें</a>
+          <a href="../support.html">सपोर्ट</a>
+          <a href="mailto:contact@outlayapp.net">संपर्क करें</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

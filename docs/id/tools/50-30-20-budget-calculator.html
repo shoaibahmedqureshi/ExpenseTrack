@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Anggaran 50/30/20 — Gratis dan Tanpa Daftar | Outlay</title>
+<meta name="description" content="Kalkulator anggaran 50/30/20 gratis. Masukkan pendapatan bulanan Anda dan langsung lihat berapa yang harus dibelanjakan untuk kebutuhan, keinginan, dan tabungan.">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/id/tools/50-30-20-budget-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/id/tools/50-30-20-budget-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Kalkulator Anggaran 50/30/20 — Gratis dan Tanpa Daftar | Outlay" />
+<meta property="og:description" content="Kalkulator anggaran 50/30/20 gratis. Masukkan pendapatan bulanan Anda dan langsung lihat berapa yang harus dibelanjakan untuk kebutuhan, keinginan, dan tabungan." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Kalkulator Anggaran 50/30/20 — Gratis dan Tanpa Daftar | Outlay" />
+<meta name="twitter:description" content="Kalkulator anggaran 50/30/20 gratis. Masukkan pendapatan bulanan Anda dan langsung lihat berapa yang harus dibelanjakan untuk kebutuhan, keinginan, dan tabungan." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/50-30-20-budget-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/50-30-20-budget-calculator.html">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .input-row select { border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 16px; background: #fff; }
+  input[type="number"] {
+    width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line);
+    font-size: 18px; font-family: inherit;
+  }
+  input[type="number"]:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .result .pct { font-size: 13px; font-weight: 700; color: var(--teal); }
+  .result .label { font-size: 13px; color: var(--muted); margin: 4px 0; }
+  .result .amount { font-size: 20px; font-weight: 800; }
+  .customize { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .customize summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--teal); }
+  .split-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .split-inputs div { text-align: center; }
+  .split-inputs label { font-size: 12px; margin-bottom: 4px; }
+  .split-inputs input {
+    width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    font-size: 16px; font-family: inherit; text-align: center;
+  }
+  .split-total { font-size: 13px; color: var(--muted); margin-top: 10px; text-align: center; }
+  .split-total.warn { color: #B45309; }
+  .reset-split {
+    display: block; margin: 10px auto 0; background: none; border: none; color: var(--teal);
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;
+  }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p, .content li { font-size: 15px; color: #333; margin-bottom: 10px; }
+  .content ul { padding-left: 20px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .results { grid-template-columns: 1fr; } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Apa itu aturan 50/30/20?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Aturan 50/30/20 adalah kerangka penganggaran sederhana: setelah pajak, bagi pendapatan Anda menjadi tiga bagian — 50% untuk kebutuhan (hal-hal yang harus Anda bayar, seperti sewa, tagihan utilitas, belanja bulanan, dan pembayaran minimum utang), 30% untuk keinginan (makan di luar, hiburan, langganan, dan pengeluaran opsional lainnya), dan 20% untuk tabungan dan pelunasan utang tambahan."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah 50/30/20 cocok untuk semua orang?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ini adalah titik awal, bukan aturan yang kaku. Di kota dengan biaya hidup tinggi, kebutuhan sering melebihi 50% — dalam kasus ini, jadikan tabungan 20% sebagai prioritas dan kurangi keinginan terlebih dahulu. Jika Anda bebas utang dan pengeluaran tetap Anda rendah, Anda bisa dengan mudah meningkatkan tabungan jauh di atas 20%."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 Bahasa Indonesia</summary>
+        <div class="lang-options">
+          <a href="../../tools/50-30-20-budget-calculator.html">English</a>
+          <a href="../../ur/tools/50-30-20-budget-calculator.html">اردو</a>
+          <a href="../../hi/tools/50-30-20-budget-calculator.html">हिन्दी</a>
+          <a href="../../ar/tools/50-30-20-budget-calculator.html">العربية</a>
+          <a href="../../bn/tools/50-30-20-budget-calculator.html">বাংলা</a>
+          <a href="50-30-20-budget-calculator.html" class="active">Bahasa Indonesia</a>
+          <a href="../../vi/tools/50-30-20-budget-calculator.html">Tiếng Việt</a>
+          <a href="../../fil/tools/50-30-20-budget-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>Kalkulator Anggaran 50/30/20</h1>
+    <p class="lede">Masukkan pendapatan bersih bulanan Anda untuk membaginya menjadi kebutuhan, keinginan, dan tabungan sesuai aturan klasik 50/30/20.</p>
+
+    <div class="card">
+      <label for="income">Pendapatan bersih bulanan</label>
+      <div class="input-row">
+        <select id="currency">
+          <option value="Rp" selected>Rp (Rupiah)</option>
+          <option value="$">$</option>
+          <option value="£">£</option>
+          <option value="€">€</option>
+          <option value="₹">₹ (Rupee India)</option>
+        </select>
+        <input type="number" id="income" placeholder="misal 8000000" min="0" step="1">
+      </div>
+
+      <div class="results" id="results" style="display:none;">
+        <div class="result">
+          <div class="pct"><span id="needsPct">50</span>% · Kebutuhan</div>
+          <div class="label">sewa, tagihan, belanja bulanan</div>
+          <div class="amount" id="needs">—</div>
+        </div>
+        <div class="result">
+          <div class="pct"><span id="wantsPct">30</span>% · Keinginan</div>
+          <div class="label">makan di luar, hobi, hiburan</div>
+          <div class="amount" id="wants">—</div>
+        </div>
+        <div class="result">
+          <div class="pct"><span id="savingsPct">20</span>% · Tabungan</div>
+          <div class="label">tabungan & pelunasan utang</div>
+          <div class="amount" id="savings">—</div>
+        </div>
+      </div>
+
+      <details class="customize">
+        <summary>Sesuaikan pembagian</summary>
+        <div class="split-inputs">
+          <div>
+            <label for="needsInput">Kebutuhan %</label>
+            <input type="number" id="needsInput" min="0" max="100" step="1" value="50">
+          </div>
+          <div>
+            <label for="wantsInput">Keinginan %</label>
+            <input type="number" id="wantsInput" min="0" max="100" step="1" value="30">
+          </div>
+          <div>
+            <label for="savingsInput">Tabungan %</label>
+            <input type="number" id="savingsInput" min="0" max="100" step="1" value="20">
+          </div>
+        </div>
+        <div class="split-total" id="splitTotal">Total: 100%</div>
+        <button type="button" class="reset-split" id="resetSplit">Atur ulang ke 50/30/20</button>
+      </details>
+    </div>
+
+    <div class="content">
+      <h2>Apa itu aturan 50/30/20?</h2>
+      <p>Aturan 50/30/20 adalah kerangka penganggaran sederhana: setelah pajak, bagi pendapatan Anda
+      menjadi tiga bagian — 50% untuk kebutuhan (hal-hal yang harus Anda bayar, seperti sewa,
+      tagihan utilitas, belanja bulanan, dan pembayaran minimum utang), 30% untuk keinginan (makan
+      di luar, hiburan, langganan, dan pengeluaran opsional lainnya), dan 20% untuk tabungan dan
+      pelunasan utang tambahan.</p>
+
+      <h2>Apakah 50/30/20 cocok untuk semua orang?</h2>
+      <p>Ini adalah titik awal, bukan aturan yang kaku. Di kota dengan biaya hidup tinggi, kebutuhan
+      sering melebihi 50% — dalam kasus ini, jadikan tabungan 20% sebagai prioritas dan kurangi
+      keinginan terlebih dahulu. Jika Anda bebas utang dan pengeluaran tetap Anda rendah, Anda bisa
+      dengan mudah meningkatkan tabungan jauh di atas 20%.</p>
+
+      <h2>Lacak ke mana uang Anda sebenarnya pergi</h2>
+      <p>Pembagian anggaran hanya berguna jika Anda tahu berapa yang sebenarnya Anda belanjakan.
+      <a href="../../index.html">Outlay</a> memindai struk secara otomatis dan mengategorikan
+      pengeluaran sehingga Anda dapat melihat kebutuhan, keinginan, dan tabungan dalam angka nyata,
+      bukan perkiraan.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">Semua Alat</a> · <a href="../../index.html">Beranda</a> · <a href="../../privacy.html">Privasi</a>
+    </footer>
+  </div>
+
+  <script>window.T = { total: 'Total' };</script>
+  <script src="../../assets/js/budget-5030-20.js"></script>
+</body>
+</html>

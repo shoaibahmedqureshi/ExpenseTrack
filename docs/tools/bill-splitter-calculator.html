@@ -4,15 +4,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bill Splitter Calculator — Split a Bill with Tip | Outlay</title>
-<meta name="description" content="Free bill splitter calculator. Split a restaurant bill evenly (or unevenly) between friends, including tip, in seconds.">
+<meta name="description" content="Free bill splitter calculator. Split a restaurant bill evenly, or itemize who ordered what, with tax and tip included.">
 <link rel="icon" href="../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/tools/bill-splitter-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Bill Splitter Calculator — Split a Bill with Tip | Outlay" />
+<meta property="og:description" content="Free bill splitter calculator. Split a restaurant bill evenly, or itemize who ordered what, with tax and tip included." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Bill Splitter Calculator — Split a Bill with Tip | Outlay" />
+<meta name="twitter:description" content="Free bill splitter calculator. Split a restaurant bill evenly, or itemize who ordered what, with tax and tip included." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
 <style>
-  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; --red: #B91C1C; }
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
   .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
-  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
   nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
   h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
   .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
@@ -22,7 +63,7 @@
     border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
     font-size: 16px; font-family: inherit; background: #fff;
   }
-  input[type="number"] { width: 100%; }
+  input[type="number"], input[type="text"] { width: 100%; }
   select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
   .input-row { display: flex; align-items: center; gap: 10px; }
   .stepper { display: flex; align-items: center; gap: 12px; }
@@ -38,22 +79,96 @@
     background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
   }
   .tip-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
-  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; display: none; }
+  .results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; display: none; }
   .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
   .result .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-  .result .amount { font-size: 20px; font-weight: 800; color: var(--teal); }
+  .result .amount { font-size: 18px; font-weight: 800; color: var(--teal); }
   .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
   .content p { font-size: 15px; color: #333; margin-bottom: 10px; }
   footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
   footer a { color: var(--muted); margin: 0 8px; }
-  @media (max-width: 480px) { .results { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .results { grid-template-columns: repeat(2, 1fr); } }
+
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mode-tab {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; color: var(--muted);
+  }
+  .mode-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .add-row {
+    background: none; border: 1px dashed var(--line); border-radius: 10px; padding: 10px;
+    width: 100%; color: var(--teal); font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+  }
+  .add-row:hover { background: #f0f9f8; }
+  .people-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .item-block { border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 14px; }
+  .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .item-row .item-name { flex: 1.4; }
+  .item-row .item-price { width: 100px; }
+  .item-shared { display: flex; flex-wrap: wrap; gap: 6px; }
+  .item-shared label {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 400;
+    background: #f0f9f8; border-radius: 8px; padding: 5px 10px; cursor: pointer; margin: 0; color: var(--ink);
+  }
+  .remove-small { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 28px; flex-shrink: 0; }
+  .remove-small:hover { color: var(--red); }
+  .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+  .breakdown-table th, .breakdown-table td { padding: 10px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  .breakdown-table th:first-child, .breakdown-table td:first-child { text-align: left; }
+  .breakdown-table th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; }
+  .actions button {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .actions button:hover { border-color: var(--teal); color: var(--teal); }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How tax and tip are calculated",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Enter the bill subtotal before tax. Tax and tip are both calculated on that subtotal (the standard convention — tip isn't charged on tax), then added together to get the total, which is divided evenly by the number of people splitting it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When to use itemized split",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Switch to Itemized Split when the group didn't order equally — add each person, add each item with its price, and tick who shared it. Tax and tip are then divided proportionally based on how much each person actually ordered, not split evenly."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
   <div class="wrap">
-    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <div class="nav-bar">
+      <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 English</summary>
+        <div class="lang-options">
+          <a href="bill-splitter-calculator.html" class="active">English</a>
+          <a href="../ur/tools/bill-splitter-calculator.html">اردو</a>
+          <a href="../hi/tools/bill-splitter-calculator.html">हिन्दी</a>
+          <a href="../ar/tools/bill-splitter-calculator.html">العربية</a>
+          <a href="../bn/tools/bill-splitter-calculator.html">বাংলা</a>
+          <a href="../id/tools/bill-splitter-calculator.html">Bahasa Indonesia</a>
+          <a href="../vi/tools/bill-splitter-calculator.html">Tiếng Việt</a>
+          <a href="../fil/tools/bill-splitter-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
     <h1>Bill Splitter Calculator</h1>
-    <p class="lede">Split a bill evenly between friends, with tip included.</p>
+    <p class="lede">Split a bill evenly, or itemize who ordered what — with tax and tip included either way.</p>
 
     <div class="card">
       <div class="field">
@@ -66,9 +181,44 @@
           <option value="₨">₨ PKR</option>
         </select>
       </div>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="even">Even Split</button>
+        <button type="button" class="mode-tab" data-mode="itemized">Itemized Split</button>
+      </div>
+
+      <div id="evenModeFields">
+        <div class="field">
+          <label for="bill">Bill amount (subtotal, before tax)</label>
+          <input type="number" id="bill" placeholder="e.g. 84.50" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Split between</label>
+          <div class="stepper">
+            <button type="button" id="minus">−</button>
+            <span class="count" id="peopleCountLabel">2</span>
+            <button type="button" id="plus">+</button>
+            <span style="color:var(--muted); font-size:14px;">people</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="itemizedModeFields" style="display:none;">
+        <div class="field">
+          <label>People</label>
+          <div id="peopleRows"></div>
+          <button type="button" class="add-row" id="addPerson">+ Add person</button>
+        </div>
+        <div class="field">
+          <label>Items</label>
+          <div id="itemRows"></div>
+          <button type="button" class="add-row" id="addItem">+ Add item</button>
+        </div>
+      </div>
+
       <div class="field">
-        <label for="bill">Bill amount</label>
-        <input type="number" id="bill" placeholder="e.g. 84.50" min="0" step="0.01">
+        <label for="tax">Tax percentage (optional)</label>
+        <input type="number" id="tax" placeholder="e.g. 8" min="0" step="0.01" value="0">
       </div>
       <div class="field">
         <label>Tip percentage</label>
@@ -80,17 +230,12 @@
           <div class="tip-btn" data-tip="20">20%</div>
         </div>
       </div>
-      <div class="field">
-        <label>Split between</label>
-        <div class="stepper">
-          <button type="button" id="minus">−</button>
-          <span class="count" id="peopleCount">2</span>
-          <button type="button" id="plus">+</button>
-          <span style="color:var(--muted); font-size:14px;">people</span>
-        </div>
-      </div>
 
       <div class="results" id="results">
+        <div class="result">
+          <div class="label">Tax</div>
+          <div class="amount" id="taxAmount">—</div>
+        </div>
         <div class="result">
           <div class="label">Tip</div>
           <div class="amount" id="tipAmount">—</div>
@@ -104,14 +249,45 @@
           <div class="amount" id="perPersonAmount">—</div>
         </div>
       </div>
+
+      <div id="itemizedResults" style="display:none;">
+        <div class="results" style="grid-template-columns: repeat(3, 1fr); display: grid;">
+          <div class="result">
+            <div class="label">Subtotal</div>
+            <div class="amount" id="itemSubtotal">—</div>
+          </div>
+          <div class="result">
+            <div class="label">Tax + Tip</div>
+            <div class="amount" id="itemTaxTip">—</div>
+          </div>
+          <div class="result">
+            <div class="label">Total</div>
+            <div class="amount" id="itemTotal">—</div>
+          </div>
+        </div>
+        <table class="breakdown-table">
+          <thead>
+            <tr><th>Person</th><th>Ordered</th><th>Owes</th></tr>
+          </thead>
+          <tbody id="breakdownBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="downloadBtn">⬇ Download Split</button>
+      </div>
     </div>
 
     <div class="content">
-      <h2>How the tip is calculated</h2>
-      <p>The tip is calculated on the full bill amount, then added to the bill to get the total. The
-      total is then divided evenly by the number of people splitting it. For an uneven split
-      (e.g. someone only had a drink), do the math on individual items separately and use this
-      tool just for the shared portion.</p>
+      <h2>How tax and tip are calculated</h2>
+      <p>Enter the bill subtotal before tax. Tax and tip are both calculated on that subtotal (the
+      standard convention — tip isn't charged on tax), then added together to get the total, which
+      is divided evenly by the number of people splitting it.</p>
+
+      <h2>When to use itemized split</h2>
+      <p>Switch to Itemized Split when the group didn't order equally — add each person, add each
+      item with its price, and tick who shared it. Tax and tip are then divided proportionally
+      based on how much each person actually ordered, not split evenly.</p>
 
       <h2>Keep track after you pay</h2>
       <p>Splitting the bill is the easy part — remembering who still owes you is the hard part.
@@ -124,59 +300,6 @@
     </footer>
   </div>
 
-  <script>
-    const billInput = document.getElementById('bill');
-    const currencySelect = document.getElementById('currency');
-    const tipOptions = document.getElementById('tipOptions');
-    const peopleCountEl = document.getElementById('peopleCount');
-    const results = document.getElementById('results');
-
-    let tipPct = 15;
-    let people = 2;
-
-    tipOptions.addEventListener('click', (e) => {
-      const btn = e.target.closest('.tip-btn');
-      if (!btn) return;
-      tipOptions.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      tipPct = parseFloat(btn.dataset.tip);
-      update();
-    });
-
-    document.getElementById('minus').addEventListener('click', () => {
-      people = Math.max(1, people - 1);
-      peopleCountEl.textContent = people;
-      update();
-    });
-    document.getElementById('plus').addEventListener('click', () => {
-      people = Math.min(50, people + 1);
-      peopleCountEl.textContent = people;
-      update();
-    });
-
-    function format(n, symbol) {
-      return symbol + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function update() {
-      const bill = parseFloat(billInput.value);
-      const symbol = currencySelect.value;
-      if (!bill || bill <= 0) {
-        results.style.display = 'none';
-        return;
-      }
-      const tip = bill * (tipPct / 100);
-      const total = bill + tip;
-      const perPerson = total / people;
-
-      document.getElementById('tipAmount').textContent = format(tip, symbol);
-      document.getElementById('totalAmount').textContent = format(total, symbol);
-      document.getElementById('perPersonAmount').textContent = format(perPerson, symbol);
-      results.style.display = 'grid';
-    }
-
-    billInput.addEventListener('input', update);
-    currencySelect.addEventListener('change', update);
-  </script>
+  <script src="../assets/js/bill-splitter.js"></script>
 </body>
 </html>

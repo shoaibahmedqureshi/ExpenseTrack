@@ -1,4 +1,4 @@
-# expense_tracker
+# Outlay
 
 A new Flutter project.
 

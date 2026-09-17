@@ -6,13 +6,54 @@
 <title>Currency Converter — Live Exchange Rates | Outlay</title>
 <meta name="description" content="Free currency converter with live exchange rates. Convert between USD, EUR, GBP, INR, PKR and more, updated daily.">
 <link rel="icon" href="../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/tools/currency-converter.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/tools/currency-converter.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Currency Converter — Live Exchange Rates | Outlay" />
+<meta property="og:description" content="Free currency converter with live exchange rates. Convert between USD, EUR, GBP, INR, PKR and more, updated daily." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Currency Converter — Live Exchange Rates | Outlay" />
+<meta name="twitter:description" content="Free currency converter with live exchange rates. Convert between USD, EUR, GBP, INR, PKR and more, updated daily." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/currency-converter.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/currency-converter.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/currency-converter.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/currency-converter.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/currency-converter.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/currency-converter.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/currency-converter.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/currency-converter.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/currency-converter.html">
 <style>
   :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
   .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
-  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
   nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
   h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
   .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
@@ -44,10 +85,41 @@
   footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
   footer a { color: var(--muted); margin: 0 8px; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where these rates come from",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Exchange rates are pulled live from open market mid-market rates, updated roughly every hour. Rates are indicative — banks and card networks add their own margin, so the amount you actually pay may differ slightly."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
   <div class="wrap">
-    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <div class="nav-bar">
+      <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 English</summary>
+        <div class="lang-options">
+          <a href="currency-converter.html" class="active">English</a>
+          <a href="../ur/tools/currency-converter.html">اردو</a>
+          <a href="../hi/tools/currency-converter.html">हिन्दी</a>
+          <a href="../ar/tools/currency-converter.html">العربية</a>
+          <a href="../bn/tools/currency-converter.html">বাংলা</a>
+          <a href="../id/tools/currency-converter.html">Bahasa Indonesia</a>
+          <a href="../vi/tools/currency-converter.html">Tiếng Việt</a>
+          <a href="../fil/tools/currency-converter.html">Filipino</a>
+        </div>
+      </details>
+    </div>
     <h1>Currency Converter</h1>
     <p class="lede">Convert between currencies using live, regularly-updated exchange rates.</p>
 
@@ -91,73 +163,6 @@
     </footer>
   </div>
 
-  <script>
-    const amountInput = document.getElementById('amount');
-    const fromSelect = document.getElementById('from');
-    const toSelect = document.getElementById('to');
-    const swapBtn = document.getElementById('swap');
-    const resultBox = document.getElementById('resultBox');
-    const errorBox = document.getElementById('errorBox');
-
-    const CURRENCIES = ['USD','EUR','GBP','INR','PKR','AED','AUD','CAD','CNY','JPY','SGD','CHF','SAR','TRY'];
-
-    CURRENCIES.forEach(c => {
-      fromSelect.appendChild(new Option(c, c));
-      toSelect.appendChild(new Option(c, c));
-    });
-    fromSelect.value = 'USD';
-    toSelect.value = 'PKR';
-
-    let rateCache = {};
-
-    async function getRate(from, to) {
-      if (from === to) return 1;
-      const key = from + '_' + to;
-      if (rateCache[key]) return rateCache[key];
-      const res = await fetch(`https://open.er-api.com/v6/latest/${from}`);
-      if (!res.ok) throw new Error('rate fetch failed');
-      const data = await res.json();
-      const rate = data.rates && data.rates[to];
-      if (!rate) throw new Error('rate missing');
-      rateCache[key] = rate;
-      return rate;
-    }
-
-    async function update() {
-      const amount = parseFloat(amountInput.value);
-      const from = fromSelect.value;
-      const to = toSelect.value;
-      errorBox.style.display = 'none';
-
-      if (!amount || amount <= 0) {
-        resultBox.style.display = 'none';
-        return;
-      }
-      try {
-        const rate = await getRate(from, to);
-        const converted = amount * rate;
-        document.getElementById('resultAmount').textContent =
-          converted.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ' + to;
-        document.getElementById('rateSub').textContent =
-          `1 ${from} = ${rate.toLocaleString(undefined, { maximumFractionDigits: 4 })} ${to}`;
-        resultBox.style.display = 'block';
-      } catch (e) {
-        resultBox.style.display = 'none';
-        errorBox.style.display = 'block';
-      }
-    }
-
-    swapBtn.addEventListener('click', () => {
-      const tmp = fromSelect.value;
-      fromSelect.value = toSelect.value;
-      toSelect.value = tmp;
-      update();
-    });
-
-    [amountInput, fromSelect, toSelect].forEach(el => el.addEventListener('input', update));
-    fromSelect.addEventListener('change', update);
-    toSelect.addEventListener('change', update);
-    update();
-  </script>
+  <script src="../assets/js/currency-converter.js"></script>
 </body>
 </html>

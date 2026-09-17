@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>बिल स्प्लिटर कैलकुलेटर — टिप के साथ बिल बांटें | Outlay</title>
+<meta name="description" content="मुफ्त बिल स्प्लिटर कैलकुलेटर। रेस्टोरेंट के बिल को बराबर बांटें, या हर व्यक्ति ने क्या ऑर्डर किया उसके अनुसार बांटें — टैक्स और टिप सहित।">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/hi/tools/bill-splitter-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/hi/tools/bill-splitter-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="बिल स्प्लिटर कैलकुलेटर — टिप के साथ बिल बांटें | Outlay" />
+<meta property="og:description" content="मुफ्त बिल स्प्लिटर कैलकुलेटर। रेस्टोरेंट के बिल को बराबर बांटें, या हर व्यक्ति ने क्या ऑर्डर किया उसके अनुसार बांटें — टैक्स और टिप सहित।" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="बिल स्प्लिटर कैलकुलेटर — टिप के साथ बिल बांटें | Outlay" />
+<meta name="twitter:description" content="मुफ्त बिल स्प्लिटर कैलकुलेटर। रेस्टोरेंट के बिल को बराबर बांटें, या हर व्यक्ति ने क्या ऑर्डर किया उसके अनुसार बांटें — टैक्स और टिप सहित।" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; --red: #B91C1C; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Devanagari", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.6; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"], input[type="text"] { width: 100%; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  .stepper { display: flex; align-items: center; gap: 12px; }
+  .stepper button {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 18px; font-weight: 700; cursor: pointer; color: var(--teal);
+  }
+  .stepper button:hover { background: #f0f9f8; }
+  .stepper .count { font-size: 20px; font-weight: 700; min-width: 28px; text-align: center; }
+  .tip-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tip-btn {
+    flex: 1; min-width: 60px; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .tip-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; display: none; }
+  .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .result .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .result .amount { font-size: 18px; font-weight: 800; color: var(--teal); }
+  .content h2 { font-size: 19px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 16px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 14px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .results { grid-template-columns: repeat(2, 1fr); } }
+
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mode-tab {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; color: var(--muted);
+  }
+  .mode-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .add-row {
+    background: none; border: 1px dashed var(--line); border-radius: 10px; padding: 10px;
+    width: 100%; color: var(--teal); font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+  }
+  .add-row:hover { background: #f0f9f8; }
+  .people-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .item-block { border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 14px; }
+  .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .item-row .item-name { flex: 1.4; }
+  .item-row .item-price { width: 100px; }
+  .item-shared { display: flex; flex-wrap: wrap; gap: 6px; }
+  .item-shared label {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 400;
+    background: #f0f9f8; border-radius: 8px; padding: 5px 10px; cursor: pointer; margin: 0; color: var(--ink);
+  }
+  .remove-small { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 28px; flex-shrink: 0; }
+  .remove-small:hover { color: var(--red); }
+  .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+  .breakdown-table th, .breakdown-table td { padding: 10px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  .breakdown-table th:first-child, .breakdown-table td:first-child { text-align: left; }
+  .breakdown-table th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; }
+  .actions button {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .actions button:hover { border-color: var(--teal); color: var(--teal); }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "टैक्स और टिप की गणना कैसे होती है",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "बिल की उप-राशि (टैक्स से पहले) दर्ज करें। टैक्स और टिप दोनों उसी उप-राशि पर गणना किए जाते हैं (मानक परंपरा के अनुसार — टिप टैक्स पर नहीं लगता), फिर दोनों को मिलाकर कुल राशि बनती है, जिसे बांटने वाले लोगों की संख्या के अनुसार बराबर बांटा जाता है।"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "आइटम अनुसार बंटवारा कब इस्तेमाल करें",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "जब समूह ने बराबर ऑर्डर न किया हो तो आइटमाइज्ड स्प्लिट पर जाएं — हर व्यक्ति को जोड़ें, हर आइटम को उसकी कीमत के साथ जोड़ें, और चुनें कि किसने उसे साझा किया। टैक्स और टिप फिर इस अनुपात में बंटेंगे कि हर व्यक्ति ने असल में कितना ऑर्डर किया, बराबर बंटवारे के बजाय।"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 हिन्दी</summary>
+        <div class="lang-options">
+          <a href="../../tools/bill-splitter-calculator.html">English</a>
+          <a href="../../ur/tools/bill-splitter-calculator.html">اردو</a>
+          <a href="bill-splitter-calculator.html" class="active">हिन्दी</a>
+          <a href="../../ar/tools/bill-splitter-calculator.html">العربية</a>
+          <a href="../../bn/tools/bill-splitter-calculator.html">বাংলা</a>
+          <a href="../../id/tools/bill-splitter-calculator.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/bill-splitter-calculator.html">Tiếng Việt</a>
+          <a href="../../fil/tools/bill-splitter-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>बिल स्प्लिटर कैलकुलेटर</h1>
+    <p class="lede">बिल को बराबर बांटें, या हर व्यक्ति ने क्या ऑर्डर किया उसके अनुसार बांटें — दोनों तरीकों में टैक्स और टिप शामिल होंगे।</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">मुद्रा</label>
+        <select id="currency">
+          <option value="₹" selected>₹ (भारतीय रुपया)</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₨">₨ (पाकिस्तानी रुपया)</option>
+        </select>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="even">बराबर बंटवारा</button>
+        <button type="button" class="mode-tab" data-mode="itemized">आइटम अनुसार बंटवारा</button>
+      </div>
+
+      <div id="evenModeFields">
+        <div class="field">
+          <label for="bill">बिल राशि (टैक्स से पहले की उप-राशि)</label>
+          <input type="number" id="bill" placeholder="जैसे 850" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>इनके बीच बांटें</label>
+          <div class="stepper">
+            <button type="button" id="minus">−</button>
+            <span class="count" id="peopleCountLabel">2</span>
+            <button type="button" id="plus">+</button>
+            <span style="color:var(--muted); font-size:14px;">लोग</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="itemizedModeFields" style="display:none;">
+        <div class="field">
+          <label>लोग</label>
+          <div id="peopleRows"></div>
+          <button type="button" class="add-row" id="addPerson">+ व्यक्ति जोड़ें</button>
+        </div>
+        <div class="field">
+          <label>आइटम</label>
+          <div id="itemRows"></div>
+          <button type="button" class="add-row" id="addItem">+ आइटम जोड़ें</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tax">टैक्स प्रतिशत (वैकल्पिक)</label>
+        <input type="number" id="tax" placeholder="जैसे 8" min="0" step="0.01" value="0">
+      </div>
+      <div class="field">
+        <label>टिप प्रतिशत</label>
+        <div class="tip-options" id="tipOptions">
+          <div class="tip-btn" data-tip="0">0%</div>
+          <div class="tip-btn" data-tip="10">10%</div>
+          <div class="tip-btn active" data-tip="15">15%</div>
+          <div class="tip-btn" data-tip="18">18%</div>
+          <div class="tip-btn" data-tip="20">20%</div>
+        </div>
+      </div>
+
+      <div class="results" id="results">
+        <div class="result">
+          <div class="label">टैक्स</div>
+          <div class="amount" id="taxAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">टिप</div>
+          <div class="amount" id="tipAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">कुल</div>
+          <div class="amount" id="totalAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">प्रति व्यक्ति</div>
+          <div class="amount" id="perPersonAmount">—</div>
+        </div>
+      </div>
+
+      <div id="itemizedResults" style="display:none;">
+        <div class="results" style="grid-template-columns: repeat(3, 1fr); display: grid;">
+          <div class="result">
+            <div class="label">उप-राशि</div>
+            <div class="amount" id="itemSubtotal">—</div>
+          </div>
+          <div class="result">
+            <div class="label">टैक्स + टिप</div>
+            <div class="amount" id="itemTaxTip">—</div>
+          </div>
+          <div class="result">
+            <div class="label">कुल</div>
+            <div class="amount" id="itemTotal">—</div>
+          </div>
+        </div>
+        <table class="breakdown-table">
+          <thead>
+            <tr><th>व्यक्ति</th><th>ऑर्डर किया</th><th>बकाया</th></tr>
+          </thead>
+          <tbody id="breakdownBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="downloadBtn">⬇ बिल डाउनलोड करें</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>टैक्स और टिप की गणना कैसे होती है</h2>
+      <p>बिल की उप-राशि (टैक्स से पहले) दर्ज करें। टैक्स और टिप दोनों उसी उप-राशि पर गणना किए जाते
+      हैं (मानक परंपरा के अनुसार — टिप टैक्स पर नहीं लगता), फिर दोनों को मिलाकर कुल राशि बनती है,
+      जिसे बांटने वाले लोगों की संख्या के अनुसार बराबर बांटा जाता है।</p>
+
+      <h2>आइटम अनुसार बंटवारा कब इस्तेमाल करें</h2>
+      <p>जब समूह ने बराबर ऑर्डर न किया हो तो आइटमाइज्ड स्प्लिट पर जाएं — हर व्यक्ति को जोड़ें, हर
+      आइटम को उसकी कीमत के साथ जोड़ें, और चुनें कि किसने उसे साझा किया। टैक्स और टिप फिर इस अनुपात
+      में बंटेंगे कि हर व्यक्ति ने असल में कितना ऑर्डर किया, बराबर बंटवारे के बजाय।</p>
+
+      <h2>भुगतान के बाद हिसाब रखें</h2>
+      <p>बिल बांटना आसान हिस्सा है — यह याद रखना कि कौन अभी भी आपका कर्जदार है, मुश्किल हिस्सा है।
+      <a href="../../index.html">Outlay</a> आपके खर्चों को अपने आप रिकॉर्ड करता है ताकि इस तरह के
+      साझा खर्च आपके मासिक हिसाब में खो न जाएं।</p>
+    </div>
+
+    <footer>
+      <a href="index.html">सभी टूल्स</a> · <a href="../../index.html">होम</a> · <a href="../../privacy.html">प्राइवेसी</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      csv: {
+      titleEven: "बिल स्प्लिटर — बराबर बांट",
+      titleItemized: "बिल स्प्लिटर — आइटम अनुसार बांट",
+      currency: "मुद्रा",
+      billAmount: "बिल राशि",
+      taxPct: "टैक्स (%)",
+      taxAmount: "टैक्स राशि",
+      tipPct: "टिप (%)",
+      tipAmount: "टिप राशि",
+      total: "कुल",
+      splitBetween: "इनके बीच बांटें",
+      people: "लोग",
+      perPerson: "प्रति व्यक्ति",
+      itemHeader: "आइटम,कीमत,किसने साझा किया",
+      subtotal: "उप-राशि",
+      taxTip: "टैक्स + टिप",
+      personHeader: "व्यक्ति,ऑर्डर किया,बकाया",
+      },
+      personDefault: (n) => 'व्यक्ति ' + n,
+      namePlaceholder: 'नाम',
+      itemNamePlaceholder: 'जैसे बर्गर',
+      removePerson: 'व्यक्ति हटाएं',
+      removeItem: 'आइटम हटाएं',
+    };
+  </script>
+  <script src="../../assets/js/bill-splitter.js"></script>
+</body>
+</html>

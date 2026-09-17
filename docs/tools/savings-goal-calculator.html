@@ -4,15 +4,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Savings Goal Calculator — How Much to Save Each Month | Outlay</title>
-<meta name="description" content="Free savings goal calculator. Enter your target amount and date to see exactly how much to save each month, with or without interest.">
+<meta name="description" content="Free savings goal calculator. Enter your target amount and timeframe to see exactly how much to save each month, with or without interest.">
 <link rel="icon" href="../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/tools/savings-goal-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/tools/savings-goal-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Savings Goal Calculator — How Much to Save Each Month | Outlay" />
+<meta property="og:description" content="Free savings goal calculator. Enter your target amount and timeframe to see exactly how much to save each month, with or without interest." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Savings Goal Calculator — How Much to Save Each Month | Outlay" />
+<meta name="twitter:description" content="Free savings goal calculator. Enter your target amount and timeframe to see exactly how much to save each month, with or without interest." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/savings-goal-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/savings-goal-calculator.html">
 <style>
   :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
   .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
-  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
   nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
   h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
   .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
@@ -25,6 +66,8 @@
   }
   input[type="number"], input[type="date"] { width: 100%; }
   select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sub-label { font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center; }
   .result-box {
     background: #f0f9f8; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;
     display: none;
@@ -37,12 +80,51 @@
   footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
   footer a { color: var(--muted); margin: 0 8px; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How this is calculated",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Without interest, it's simple: (goal − what you've already saved) ÷ number of months remaining. If you add an expected annual return, the calculator accounts for compounding on both your existing savings and each new monthly deposit, so the required monthly amount comes out a little lower the higher the rate you enter."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "A note on estimates",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Investment returns aren't guaranteed — treat the interest-adjusted number as an optimistic estimate, not a promise. For pure cash savings (a bank account), leave the rate at 0."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
   <div class="wrap">
-    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <div class="nav-bar">
+      <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 English</summary>
+        <div class="lang-options">
+          <a href="savings-goal-calculator.html" class="active">English</a>
+          <a href="../ur/tools/savings-goal-calculator.html">اردو</a>
+          <a href="../hi/tools/savings-goal-calculator.html">हिन्दी</a>
+          <a href="../ar/tools/savings-goal-calculator.html">العربية</a>
+          <a href="../bn/tools/savings-goal-calculator.html">বাংলা</a>
+          <a href="../id/tools/savings-goal-calculator.html">Bahasa Indonesia</a>
+          <a href="../vi/tools/savings-goal-calculator.html">Tiếng Việt</a>
+          <a href="../fil/tools/savings-goal-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
     <h1>Savings Goal Calculator</h1>
-    <p class="lede">Figure out exactly how much to set aside each month to hit a savings target by a specific date.</p>
+    <p class="lede">Figure out exactly how much to set aside each month to hit a savings target within a set timeframe.</p>
 
     <div class="card">
       <div class="field">
@@ -64,8 +146,17 @@
         <input type="number" id="current" placeholder="e.g. 1000" min="0" step="1" value="0">
       </div>
       <div class="field">
-        <label for="targetDate">Target date</label>
-        <input type="date" id="targetDate">
+        <label>Time to save</label>
+        <div class="two-col">
+          <div>
+            <input type="number" id="years" placeholder="0" min="0" step="1" value="0">
+            <div class="sub-label">Years</div>
+          </div>
+          <div>
+            <input type="number" id="months" placeholder="0" min="0" max="11" step="1" value="0">
+            <div class="sub-label">Months</div>
+          </div>
+        </div>
       </div>
       <div class="field">
         <label for="rate">Expected annual interest/return (optional)</label>
@@ -76,6 +167,7 @@
         <div class="label">You need to save</div>
         <div class="amount" id="monthlyAmount">—</div>
         <div class="sub" id="monthsSub"></div>
+        <div class="sub" id="equivSub"></div>
       </div>
     </div>
 
@@ -100,62 +192,6 @@
     </footer>
   </div>
 
-  <script>
-    const goalInput = document.getElementById('goal');
-    const currentInput = document.getElementById('current');
-    const dateInput = document.getElementById('targetDate');
-    const rateInput = document.getElementById('rate');
-    const currencySelect = document.getElementById('currency');
-    const resultBox = document.getElementById('resultBox');
-
-    function monthsBetween(now, target) {
-      const months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-      // Partial current month still counts as needing action this month.
-      return Math.max(1, months);
-    }
-
-    function update() {
-      const goal = parseFloat(goalInput.value);
-      const current = parseFloat(currentInput.value) || 0;
-      const annualRatePct = parseFloat(rateInput.value) || 0;
-      const symbol = currencySelect.value;
-      const dateVal = dateInput.value;
-
-      if (!goal || goal <= 0 || !dateVal) {
-        resultBox.style.display = 'none';
-        return;
-      }
-      const target = new Date(dateVal);
-      const now = new Date();
-      if (target <= now) {
-        resultBox.style.display = 'none';
-        return;
-      }
-      const n = monthsBetween(now, target);
-      const remaining = Math.max(0, goal - current);
-
-      let monthly;
-      if (annualRatePct > 0) {
-        const r = annualRatePct / 100 / 12; // monthly rate
-        // Future value of current savings after n months, compounding monthly.
-        const fvCurrent = current * Math.pow(1 + r, n);
-        const stillNeeded = Math.max(0, goal - fvCurrent);
-        // Solve ordinary annuity payment for future value = stillNeeded.
-        const annuityFactor = (Math.pow(1 + r, n) - 1) / r;
-        monthly = stillNeeded / annuityFactor;
-      } else {
-        monthly = remaining / n;
-      }
-
-      document.getElementById('monthlyAmount').textContent =
-        symbol + monthly.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' / month';
-      document.getElementById('monthsSub').textContent =
-        'over ' + n + ' month' + (n === 1 ? '' : 's');
-      resultBox.style.display = 'block';
-    }
-
-    [goalInput, currentInput, dateInput, rateInput, currencySelect].forEach(el =>
-      el.addEventListener('input', update));
-  </script>
+  <script src="../assets/js/savings-goal.js"></script>
 </body>
 </html>

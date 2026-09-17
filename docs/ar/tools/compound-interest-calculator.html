@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة الفائدة المركبة — مع استثمار شهري | Outlay</title>
+<meta name="description" content="حاسبة فائدة مركبة مجانية. شاهد كيف تنمو مدخراتك أو استثماراتك بمرور الوقت، بما في ذلك الاستثمار الشهري المنتظم.">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/ar/tools/compound-interest-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/ar/tools/compound-interest-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="حاسبة الفائدة المركبة — مع استثمار شهري | Outlay" />
+<meta property="og:description" content="حاسبة فائدة مركبة مجانية. شاهد كيف تنمو مدخراتك أو استثماراتك بمرور الوقت، بما في ذلك الاستثمار الشهري المنتظم." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="حاسبة الفائدة المركبة — مع استثمار شهري | Outlay" />
+<meta name="twitter:description" content="حاسبة فائدة مركبة مجانية. شاهد كيف تنمو مدخراتك أو استثماراتك بمرور الوقت، بما في ذلك الاستثمار الشهري المنتظم." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/compound-interest-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/compound-interest-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Arabic", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.7; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"] { width: 100%; direction: ltr; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .result-box {
+    background: #f0f9f8; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: center;
+    display: none;
+  }
+  .result-box .label { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  .result-box .amount { font-size: 28px; font-weight: 800; color: var(--teal); direction: ltr; }
+  .breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+  .breakdown .box { background: #fff; border-radius: 10px; padding: 12px; text-align: center; }
+  .breakdown .box .label { font-size: 13px; color: var(--muted); }
+  .breakdown .box .amount { font-size: 16px; font-weight: 700; color: var(--ink); direction: ltr; }
+  .chart-wrap { margin-top: 20px; display: none; }
+  #growthChart { width: 100%; height: 220px; display: block; }
+  .chart-legend { display: flex; justify-content: center; gap: 20px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .content h2 { font-size: 19px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 16px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 14px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "كيف تعمل الفائدة المركبة",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "تُحسب الفائدة كل شهر وتُضاف مرة أخرى إلى الرصيد، لذا تُكتسب الفائدة المستقبلية على الفائدة السابقة أيضًا — وليس فقط على المبلغ الأصلي. تحتسب هذه الحاسبة الفائدة المركبة شهريًا وتفترض أن كل استثمار شهري يُضاف في بداية ذلك الشهر."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "لماذا تعتبر البداية المبكرة مهمة",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "نظرًا لأن الفائدة تُكتسب على الفائدة، فإن السنوات الأخيرة من المدة الطويلة تضيف عادةً قيمة أكبر من السنوات الأولى — لهذا السبب فإن البدء مبكرًا، حتى بمبلغ صغير، يتفوق عادةً على البدء لاحقًا بمبلغ أكبر."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "ملاحظة حول العوائد",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "تتقلب عوائد الاستثمار من سنة لأخرى في الواقع؛ تفترض هذه الأداة معدلًا ثابتًا للتبسيط. اعتبر النتيجة تقديرًا تقريبيًا طويل الأمد، وليست ضمانًا."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 العربية</summary>
+        <div class="lang-options">
+          <a href="../../tools/compound-interest-calculator.html">English</a>
+          <a href="../../ur/tools/compound-interest-calculator.html">اردو</a>
+          <a href="../../hi/tools/compound-interest-calculator.html">हिन्दी</a>
+          <a href="compound-interest-calculator.html" class="active">العربية</a>
+          <a href="../../bn/tools/compound-interest-calculator.html">বাংলা</a>
+          <a href="../../id/tools/compound-interest-calculator.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/compound-interest-calculator.html">Tiếng Việt</a>
+          <a href="../../fil/tools/compound-interest-calculator.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>حاسبة الفائدة المركبة</h1>
+    <p class="lede">شاهد كيف ينمو مبلغ مقطوع أو استثمار شهري منتظم بفائدة مركبة بمرور الوقت.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">العملة</label>
+        <select id="currency">
+          <option value="ر.س" selected>ر.س (ريال سعودي)</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="د.إ">د.إ (درهم إماراتي)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="principal">المبلغ الابتدائي</label>
+        <input type="number" id="principal" placeholder="مثال 20000" min="0" step="1" value="20000">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="contribution">الاستثمار الشهري</label>
+          <input type="number" id="contribution" placeholder="مثال 800" min="0" step="1" value="800">
+        </div>
+        <div class="field">
+          <label for="years">سنوات</label>
+          <input type="number" id="years" placeholder="مثال 20" min="1" step="1" value="20">
+        </div>
+      </div>
+      <div class="field">
+        <label for="rate">معدل الفائدة السنوي (%)</label>
+        <input type="number" id="rate" placeholder="مثال 7" min="0" step="0.1" value="7">
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="label">القيمة المستقبلية</div>
+        <div class="amount" id="futureValue">—</div>
+        <div class="breakdown">
+          <div class="box">
+            <div class="label">إجمالي المبلغ المستثمر</div>
+            <div class="amount" id="totalContributed">—</div>
+          </div>
+          <div class="box">
+            <div class="label">إجمالي الفائدة المكتسبة</div>
+            <div class="amount" id="totalInterest">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="growthChart"></canvas>
+        <div class="chart-legend">
+          <span><span class="swatch" style="background:#0F766E;"></span>المبلغ المستثمر</span>
+          <span><span class="swatch" style="background:#5EEAD4;"></span>الفائدة المكتسبة</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>كيف تعمل الفائدة المركبة</h2>
+      <p>تُحسب الفائدة كل شهر وتُضاف مرة أخرى إلى الرصيد، لذا تُكتسب الفائدة المستقبلية على الفائدة
+      السابقة أيضًا — وليس فقط على المبلغ الأصلي. تحتسب هذه الحاسبة الفائدة المركبة شهريًا وتفترض
+      أن كل استثمار شهري يُضاف في بداية ذلك الشهر.</p>
+
+      <h2>لماذا تعتبر البداية المبكرة مهمة</h2>
+      <p>نظرًا لأن الفائدة تُكتسب على الفائدة، فإن السنوات الأخيرة من المدة الطويلة تضيف عادةً قيمة
+      أكبر من السنوات الأولى — لهذا السبب فإن البدء مبكرًا، حتى بمبلغ صغير، يتفوق عادةً على البدء
+      لاحقًا بمبلغ أكبر.</p>
+
+      <h2>ملاحظة حول العوائد</h2>
+      <p>تتقلب عوائد الاستثمار من سنة لأخرى في الواقع؛ تفترض هذه الأداة معدلًا ثابتًا للتبسيط.
+      اعتبر النتيجة تقديرًا تقريبيًا طويل الأمد، وليست ضمانًا.</p>
+
+      <h2>موّل الخطة من ميزانيتك الفعلية</h2>
+      <p>الاستثمار المنتظم أهم من المعدل الدقيق. <a href="../../index.html">Outlay</a> يساعدك على
+      إيجاد فائض شهري حقيقي في مصاريفك حتى يبقى هذا الاستثمار منتظمًا.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">جميع الأدوات</a> · <a href="../../index.html">الرئيسية</a> · <a href="../../privacy.html">الخصوصية</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      yearLabel: (yr) => 'سنة ' + yr,
+    };
+  </script>
+  <script src="../../assets/js/compound-interest.js"></script>
+</body>
+</html>

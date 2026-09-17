@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>বিনামূল্যে অর্থ ক্যালকুলেটর — বাজেট, সঞ্চয়, চক্রবৃদ্ধি সুদ এবং আরও | Outlay</title>
+<meta name="description" content="বিনামূল্যে, সাইনআপ ছাড়া আর্থিক ক্যালকুলেটর: বাজেট পরিকল্পনাকারী, সঞ্চয় লক্ষ্য, বিল স্প্লিটার, চক্রবৃদ্ধি সুদ, মুদ্রা কনভার্টার এবং আরও — Outlay টিমের পক্ষ থেকে।">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/bn/tools/index.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/bn/tools/index.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="বিনামূল্যে অর্থ ক্যালকুলেটর — বাজেট, সঞ্চয়, চক্রবৃদ্ধি সুদ এবং আরও | Outlay" />
+<meta property="og:description" content="বিনামূল্যে, সাইনআপ ছাড়া আর্থিক ক্যালকুলেটর: বাজেট পরিকল্পনাকারী, সঞ্চয় লক্ষ্য, বিল স্প্লিটার, চক্রবৃদ্ধি সুদ, মুদ্রা কনভার্টার এবং আরও — Outlay টিমের পক্ষ থেকে।" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="বিনামূল্যে অর্থ ক্যালকুলেটর — বাজেট, সঞ্চয়, চক্রবৃদ্ধি সুদ এবং আরও | Outlay" />
+<meta name="twitter:description" content="বিনামূল্যে, সাইনআপ ছাড়া আর্থিক ক্যালকুলেটর: বাজেট পরিকল্পনাকারী, সঞ্চয় লক্ষ্য, বিল স্প্লিটার, চক্রবৃদ্ধি সুদ, মুদ্রা কনভার্টার এবং আরও — Outlay টিমের পক্ষ থেকে।" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/index.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/index.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/index.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/index.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/index.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/index.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/index.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/index.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/index.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans Bengali", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 34px; font-weight: 800; margin-bottom: 10px; }
+  .lede { color: var(--muted); font-size: 17px; max-width: 620px; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .tool-card {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .tool-card:hover { border-color: var(--teal); }
+  .tool-card .emoji { font-size: 26px; margin-bottom: 10px; display: block; }
+  .tool-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .tool-card p { font-size: 14px; color: var(--muted); }
+  footer { text-align: center; font-size: 14px; color: var(--muted); padding-top: 48px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 বাংলা</summary>
+        <div class="lang-options">
+          <a href="../../tools/index.html">English</a>
+          <a href="../../ur/tools/index.html">اردو</a>
+          <a href="../../hi/tools/index.html">हिन्दी</a>
+          <a href="../../ar/tools/index.html">العربية</a>
+          <a href="index.html" class="active">বাংলা</a>
+          <a href="../../id/tools/index.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/index.html">Tiếng Việt</a>
+          <a href="../../fil/tools/index.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>বিনামূল্যে অর্থ ক্যালকুলেটর</h1>
+    <p class="lede">প্রতিদিনের আর্থিক সিদ্ধান্তের জন্য দ্রুত, বিনামূল্যে টুলস — কোনো সাইনআপ প্রয়োজন নেই। Outlay, একটি খরচ ট্র্যাকার অ্যাপ, টিম কর্তৃক তৈরি।</p>
+
+    <div class="grid">
+      <a class="tool-card" href="50-30-20-budget-calculator.html">
+        <span class="emoji">📊</span>
+        <h3>৫০/৩০/২০ বাজেট ক্যালকুলেটর</h3>
+        <p>ক্লাসিক নিয়ম অনুযায়ী আপনার আয়কে প্রয়োজন, ইচ্ছা এবং সঞ্চয়ে ভাগ করুন।</p>
+      </a>
+      <a class="tool-card" href="savings-goal-calculator.html">
+        <span class="emoji">🎯</span>
+        <h3>সঞ্চয় লক্ষ্য ক্যালকুলেটর</h3>
+        <p>জানুন একটি নির্দিষ্ট সময়ের মধ্যে লক্ষ্য পরিমাণে পৌঁছাতে প্রতি মাসে কত সঞ্চয় করতে হবে।</p>
+      </a>
+      <a class="tool-card" href="bill-splitter-calculator.html">
+        <span class="emoji">🧾</span>
+        <h3>বিল স্প্লিটার ক্যালকুলেটর</h3>
+        <p>বন্ধুদের মধ্যে বিল সমানভাবে বা আইটেম অনুযায়ী ভাগ করুন, টিপসহ।</p>
+      </a>
+      <a class="tool-card" href="budget-planner.html">
+        <span class="emoji">📝</span>
+        <h3>মাসিক বাজেট পরিকল্পনাকারী</h3>
+        <p>একটি সহজ, ব্যক্তিগত বাজেট ওয়ার্কশিট — কিছুই সংরক্ষণ হয় না, কোনো সাইনআপ নেই।</p>
+      </a>
+      <a class="tool-card" href="currency-converter.html">
+        <span class="emoji">💱</span>
+        <h3>মুদ্রা কনভার্টার</h3>
+        <p>লাইভ এক্সচেঞ্জ রেট ব্যবহার করে মুদ্রার মধ্যে রূপান্তর করুন।</p>
+      </a>
+      <a class="tool-card" href="compound-interest-calculator.html">
+        <span class="emoji">📈</span>
+        <h3>চক্রবৃদ্ধি সুদ ক্যালকুলেটর</h3>
+        <p>দেখুন সঞ্চয় বা বিনিয়োগ সময়ের সাথে চক্রবৃদ্ধি সুদে কীভাবে বাড়ে।</p>
+      </a>
+      <a class="tool-card" href="invoice-generator.html">
+        <span class="emoji">🧮</span>
+        <h3>ইনভয়েস জেনারেটর</h3>
+        <p>আন্তর্জাতিক ক্লায়েন্টদের বিল করা ফ্রিল্যান্সারদের জন্য বিনামূল্যে ইনভয়েস জেনারেটর — USD + PKR, উইথহোল্ডিং ট্যাক্স সহ।</p>
+      </a>
+    </div>
+
+    <footer>
+      <a href="../../index.html">হোম</a> · <a href="../../privacy.html">প্রাইভেসি</a> · <a href="../../terms.html">শর্তাবলী</a> · <a href="../../support.html">সহায়তা</a>
+    </footer>
+  </div>
+</body>
+</html>

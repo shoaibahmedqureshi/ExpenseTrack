@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perencana Anggaran Bulanan — Lembar Kerja Gratis, Tanpa Daftar | Outlay</title>
+<meta name="description" content="Perencana anggaran bulanan gratis dan privat. Masukkan pendapatan dan pengeluaran Anda, lihat sisa saldo secara instan — tidak ada yang disimpan, tanpa daftar.">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/id/tools/budget-planner.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/id/tools/budget-planner.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Perencana Anggaran Bulanan — Lembar Kerja Gratis, Tanpa Daftar | Outlay" />
+<meta property="og:description" content="Perencana anggaran bulanan gratis dan privat. Masukkan pendapatan dan pengeluaran Anda, lihat sisa saldo secara instan — tidak ada yang disimpan, tanpa daftar." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Perencana Anggaran Bulanan — Lembar Kerja Gratis, Tanpa Daftar | Outlay" />
+<meta name="twitter:description" content="Perencana anggaran bulanan gratis dan privat. Masukkan pendapatan dan pengeluaran Anda, lihat sisa saldo secara instan — tidak ada yang disimpan, tanpa daftar." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/budget-planner.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/budget-planner.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/budget-planner.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/budget-planner.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/budget-planner.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/budget-planner.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/budget-planner.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/budget-planner.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/budget-planner.html">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; --red: #B91C1C; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+  .card h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--teal); margin-bottom: 16px; }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .row input[type="text"] {
+    flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit;
+  }
+  .row input[type="number"] {
+    width: 120px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit;
+  }
+  .row input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .row button.remove {
+    background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 28px;
+  }
+  .row button.remove:hover { color: var(--red); }
+  .add-row {
+    background: none; border: 1px dashed var(--line); border-radius: 10px; padding: 10px;
+    width: 100%; color: var(--teal); font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+  }
+  .add-row:hover { background: #f0f9f8; }
+  .currency-field { margin-bottom: 16px; }
+  .currency-field select {
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; background: #fff;
+  }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .summary .box { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .summary .box.leftover.negative { background: #fdecec; }
+  .summary .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .summary .amount { font-size: 20px; font-weight: 800; color: var(--teal); }
+  .summary .box.negative .amount { color: var(--red); }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 15px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  .actions { display: flex; gap: 10px; margin-bottom: 20px; }
+  .actions button {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .actions button:hover { border-color: var(--teal); color: var(--teal); }
+  @media (max-width: 480px) { .summary { grid-template-columns: 1fr; } .row input[type="number"] { width: 90px; } }
+  @media print {
+    .add-row, .row button.remove, .actions, .content, footer { display: none !important; }
+    body { background: #fff; }
+    .card { border: 1px solid #ccc; break-inside: avoid; }
+  }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Mengapa merencanakan sebelum bulan dimulai",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Anggaran yang direncanakan sebelumnya menangkap kekurangan sebelum terjadi, bukan setelah kartu Anda ditolak. Masukkan setiap sumber pendapatan dan setiap pengeluaran tetap atau yang diperkirakan, dan sisa saldo memberi tahu Anda persis berapa banyak ruang yang Anda miliki untuk tabungan atau pengeluaran opsional."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 Bahasa Indonesia</summary>
+        <div class="lang-options">
+          <a href="../../tools/budget-planner.html">English</a>
+          <a href="../../ur/tools/budget-planner.html">اردو</a>
+          <a href="../../hi/tools/budget-planner.html">हिन्दी</a>
+          <a href="../../ar/tools/budget-planner.html">العربية</a>
+          <a href="../../bn/tools/budget-planner.html">বাংলা</a>
+          <a href="budget-planner.html" class="active">Bahasa Indonesia</a>
+          <a href="../../vi/tools/budget-planner.html">Tiếng Việt</a>
+          <a href="../../fil/tools/budget-planner.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>Perencana Anggaran Bulanan</h1>
+    <p class="lede">Lembar kerja sederhana untuk merencanakan bulan Anda. Semuanya tetap di browser Anda — tidak ada yang disimpan atau dikirim.</p>
+
+    <div class="currency-field">
+      <select id="currency">
+        <option value="Rp" selected>Rp (Rupiah)</option>
+        <option value="$">$ USD</option>
+        <option value="£">£ GBP</option>
+        <option value="€">€ EUR</option>
+        <option value="₹">₹ (Rupee India)</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h2>Pendapatan</h2>
+      <div id="incomeRows"></div>
+      <button type="button" class="add-row" data-target="income">+ Tambah sumber pendapatan</button>
+    </div>
+
+    <div class="card">
+      <h2>Pengeluaran</h2>
+      <div id="expenseRows"></div>
+      <button type="button" class="add-row" data-target="expense">+ Tambah pengeluaran</button>
+    </div>
+
+    <datalist id="incomeSuggestions">
+      <option value="Gaji">
+      <option value="Pendapatan Freelance">
+      <option value="Pendapatan Usaha">
+      <option value="Pendapatan Sewa">
+      <option value="Pendapatan Investasi">
+      <option value="Lainnya">
+    </datalist>
+    <datalist id="expenseSuggestions">
+      <option value="Sewa/Cicilan Rumah">
+      <option value="Belanja Bulanan">
+      <option value="Tagihan Listrik & Air">
+      <option value="Transportasi">
+      <option value="Asuransi">
+      <option value="Langganan">
+      <option value="Cicilan Utang">
+      <option value="Makan di Luar">
+      <option value="Hiburan">
+      <option value="Kesehatan">
+      <option value="Tabungan">
+      <option value="Lainnya">
+    </datalist>
+
+    <div class="card">
+      <div class="summary">
+        <div class="box">
+          <div class="label">Total pendapatan</div>
+          <div class="amount" id="totalIncome">—</div>
+        </div>
+        <div class="box">
+          <div class="label">Total pengeluaran</div>
+          <div class="amount" id="totalExpenses">—</div>
+        </div>
+        <div class="box leftover" id="leftoverBox">
+          <div class="label">Sisa saldo</div>
+          <div class="amount" id="leftover">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="printBtn">🖨 Cetak</button>
+      <button type="button" id="downloadBtn">⬇ Unduh CSV</button>
+    </div>
+
+    <div class="content">
+      <h2>Mengapa merencanakan sebelum bulan dimulai</h2>
+      <p>Anggaran yang direncanakan sebelumnya menangkap kekurangan sebelum terjadi, bukan setelah
+      kartu Anda ditolak. Masukkan setiap sumber pendapatan dan setiap pengeluaran tetap atau yang
+      diperkirakan, dan sisa saldo memberi tahu Anda persis berapa banyak ruang yang Anda miliki
+      untuk tabungan atau pengeluaran opsional.</p>
+
+      <h2>Jadikan perencanaan sebagai kebiasaan</h2>
+      <p>Lembar kerja hanya berguna jika Anda membandingkannya dengan kenyataan. <a href="../../index.html">Outlay</a>
+      melacak pengeluaran aktual Anda secara otomatis dengan memindai struk, sehingga Anda dapat
+      membandingkan rencana dengan kenyataan setiap bulan tanpa entri manual.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">Semua Alat</a> · <a href="../../index.html">Beranda</a> · <a href="../../privacy.html">Privasi</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      incomePlaceholder: 'misal Gaji',
+      expensePlaceholders: ['misal Sewa', 'misal Belanja Bulanan', 'misal Langganan'],
+      untitled: 'Tanpa judul',
+      removeLabel: 'Hapus',
+      csv: {
+        title: 'Perencana Anggaran Bulanan',
+        currency: 'Mata uang',
+        incomeHeader: 'Pendapatan,Jumlah',
+        totalIncome: 'Total pendapatan',
+        expensesHeader: 'Pengeluaran,Jumlah',
+        totalExpenses: 'Total pengeluaran',
+        leftover: 'Sisa saldo',
+      },
+    };
+  </script>
+  <script src="../../assets/js/budget-planner.js"></script>
+</body>
+</html>

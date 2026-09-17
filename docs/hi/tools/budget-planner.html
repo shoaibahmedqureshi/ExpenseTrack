@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>मासिक बजट प्लानर — मुफ्त वर्कशीट, बिना साइनअप | Outlay</title>
+<meta name="description" content="एक मुफ्त, निजी मासिक बजट प्लानर। अपनी आय और खर्च दर्ज करें, तुरंत बची हुई राशि देखें — कुछ भी सेव नहीं होता, कोई साइनअप नहीं।">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/hi/tools/budget-planner.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/hi/tools/budget-planner.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="मासिक बजट प्लानर — मुफ्त वर्कशीट, बिना साइनअप | Outlay" />
+<meta property="og:description" content="एक मुफ्त, निजी मासिक बजट प्लानर। अपनी आय और खर्च दर्ज करें, तुरंत बची हुई राशि देखें — कुछ भी सेव नहीं होता, कोई साइनअप नहीं।" />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="मासिक बजट प्लानर — मुफ्त वर्कशीट, बिना साइनअप | Outlay" />
+<meta name="twitter:description" content="एक मुफ्त, निजी मासिक बजट प्लानर। अपनी आय और खर्च दर्ज करें, तुरंत बची हुई राशि देखें — कुछ भी सेव नहीं होता, कोई साइनअप नहीं।" />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/budget-planner.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/budget-planner.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/budget-planner.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/budget-planner.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/budget-planner.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/budget-planner.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/budget-planner.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/budget-planner.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/budget-planner.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; --red: #B91C1C; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans Devanagari", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.6; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; color: var(--teal); margin-bottom: 16px; }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .row input[type="text"] {
+    flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; font-family: inherit;
+  }
+  .row input[type="number"] {
+    width: 120px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; font-family: inherit;
+  }
+  .row input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .row button.remove {
+    background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 28px;
+  }
+  .row button.remove:hover { color: var(--red); }
+  .add-row {
+    background: none; border: 1px dashed var(--line); border-radius: 10px; padding: 10px;
+    width: 100%; color: var(--teal); font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+  }
+  .add-row:hover { background: #f0f9f8; }
+  .currency-field { margin-bottom: 16px; }
+  .currency-field select {
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 16px; background: #fff;
+  }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .summary .box { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .summary .box.leftover.negative { background: #fdecec; }
+  .summary .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .summary .amount { font-size: 20px; font-weight: 800; color: var(--teal); }
+  .summary .box.negative .amount { color: var(--red); }
+  .content h2 { font-size: 19px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 16px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 14px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  .actions { display: flex; gap: 10px; margin-bottom: 20px; }
+  .actions button {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .actions button:hover { border-color: var(--teal); color: var(--teal); }
+  @media (max-width: 480px) { .summary { grid-template-columns: 1fr; } .row input[type="number"] { width: 90px; } }
+  @media print {
+    .add-row, .row button.remove, .actions, .content, footer { display: none !important; }
+    body { background: #fff; }
+    .card { border: 1px solid #ccc; break-inside: avoid; }
+  }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "महीना शुरू होने से पहले योजना क्यों बनाएं",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "पहले से बनाया गया बजट कमी को होने से पहले पकड़ लेता है, आपका कार्ड अस्वीकार होने के बाद नहीं। हर आय स्रोत और हर तय या अनुमानित खर्च दर्ज करें, और बची हुई राशि बताती है कि आपके पास बचत या वैकल्पिक खर्चों के लिए कितनी गुंजाइश है।"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 हिन्दी</summary>
+        <div class="lang-options">
+          <a href="../../tools/budget-planner.html">English</a>
+          <a href="../../ur/tools/budget-planner.html">اردو</a>
+          <a href="budget-planner.html" class="active">हिन्दी</a>
+          <a href="../../ar/tools/budget-planner.html">العربية</a>
+          <a href="../../bn/tools/budget-planner.html">বাংলা</a>
+          <a href="../../id/tools/budget-planner.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/budget-planner.html">Tiếng Việt</a>
+          <a href="../../fil/tools/budget-planner.html">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>मासिक बजट प्लानर</h1>
+    <p class="lede">अपने महीने की योजना बनाने के लिए एक सरल वर्कशीट। सब कुछ आपके ब्राउज़र में रहता है — कुछ भी सेव या कहीं भेजा नहीं जाता।</p>
+
+    <div class="currency-field">
+      <select id="currency">
+        <option value="₹" selected>₹ (भारतीय रुपया)</option>
+        <option value="$">$ USD</option>
+        <option value="£">£ GBP</option>
+        <option value="€">€ EUR</option>
+        <option value="₨">₨ (पाकिस्तानी रुपया)</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h2>आय</h2>
+      <div id="incomeRows"></div>
+      <button type="button" class="add-row" data-target="income">+ आय का स्रोत जोड़ें</button>
+    </div>
+
+    <div class="card">
+      <h2>खर्च</h2>
+      <div id="expenseRows"></div>
+      <button type="button" class="add-row" data-target="expense">+ खर्च जोड़ें</button>
+    </div>
+
+    <datalist id="incomeSuggestions">
+      <option value="वेतन">
+      <option value="फ्रीलांस आय">
+      <option value="व्यावसायिक आय">
+      <option value="किराए की आय">
+      <option value="निवेश से आय">
+      <option value="अन्य">
+    </datalist>
+    <datalist id="expenseSuggestions">
+      <option value="किराया/मॉर्गेज">
+      <option value="किराने का सामान">
+      <option value="बिजली-पानी बिल">
+      <option value="आवागमन">
+      <option value="बीमा">
+      <option value="सब्सक्रिप्शन">
+      <option value="कर्ज भुगतान">
+      <option value="बाहर खाना">
+      <option value="मनोरंजन">
+      <option value="स्वास्थ्य सेवा">
+      <option value="बचत">
+      <option value="अन्य">
+    </datalist>
+
+    <div class="card">
+      <div class="summary">
+        <div class="box">
+          <div class="label">कुल आय</div>
+          <div class="amount" id="totalIncome">—</div>
+        </div>
+        <div class="box">
+          <div class="label">कुल खर्च</div>
+          <div class="amount" id="totalExpenses">—</div>
+        </div>
+        <div class="box leftover" id="leftoverBox">
+          <div class="label">बची हुई राशि</div>
+          <div class="amount" id="leftover">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="printBtn">🖨 प्रिंट करें</button>
+      <button type="button" id="downloadBtn">⬇ CSV डाउनलोड करें</button>
+    </div>
+
+    <div class="content">
+      <h2>महीना शुरू होने से पहले योजना क्यों बनाएं</h2>
+      <p>पहले से बनाया गया बजट कमी को होने से पहले पकड़ लेता है, आपका कार्ड अस्वीकार होने के बाद
+      नहीं। हर आय स्रोत और हर तय या अनुमानित खर्च दर्ज करें, और बची हुई राशि बताती है कि आपके पास
+      बचत या वैकल्पिक खर्चों के लिए कितनी गुंजाइश है।</p>
+
+      <h2>योजना को आदत बनाएं</h2>
+      <p>वर्कशीट तभी काम की है जब आप इसे हकीकत से मिलाएं। <a href="../../index.html">Outlay</a>
+      रसीदों को स्कैन करके आपके असली खर्चों को अपने आप ट्रैक करता है, ताकि आप हर महीने बिना मैनुअल
+      एंट्री के योजना बनाम हकीकत की तुलना कर सकें।</p>
+    </div>
+
+    <footer>
+      <a href="index.html">सभी टूल्स</a> · <a href="../../index.html">होम</a> · <a href="../../privacy.html">प्राइवेसी</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      incomePlaceholder: 'जैसे वेतन',
+      expensePlaceholders: ['जैसे किराया', 'जैसे किराने का सामान', 'जैसे सब्सक्रिप्शन'],
+      untitled: 'शीर्षक रहित',
+      removeLabel: 'हटाएं',
+      csv: {
+        title: 'मासिक बजट प्लानर',
+        currency: 'मुद्रा',
+        incomeHeader: 'आय,राशि',
+        totalIncome: 'कुल आय',
+        expensesHeader: 'खर्च,राशि',
+        totalExpenses: 'कुल खर्च',
+        leftover: 'बची हुई राशि',
+      },
+    };
+  </script>
+  <script src="../../assets/js/budget-planner.js"></script>
+</body>
+</html>

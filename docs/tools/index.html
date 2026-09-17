@@ -6,6 +6,26 @@
 <title>Free Money Calculators — Budget, Savings, Compound Interest & More | Outlay</title>
 <meta name="description" content="Free, no-signup financial calculators: budget planner, savings goal, bill splitter, compound interest, currency converter, and more — from the team behind Outlay.">
 <link rel="icon" href="../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/tools/index.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/tools/index.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Free Money Calculators — Budget, Savings, Compound Interest &amp; More | Outlay" />
+<meta property="og:description" content="Free, no-signup financial calculators: budget planner, savings goal, bill splitter, compound interest, currency converter, and more — from the team behind Outlay." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Free Money Calculators — Budget, Savings, Compound Interest &amp; More | Outlay" />
+<meta name="twitter:description" content="Free, no-signup financial calculators: budget planner, savings goal, bill splitter, compound interest, currency converter, and more — from the team behind Outlay." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/index.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/index.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/index.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/index.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/index.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/index.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/index.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/index.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/index.html">
 <style>
   :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,8 +36,29 @@
     line-height: 1.5;
   }
   .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px 60px; }
-  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
   nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
   h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; }
   .lede { color: var(--muted); font-size: 16px; max-width: 620px; margin-bottom: 40px; }
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
@@ -41,7 +82,22 @@
 </head>
 <body>
   <div class="wrap">
-    <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+    <div class="nav-bar">
+      <a href="../index.html" style="text-decoration:none;"><nav><img src="../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 English</summary>
+        <div class="lang-options">
+          <a href="index.html" class="active">English</a>
+          <a href="../ur/tools/index.html">اردو</a>
+          <a href="../hi/tools/index.html">हिन्दी</a>
+          <a href="../ar/tools/index.html">العربية</a>
+          <a href="../bn/tools/index.html">বাংলা</a>
+          <a href="../id/tools/index.html">Bahasa Indonesia</a>
+          <a href="../vi/tools/index.html">Tiếng Việt</a>
+          <a href="../fil/tools/index.html">Filipino</a>
+        </div>
+      </details>
+    </div>
     <h1>Free Money Calculators</h1>
     <p class="lede">Quick, free tools for everyday money decisions — no signup required. Built by the team behind Outlay, the expense tracker app.</p>
 
@@ -54,7 +110,7 @@
       <a class="tool-card" href="savings-goal-calculator.html">
         <span class="emoji">🎯</span>
         <h3>Savings Goal Calculator</h3>
-        <p>Find out how much to save each month to hit a target amount by a date.</p>
+        <p>Find out how much to save each month to hit a target amount within a timeframe.</p>
       </a>
       <a class="tool-card" href="bill-splitter-calculator.html">
         <span class="emoji">🧾</span>
@@ -75,6 +131,11 @@
         <span class="emoji">📈</span>
         <h3>Compound Interest Calculator</h3>
         <p>See how savings or investments grow over time with compounding.</p>
+      </a>
+      <a class="tool-card" href="invoice-generator.html">
+        <span class="emoji">🧮</span>
+        <h3>Invoice Generator</h3>
+        <p>Free invoice generator for freelancers billing international clients — USD + PKR, withholding tax included.</p>
       </a>
     </div>
 

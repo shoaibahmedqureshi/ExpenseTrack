@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator ng Paghahati ng Bill — Hatiin ang Bill Kasama ang Tip | Outlay</title>
+<meta name="description" content="Libreng kalkulator ng paghahati ng bill. Hatiin ang bill sa restaurant nang pantay, o base sa in-order ng bawat isa — kasama ang tax at tip.">
+<link rel="icon" href="../../assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/fil/tools/bill-splitter-calculator.html">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/fil/tools/bill-splitter-calculator.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Kalkulator ng Paghahati ng Bill — Hatiin ang Bill Kasama ang Tip | Outlay" />
+<meta property="og:description" content="Libreng kalkulator ng paghahati ng bill. Hatiin ang bill sa restaurant nang pantay, o base sa in-order ng bawat isa — kasama ang tax at tip." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Kalkulator ng Paghahati ng Bill — Hatiin ang Bill Kasama ang Tip | Outlay" />
+<meta name="twitter:description" content="Libreng kalkulator ng paghahati ng bill. Hatiin ang bill sa restaurant nang pantay, o base sa in-order ng bawat isa — kasama ang tax at tip." />
+<meta name="twitter:image" content="https://outlayapp.net/assets/icon.png" />
+<link rel="alternate" hreflang="en" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ur" href="https://outlayapp.net/ur/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="hi" href="https://outlayapp.net/hi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="ar" href="https://outlayapp.net/ar/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="bn" href="https://outlayapp.net/bn/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="id" href="https://outlayapp.net/id/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="vi" href="https://outlayapp.net/vi/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/bill-splitter-calculator.html">
+<link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/bill-splitter-calculator.html">
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --card: #ffffff; --line: #e7e9e8; --red: #B91C1C; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); line-height: 1.5; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  nav { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; text-decoration: none; color: var(--ink); }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .lang-menu { position: relative; }
+  .lang-menu summary {
+    list-style: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lang-menu summary::-webkit-details-marker { display: none; }
+  .lang-menu summary:hover, .lang-menu[open] summary { border-color: var(--teal); color: var(--teal); }
+  .lang-options {
+    position: absolute; inset-inline-end: 0; top: calc(100% + 6px);
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 6px; min-width: 140px; z-index: 20;
+  }
+  .lang-options a {
+    display: block; padding: 8px 12px; border-radius: 6px; font-size: 14px;
+    color: var(--ink); text-decoration: none;
+  }
+  .lang-options a:hover { background: #f0f9f8; color: var(--teal); }
+  .lang-options a.active { color: var(--teal); font-weight: 700; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  select, input {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-size: 16px; font-family: inherit; background: #fff;
+  }
+  input[type="number"], input[type="text"] { width: 100%; }
+  select:focus, input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  .stepper { display: flex; align-items: center; gap: 12px; }
+  .stepper button {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 18px; font-weight: 700; cursor: pointer; color: var(--teal);
+  }
+  .stepper button:hover { background: #f0f9f8; }
+  .stepper .count { font-size: 20px; font-weight: 700; min-width: 28px; text-align: center; }
+  .tip-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tip-btn {
+    flex: 1; min-width: 60px; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .tip-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; display: none; }
+  .result { background: #f0f9f8; border-radius: 12px; padding: 16px; text-align: center; }
+  .result .label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .result .amount { font-size: 18px; font-weight: 800; color: var(--teal); }
+  .content h2 { font-size: 18px; margin: 28px 0 10px; color: var(--teal); }
+  .content p { font-size: 15px; color: #333; margin-bottom: 10px; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 480px) { .results { grid-template-columns: repeat(2, 1fr); } }
+
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mode-tab {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; color: var(--muted);
+  }
+  .mode-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .add-row {
+    background: none; border: 1px dashed var(--line); border-radius: 10px; padding: 10px;
+    width: 100%; color: var(--teal); font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+  }
+  .add-row:hover { background: #f0f9f8; }
+  .people-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .item-block { border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 14px; }
+  .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .item-row .item-name { flex: 1.4; }
+  .item-row .item-price { width: 100px; }
+  .item-shared { display: flex; flex-wrap: wrap; gap: 6px; }
+  .item-shared label {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 400;
+    background: #f0f9f8; border-radius: 8px; padding: 5px 10px; cursor: pointer; margin: 0; color: var(--ink);
+  }
+  .remove-small { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 28px; flex-shrink: 0; }
+  .remove-small:hover { color: var(--red); }
+  .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+  .breakdown-table th, .breakdown-table td { padding: 10px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  .breakdown-table th:first-child, .breakdown-table td:first-child { text-align: left; }
+  .breakdown-table th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; }
+  .actions button {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+    font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; font-family: inherit;
+  }
+  .actions button:hover { border-color: var(--teal); color: var(--teal); }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Paano kinakalkula ang tax at tip",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ilagay ang subtotal ng bill bago ang tax. Ang tax at tip ay pareho na kinakalkula base sa parehong halaga (ayon sa karaniwang kombensiyon — hindi kinokolekta ang tip sa tax), pagkatapos idadagdag ang dalawa para makuha ang kabuuan, na hahatiin nang pantay ayon sa bilang ng taong naghahati."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Kailan gagamitin ang hati ayon sa item",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Lumipat sa itemized split kapag hindi pareho ang in-order ng grupo — idagdag ang bawat tao, idagdag ang bawat item kasama ang presyo nito, at markahan kung sino ang nag-share nito. Ang tax at tip ay hahatiin ayon sa proporsyon ng aktwal na in-order ng bawat tao, sa halip na pantay na paghahati."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav-bar">
+      <a href="../../index.html" style="text-decoration:none;"><nav><img src="../../assets/icon.png" alt="Outlay"> Outlay</nav></a>
+      <details class="lang-menu">
+        <summary>🌐 Filipino</summary>
+        <div class="lang-options">
+          <a href="../../tools/bill-splitter-calculator.html">English</a>
+          <a href="../../ur/tools/bill-splitter-calculator.html">اردو</a>
+          <a href="../../hi/tools/bill-splitter-calculator.html">हिन्दी</a>
+          <a href="../../ar/tools/bill-splitter-calculator.html">العربية</a>
+          <a href="../../bn/tools/bill-splitter-calculator.html">বাংলা</a>
+          <a href="../../id/tools/bill-splitter-calculator.html">Bahasa Indonesia</a>
+          <a href="../../vi/tools/bill-splitter-calculator.html">Tiếng Việt</a>
+          <a href="bill-splitter-calculator.html" class="active">Filipino</a>
+        </div>
+      </details>
+    </div>
+    <h1>Kalkulator ng Paghahati ng Bill</h1>
+    <p class="lede">Hatiin ang bill nang pantay, o base sa in-order ng bawat isa — kasama ang tax at tip sa dalawang paraan.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency">
+          <option value="₱" selected>₱ (Piso ng Pilipinas)</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="€">€ EUR</option>
+          <option value="₹">₹ (Rupee ng India)</option>
+        </select>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="even">Pantay na Hati</button>
+        <button type="button" class="mode-tab" data-mode="itemized">Hati Ayon sa Item</button>
+      </div>
+
+      <div id="evenModeFields">
+        <div class="field">
+          <label for="bill">Halaga ng bill (bago ang tax)</label>
+          <input type="number" id="bill" placeholder="hal. 1500" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Hatiin sa</label>
+          <div class="stepper">
+            <button type="button" id="minus">−</button>
+            <span class="count" id="peopleCountLabel">2</span>
+            <button type="button" id="plus">+</button>
+            <span style="color:var(--muted); font-size:14px;">tao</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="itemizedModeFields" style="display:none;">
+        <div class="field">
+          <label>Mga Tao</label>
+          <div id="peopleRows"></div>
+          <button type="button" class="add-row" id="addPerson">+ Magdagdag ng tao</button>
+        </div>
+        <div class="field">
+          <label>Mga Item</label>
+          <div id="itemRows"></div>
+          <button type="button" class="add-row" id="addItem">+ Magdagdag ng item</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tax">Porsyento ng tax (opsyonal)</label>
+        <input type="number" id="tax" placeholder="hal. 12" min="0" step="0.01" value="0">
+      </div>
+      <div class="field">
+        <label>Porsyento ng tip</label>
+        <div class="tip-options" id="tipOptions">
+          <div class="tip-btn" data-tip="0">0%</div>
+          <div class="tip-btn" data-tip="10">10%</div>
+          <div class="tip-btn active" data-tip="15">15%</div>
+          <div class="tip-btn" data-tip="18">18%</div>
+          <div class="tip-btn" data-tip="20">20%</div>
+        </div>
+      </div>
+
+      <div class="results" id="results">
+        <div class="result">
+          <div class="label">Tax</div>
+          <div class="amount" id="taxAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">Tip</div>
+          <div class="amount" id="tipAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">Kabuuan</div>
+          <div class="amount" id="totalAmount">—</div>
+        </div>
+        <div class="result">
+          <div class="label">Bawat tao</div>
+          <div class="amount" id="perPersonAmount">—</div>
+        </div>
+      </div>
+
+      <div id="itemizedResults" style="display:none;">
+        <div class="results" style="grid-template-columns: repeat(3, 1fr); display: grid;">
+          <div class="result">
+            <div class="label">Subtotal</div>
+            <div class="amount" id="itemSubtotal">—</div>
+          </div>
+          <div class="result">
+            <div class="label">Tax + Tip</div>
+            <div class="amount" id="itemTaxTip">—</div>
+          </div>
+          <div class="result">
+            <div class="label">Kabuuan</div>
+            <div class="amount" id="itemTotal">—</div>
+          </div>
+        </div>
+        <table class="breakdown-table">
+          <thead>
+            <tr><th>Tao</th><th>In-order</th><th>Utang</th></tr>
+          </thead>
+          <tbody id="breakdownBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="downloadBtn">⬇ I-download ang Bill</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <h2>Paano kinakalkula ang tax at tip</h2>
+      <p>Ilagay ang subtotal ng bill bago ang tax. Ang tax at tip ay pareho na kinakalkula base sa
+      parehong halaga (ayon sa karaniwang kombensiyon — hindi kinokolekta ang tip sa tax), pagkatapos
+      idadagdag ang dalawa para makuha ang kabuuan, na hahatiin nang pantay ayon sa bilang ng taong
+      naghahati.</p>
+
+      <h2>Kailan gagamitin ang hati ayon sa item</h2>
+      <p>Lumipat sa itemized split kapag hindi pareho ang in-order ng grupo — idagdag ang bawat
+      tao, idagdag ang bawat item kasama ang presyo nito, at markahan kung sino ang nag-share nito.
+      Ang tax at tip ay hahatiin ayon sa proporsyon ng aktwal na in-order ng bawat tao, sa halip na
+      pantay na paghahati.</p>
+
+      <h2>Itala pagkatapos mong magbayad</h2>
+      <p>Ang paghahati ng bill ang madaling bahagi — ang pag-alala kung sino pa ang may utang sa
+      iyo ang mahirap na bahagi. <a href="../../index.html">Outlay</a> awtomatikong itinatala ang
+      iyong mga gastos para hindi mawala ang mga ganitong shared expenses sa iyong buwanang kabuuan.</p>
+    </div>
+
+    <footer>
+      <a href="index.html">Lahat ng Tool</a> · <a href="../../index.html">Home</a> · <a href="../../privacy.html">Privacy</a>
+    </footer>
+  </div>
+
+  <script>
+    window.T = {
+      csv: {
+      titleEven: "Bill Splitter — Pantay na Hati",
+      titleItemized: "Bill Splitter — Hati ayon sa Item",
+      currency: "Currency",
+      billAmount: "Halaga ng bill",
+      taxPct: "Tax (%)",
+      taxAmount: "Halaga ng tax",
+      tipPct: "Tip (%)",
+      tipAmount: "Halaga ng tip",
+      total: "Kabuuan",
+      splitBetween: "Hatiin sa",
+      people: "tao",
+      perPerson: "Bawat tao",
+      itemHeader: "Item,Presyo,Shared ng",
+      subtotal: "Subtotal",
+      taxTip: "Tax + Tip",
+      personHeader: "Tao,In-order,Utang",
+      },
+      personDefault: (n) => 'Tao ' + n,
+      namePlaceholder: 'Pangalan',
+      itemNamePlaceholder: 'hal. Burger',
+      removePerson: 'Alisin ang tao',
+      removeItem: 'Alisin ang item',
+    };
+  </script>
+  <script src="../../assets/js/bill-splitter.js"></script>
+</body>
+</html>
