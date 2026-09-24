@@ -412,3 +412,15 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# Agent System Cron Jobs
+
+[[functions.seo_aso_agent]]
+name = "seo_aso_agent"
+enabled = true
+cron_expression = "0 6 * * *"
+
+[[functions.influencer_agent]]
+name = "influencer_agent"
+enabled = true
+cron_expression = "0 8 * * *"
