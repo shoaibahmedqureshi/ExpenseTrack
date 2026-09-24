@@ -1,0 +1,24 @@
+name: Run AI Agents Daily
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 6 AM UTC - SEO Agent
+    - cron: '0 8 * * *'  # 8 AM UTC - Influencer Agent
+
+jobs:
+  run-agents:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run SEO Agent (6 AM)
+        if: github.event.schedule == '0 6 * * *' || contains(github.event.schedule, '6')
+        run: |
+          curl -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent \
+            -H "Content-Type: application/json" \
+            -d '{}'
+      
+      - name: Run Influencer Agent (8 AM)
+        if: github.event.schedule == '0 8 * * *' || contains(github.event.schedule, '8')
+        run: |
+          curl -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent \
+            -H "Content-Type: application/json" \
+            -d '{}'
