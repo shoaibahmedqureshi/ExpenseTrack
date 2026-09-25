@@ -343,7 +343,9 @@
       "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/information_schema.tables?table_schema=eq.public&select=table_name' -H 'apikey: sb_publishable_cTHDiUVcracNw3eF9w5ATQ_Pd7Afi5Y' -H 'Accept: application/json')",
       "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -d '{}')",
       "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent -H 'Content-Type: application/json' -d '{}')",
-      "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnYXZ4YnVlem1pdm5zZXloa3llIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTM3NTUyMywiZXhwIjoyMDk2OTUxNTIzfQ.XCcaeI2McS442mS1E0nXNN4QITERW47w4Q_cWVzf3G0' -d '{}')"
+      "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnYXZ4YnVlem1pdm5zZXloa3llIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTM3NTUyMywiZXhwIjoyMDk2OTUxNTIzfQ.XCcaeI2McS442mS1E0nXNN4QITERW47w4Q_cWVzf3G0' -d '{}')",
+      "Bash(chmod +x /tmp/test_smtp.sh)",
+      "Bash(/tmp/test_smtp.sh)"
     ]
   }
 }

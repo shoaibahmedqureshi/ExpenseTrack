@@ -261,34 +261,41 @@ async function sendEmailViaSMTP(
   }
 }
 
-async function createOutreachRecord(
-  prospect_id: string,
+async function createEmailDraft(
   prospect: InfluencerProspect,
   message: string,
-  status: "sent" | "pending_approval" = "sent",
-  sendEmail: boolean = true
+  fitScore: number
 ) {
   try {
-    const record = {
-      prospect_id,
+    const draftStatus = fitScore >= 8 ? "pending_review" : "approved";
+
+    const { data } = await supabase.from("email_drafts").insert({
+      agent_type: "influencer",
+      recipient_name: prospect.handle,
+      recipient_email: prospect.email || `${prospect.handle}@${prospect.platform}.com`,
+      recipient_platform: prospect.platform,
+      recipient_url: `https://${prospect.platform}.com/${prospect.handle}`,
       subject: `Collaboration Opportunity - Outlay Expense Tracker`,
       body: message,
-      sent_date: status === "sent" ? new Date().toISOString() : null,
-      status,
-    };
+      status: draftStatus,
+      metadata: {
+        fit_score: fitScore,
+        platform: prospect.platform,
+        follower_count: prospect.follower_count,
+        engagement_rate: prospect.engagement_rate,
+        niche: prospect.niche,
+      },
+    }).select();
 
-    await supabase.from("influencer_outreach").insert(record);
-
-    // Send actual email if fit is low (auto-execute) and email is available
-    if (status === "sent" && sendEmail && prospect.email) {
-      await sendEmailViaSMTP(
-        prospect.email,
-        record.subject,
-        record.body
-      );
+    if (draftStatus === "pending_review") {
+      console.log(`⭐ HIGH-VALUE draft created for @${prospect.handle} (fit: ${fitScore}/10)`);
+    } else {
+      console.log(`✅ Auto-approved draft created for @${prospect.handle} (fit: ${fitScore}/10)`);
     }
+
+    return data?.[0]?.id;
   } catch (error) {
-    console.error(`Error creating outreach record for ${prospect_id}:`, error);
+    console.error(`Error creating draft for @${prospect.handle}:`, error);
   }
 }
 
@@ -345,16 +352,14 @@ async function main() {
       // Draft outreach
       const message = await draftOutreach(prospect);
 
+      // Create email draft (approval workflow)
+      const draftId = await createEmailDraft(prospect, message, fit_score);
+
       if (fit_score >= 8) {
-        // High value - flag for approval (don't send email yet)
-        await createOutreachRecord(prospect_id, prospect, message, "pending_approval", false);
-        await flagHighValueOpportunity(prospect_id, prospect, fit_score);
-        console.log(`⭐ HIGH-VALUE flagged for approval: @${prospect.handle}`);
+        // High value - flag for review
         high_value_count++;
       } else {
-        // Low/medium fit - auto-send email
-        await createOutreachRecord(prospect_id, prospect, message, "sent", true);
-        console.log(`✅ Outreach auto-sent to @${prospect.handle}`);
+        // Low/medium fit - auto-approved (ready to send)
         auto_sent_count++;
       }
     }
@@ -374,11 +379,13 @@ async function main() {
 
     return {
       status: "success",
-      mode: "smart_approval",
+      mode: "approval_workflow",
       prospects_found: prospects.length,
-      auto_sent: auto_sent_count,
-      flagged_for_approval: high_value_count,
+      drafts_created: auto_sent_count + high_value_count,
+      auto_approved: auto_sent_count,
+      pending_review: high_value_count,
       timestamp: new Date().toISOString(),
+      action: "Check Supabase email_drafts table for approval",
     };
   } catch (error) {
     console.error("❌ Influencer Agent error:", error);
