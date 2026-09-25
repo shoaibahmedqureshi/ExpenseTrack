@@ -322,7 +322,28 @@
       "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(s['name']\\) for s in data['secrets']]\")",
       "Bash(supabase functions *)",
       "Bash(security find-generic-password *)",
-      "Bash(security dump-keychain *)"
+      "Bash(security dump-keychain *)",
+      "WebFetch(domain:www.pta.gov.pk)",
+      "WebFetch(domain:www.fbr.gov.pk)",
+      "WebFetch(domain:www.daraz.pk)",
+      "WebFetch(domain:www.telemart.pk)",
+      "WebFetch(domain:blog.daraz.pk)",
+      "WebFetch(domain:www.telex.pk)",
+      "WebFetch(domain:truehost.cloud)",
+      "WebFetch(domain:www.meersworld.net)",
+      "WebFetch(domain:www.markaz.app)",
+      "WebFetch(domain:uppromote.com)",
+      "WebFetch(domain:www.thedesignsfirm.com)",
+      "WebFetch(domain:www.dcmnetwork.com)",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/agent_logs?select=*&order=run_date.desc&limit=5' -H 'Accept: application/json')",
+      "Bash(env)",
+      "Bash(pbpaste)",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/agent_logs?select=*&order=run_date.desc&limit=20' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnYXZ4YnVlem1pdm5zZXloa3llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNzU1MjMsImV4cCI6MjA5Njk1MTUyM30.ESWuIFj98-91bjFgcPiqITtqvvsP3YbfexfMG2zMh8c' -H 'Accept: application/json')",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/information_schema.tables?select=table_name&table_schema=eq.public' -H 'apikey: sb_publishable_cTHDiUVcracNw3eF9w5ATQ_Pd7Afi5Y' -H 'Accept: application/json')",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/information_schema.tables?table_schema=eq.public&select=table_name' -H 'apikey: sb_publishable_cTHDiUVcracNw3eF9w5ATQ_Pd7Afi5Y' -H 'Accept: application/json')",
+      "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -d '{}')",
+      "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent -H 'Content-Type: application/json' -d '{}')",
+      "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnYXZ4YnVlem1pdm5zZXloa3llIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTM3NTUyMywiZXhwIjoyMDk2OTUxNTIzfQ.XCcaeI2McS442mS1E0nXNN4QITERW47w4Q_cWVzf3G0' -d '{}')"
     ]
   }
 }

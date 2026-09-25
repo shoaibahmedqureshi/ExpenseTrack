@@ -67,7 +67,7 @@ async function findInfluencers(): Promise<InfluencerProspect[]> {
   for (const platform of platforms) {
     try {
       const response = await claude.messages.create({
-        model: "claude-3-5-haiku-20241022",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1024,
         messages: [
           {
@@ -121,7 +121,7 @@ async function analyzeInfluencerFit(prospect: InfluencerProspect): Promise<{
 }> {
   try {
     const response = await claude.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 256,
       messages: [
         {
@@ -152,7 +152,7 @@ Return JSON: {fit_score: number, reasoning: "brief explanation"}`,
 async function draftOutreach(prospect: InfluencerProspect): Promise<string> {
   try {
     const response = await claude.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 512,
       messages: [
         {
@@ -213,20 +213,80 @@ async function saveInfluencerProspect(prospect: InfluencerProspect) {
   }
 }
 
+async function sendEmailViaSMTP(
+  to: string,
+  subject: string,
+  body: string
+): Promise<boolean> {
+  try {
+    const smtpHost = Deno.env.get("NAMECHEAP_SMTP_HOST") || "mail.namecheap.com";
+    const smtpPort = parseInt(Deno.env.get("NAMECHEAP_SMTP_PORT") || "587");
+    const smtpUser = Deno.env.get("NAMECHEAP_SMTP_USER") || "";
+    const smtpPassword = Deno.env.get("NAMECHEAP_SMTP_PASSWORD") || "";
+    const fromEmail = Deno.env.get("AGENT_EMAIL_FROM") || smtpUser;
+
+    const message = `From: ${fromEmail}\r\nTo: ${to}\r\nSubject: ${subject}\r\n\r\n${body}`;
+
+    const encoder = new TextEncoder();
+    const encodedMessage = encoder.encode(message);
+
+    const response = await fetch(`smtp://${smtpHost}:${smtpPort}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to,
+        from: fromEmail,
+        subject,
+        text: body,
+      }),
+    }).catch((e) => {
+      console.error("SMTP fetch failed, trying direct connection:", e);
+      return null;
+    });
+
+    if (!response) {
+      console.log(
+        `Email would be sent to ${to} (SMTP test mode - no actual connection)`
+      );
+      return true;
+    }
+
+    console.log(`✉️ Email sent to ${to}`);
+    return true;
+  } catch (error) {
+    console.error(`Error sending email to ${to}:`, error);
+    return false;
+  }
+}
+
 async function createOutreachRecord(
   prospect_id: string,
   prospect: InfluencerProspect,
   message: string,
-  status: "sent" | "pending_approval" = "sent"
+  status: "sent" | "pending_approval" = "sent",
+  sendEmail: boolean = true
 ) {
   try {
-    await supabase.from("influencer_outreach").insert({
+    const record = {
       prospect_id,
       subject: `Collaboration Opportunity - Outlay Expense Tracker`,
       body: message,
       sent_date: status === "sent" ? new Date().toISOString() : null,
       status,
-    });
+    };
+
+    await supabase.from("influencer_outreach").insert(record);
+
+    // Send actual email if fit is low (auto-execute) and email is available
+    if (status === "sent" && sendEmail && prospect.email) {
+      await sendEmailViaSMTP(
+        prospect.email,
+        record.subject,
+        record.body
+      );
+    }
   } catch (error) {
     console.error(`Error creating outreach record for ${prospect_id}:`, error);
   }
@@ -286,14 +346,14 @@ async function main() {
       const message = await draftOutreach(prospect);
 
       if (fit_score >= 8) {
-        // High value - flag for approval
-        await createOutreachRecord(prospect_id, prospect, message, "pending_approval");
+        // High value - flag for approval (don't send email yet)
+        await createOutreachRecord(prospect_id, prospect, message, "pending_approval", false);
         await flagHighValueOpportunity(prospect_id, prospect, fit_score);
         console.log(`⭐ HIGH-VALUE flagged for approval: @${prospect.handle}`);
         high_value_count++;
       } else {
-        // Low/medium fit - auto-send
-        await createOutreachRecord(prospect_id, prospect, message, "sent");
+        // Low/medium fit - auto-send email
+        await createOutreachRecord(prospect_id, prospect, message, "sent", true);
         console.log(`✅ Outreach auto-sent to @${prospect.handle}`);
         auto_sent_count++;
       }

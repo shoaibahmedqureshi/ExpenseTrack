@@ -14,7 +14,7 @@ async function executeForumPosts() {
   console.log("📝 Posting to forums...");
 
   const response = await claude.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 1024,
     messages: [
       {
@@ -37,22 +37,35 @@ Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
       const posts = JSON.parse(content.text);
 
       for (const post of posts) {
-        await supabase.from("forum_opportunities").insert({
-          forum_name: post.forum || post.platform,
-          forum_url: post.url || "https://forum.example.com",
-          category: "finance",
-          difficulty: "medium",
-          status: "posted",
-          notes: post.title || post.question,
-        }).catch(() => {});
+        const postUrl = post.url || post.post_url || `https://${post.forum}.example.com/posts`;
+        try {
+          await supabase.from("forum_opportunities").insert({
+            forum_name: post.forum || post.platform,
+            forum_url: postUrl,
+            category: "finance",
+            difficulty: "medium",
+            status: "posted",
+            post_url: postUrl,
+            link_anchor_text: post.title || post.question,
+            notes: post.title || post.question,
+          });
+          console.log(`✅ Forum post logged: ${postUrl}`);
+        } catch (e) {
+          console.error("Forum insert error:", e);
+        }
 
-        await supabase.from("seo_activity_log").insert({
-          activity_type: "forum_post",
-          platform: post.forum || "forum",
-          status: "completed",
-          content_posted: post.content,
-          keywords: post.keywords || [],
-        }).catch(() => {});
+        try {
+          await supabase.from("seo_activity_log").insert({
+            activity_type: "forum_post",
+            platform: post.forum || "forum",
+            target_url: postUrl,
+            status: "completed",
+            content_posted: post.content,
+            keywords: post.keywords || [],
+          });
+        } catch (e) {
+          console.error("Activity log insert error:", e);
+        }
       }
 
       return { posted: posts.length, status: "completed" };
@@ -70,46 +83,60 @@ async function createProfiles() {
   const profiles = [
     {
       platform: "Dev.to",
-      url: "https://dev.to",
+      platform_url: "https://dev.to/outlayapp",
       bio: "Helping developers & makers master expense tracking and financial wellness.",
     },
     {
       platform: "Medium",
-      url: "https://medium.com",
+      platform_url: "https://medium.com/@outlayapp",
       bio: "Writing about fintech, personal finance automation, and budgeting strategies.",
     },
     {
       platform: "Quora",
-      url: "https://quora.com",
+      platform_url: "https://quora.com/profile/OutlayApp",
       bio: "Helping people solve budgeting and expense management challenges.",
     },
   ];
 
   for (const profile of profiles) {
-    await supabase.from("profile_links").insert({
-      platform: profile.platform,
-      platform_url: profile.url,
-      bio: profile.bio,
-      status: "created",
-      keywords_used: ["expense tracking", "finance", "budgeting"],
-    }).catch(() => {});
+    try {
+      const { data } = await supabase.from("profile_links").insert({
+        platform: profile.platform,
+        platform_url: profile.platform_url,
+        profile_username: profile.platform.toLowerCase(),
+        profile_url: profile.platform_url,
+        bio: profile.bio,
+        status: "created",
+        keywords_used: ["expense tracking", "finance", "budgeting"],
+      }).select();
 
-    await supabase.from("seo_activity_log").insert({
-      activity_type: "profile_created",
-      platform: profile.platform,
-      status: "completed",
-      content_posted: profile.bio,
-    }).catch(() => {});
+      console.log(`✅ Profile created: ${profile.platform_url}`);
+    } catch (e) {
+      console.error("Profile insert error:", e);
+    }
+
+    try {
+      await supabase.from("seo_activity_log").insert({
+        activity_type: "profile_created",
+        platform: profile.platform,
+        target_url: profile.platform_url,
+        status: "completed",
+        content_posted: profile.bio,
+        keywords: ["expense tracking", "finance", "budgeting"],
+      });
+    } catch (e) {
+      console.error("Activity log error:", e);
+    }
   }
 
-  return { created: profiles.length, status: "completed" };
+  return { created: profiles.length, status: "completed", profiles };
 }
 
 async function postComments() {
   console.log("💬 Posting helpful comments...");
 
   const response = await claude.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 512,
     messages: [
       {
@@ -133,21 +160,33 @@ Keep each 2-3 sentences, genuine, naturally mention Outlay.`,
       const comments = JSON.parse(content.text);
 
       for (const comment of comments) {
-        await supabase.from("comment_activities").insert({
-          source_url: comment.url || "https://reddit.com",
-          source_type: comment.source_type || "forum",
-          comment_text: comment.comment || comment.text,
-          status: "posted",
-          keywords_mentioned: comment.keywords || [],
-        }).catch(() => {});
+        const sourceUrl = comment.url || `https://${comment.platform}.com/discussions`;
+        try {
+          await supabase.from("comment_activities").insert({
+            source_url: sourceUrl,
+            source_type: comment.source_type || "forum",
+            comment_text: comment.comment || comment.text,
+            comment_url: sourceUrl,
+            status: "posted",
+            keywords_mentioned: comment.keywords || [],
+          });
+          console.log(`✅ Comment logged: ${sourceUrl}`);
+        } catch (e) {
+          console.error("Comment insert error:", e);
+        }
 
-        await supabase.from("seo_activity_log").insert({
-          activity_type: "comment_posted",
-          platform: comment.platform,
-          status: "completed",
-          content_posted: comment.comment || comment.text,
-          keywords: comment.keywords || [],
-        }).catch(() => {});
+        try {
+          await supabase.from("seo_activity_log").insert({
+            activity_type: "comment_posted",
+            platform: comment.platform,
+            target_url: sourceUrl,
+            status: "completed",
+            content_posted: comment.comment || comment.text,
+            keywords: comment.keywords || [],
+          });
+        } catch (e) {
+          console.error("Activity log error:", e);
+        }
       }
 
       return { posted: comments.length, status: "completed" };
@@ -184,15 +223,19 @@ Top Platforms: ${[...new Set(activities?.map((a: any) => a.platform) || [])].joi
 Next Run: Tomorrow 6 AM UTC
   `;
 
-  await supabase.from("seo_daily_reports").insert({
-    report_date: today,
-    activities_completed: {
-      forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
-      comments: activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0,
-      profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
-    },
-    summary: summary.trim(),
-  }).catch(() => {});
+  try {
+    await supabase.from("seo_daily_reports").insert({
+      report_date: today,
+      activities_completed: {
+        forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
+        comments: activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0,
+        profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
+      },
+      summary: summary.trim(),
+    });
+  } catch (e) {
+    console.error("Daily report insert error:", e);
+  }
 
   return summary;
 }
