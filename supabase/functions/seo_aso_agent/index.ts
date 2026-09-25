@@ -1,25 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.24.3";
 
-interface AgentLog {
-  agent_type: string;
-  action: string;
-  status: "success" | "error" | "pending";
-  details: Record<string, unknown>;
-  error_message?: string;
-}
-
-interface LinkOpportunity {
-  domain: string;
-  url: string;
-  domain_authority?: number;
-  relevance_score?: number;
-  email?: string;
-  contact_name?: string;
-  subscription_offered: string;
-  subscription_code: string;
-}
-
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") || "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
@@ -29,261 +10,248 @@ const claude = new Anthropic({
   apiKey: Deno.env.get("CLAUDE_API_KEY") || "",
 });
 
-async function logAgentAction(log: AgentLog) {
+async function logAgentAction(action: string, status: "success" | "error", details: any) {
   await supabase.from("agent_logs").insert({
-    ...log,
+    agent_type: "seo_aso",
+    action,
+    status,
+    details,
     run_date: new Date().toISOString(),
   });
 }
 
-async function generateSubscriptionCode(): Promise<string> {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+async function findForumOpportunities() {
+  console.log("🔍 Finding forum & community opportunities...");
+
+  const response = await claude.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: `Find 5 high-quality forums/communities for outlay.net (expense tracker).
+        
+Focus on:
+1. Personal finance forums (Reddit r/finance, r/budgeting)
+2. Budgeting communities
+3. Q&A sites (Stack Exchange, Quora)
+4. Niche forums
+
+For each, provide:
+- Forum name
+- URL
+- Category (finance/budgeting/expense-tracking)
+- Difficulty (easy/medium/hard)
+- Link anchor text idea
+- Why it's good for backlinks
+
+Return as JSON array.`,
+      },
+    ],
+  });
+
+  const content = response.content[0];
+  if (content.type === "text") {
+    try {
+      const forums = JSON.parse(content.text);
+      for (const forum of forums) {
+        await supabase.from("forum_opportunities").insert({
+          forum_name: forum.forum_name || forum.name,
+          forum_url: forum.forum_url || forum.url,
+          category: forum.category,
+          difficulty: forum.difficulty,
+          ranking_potential: 0.7,
+          link_anchor_text: forum.anchor_text,
+          target_url: "https://outlayapp.net",
+          status: "discovered",
+        }).catch(() => {}); // Ignore duplicates
+      }
+      return forums.length;
+    } catch (e) {
+      console.error("Error parsing forums:", e);
+      return 0;
+    }
   }
-  return code;
+  return 0;
 }
 
-async function findLinkOpportunities(): Promise<LinkOpportunity[]> {
-  console.log("🔍 Starting link opportunity discovery...");
+async function createProfileOpportunities() {
+  console.log("👤 Identifying profile creation opportunities...");
 
-  const apps = [
-    {
-      domain: "outlayapp.net",
-      description: "Personal expense tracker app for all budgeting needs",
-      keywords: "expense tracking, budgeting, financial management",
+  const response = await claude.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 512,
+    messages: [
+      {
+        role: "user",
+        content: `Suggest 4-5 platforms where Outlay (expense tracker) should have profiles:
+
+Platforms:
+1. Stack Overflow
+2. Dev.to
+3. Medium
+4. Quora
+5. Product Hunt
+6. GitHub
+
+For each:
+- Profile URL format
+- Bio keywords to use
+- Content ideas
+- Expected reach
+
+Return as JSON array.`,
+      },
+    ],
+  });
+
+  const content = response.content[0];
+  if (content.type === "text") {
+    try {
+      const profiles = JSON.parse(content.text);
+      for (const profile of profiles) {
+        await supabase.from("profile_links").insert({
+          platform: profile.platform,
+          platform_url: profile.platform_url,
+          status: "planned",
+          keywords_used: profile.keywords || ["expense tracking", "budgeting", "finance"],
+        }).catch(() => {});
+      }
+      return profiles.length;
+    } catch (e) {
+      console.error("Error parsing profiles:", e);
+      return 0;
+    }
+  }
+  return 0;
+}
+
+async function suggestCommentOpportunities() {
+  console.log("💬 Finding comment opportunities...");
+
+  const response = await claude.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 512,
+    messages: [
+      {
+        role: "user",
+        content: `Suggest 3-4 popular questions/discussions on:
+1. Reddit (r/personalfinance, r/budgeting)
+2. Stack Exchange
+3. Quora
+
+For each:
+- Discussion title
+- URL
+- Suggested comment (natural, helpful, mentions Outlay subtly)
+- Expected upvotes
+
+Return as JSON array.`,
+      },
+    ],
+  });
+
+  const content = response.content[0];
+  if (content.type === "text") {
+    try {
+      const comments = JSON.parse(content.text);
+      for (const comment of comments) {
+        await supabase.from("comment_activities").insert({
+          source_url: comment.url,
+          source_type: comment.source_type || "forum",
+          comment_text: comment.suggested_comment,
+          status: "draft",
+          keywords_mentioned: ["expense tracking", "budgeting", "personal finance"],
+        }).catch(() => {});
+      }
+      return comments.length;
+    } catch (e) {
+      console.error("Error parsing comments:", e);
+      return 0;
+    }
+  }
+  return 0;
+}
+
+async function generateDailyReport() {
+  console.log("📊 Generating daily SEO report...");
+
+  const { data: activities } = await supabase
+    .from("seo_activity_log")
+    .select("*")
+    .gte("created_at", new Date(Date.now() - 86400000).toISOString());
+
+  const { data: forums } = await supabase
+    .from("forum_opportunities")
+    .select("*")
+    .eq("status", "posted")
+    .gte("post_date", new Date(Date.now() - 86400000).toISOString());
+
+  const { data: comments } = await supabase
+    .from("comment_activities")
+    .select("*")
+    .eq("status", "posted")
+    .gte("posted_date", new Date(Date.now() - 86400000).toISOString());
+
+  const summary = `Daily SEO Report:
+- Forum posts: ${forums?.length || 0}
+- Comments posted: ${comments?.length || 0}
+- Activities logged: ${activities?.length || 0}
+- Links created: ${(forums?.length || 0) + (comments?.length || 0)}`;
+
+  await supabase.from("seo_daily_reports").insert({
+    report_date: new Date().toISOString().split("T")[0],
+    activities_completed: {
+      forum_posts: forums?.length || 0,
+      comments: comments?.length || 0,
+      guest_posts: 0,
+      profiles_created: 0,
     },
-    {
-      domain: "technologistan.pk",
-      description: "Electronics and device marketplace",
-      keywords: "technology, electronics, devices marketplace",
-    },
-  ];
+    links_created: (forums?.length || 0) + (comments?.length || 0),
+    summary,
+  }).catch(() => {});
 
-  const opportunities: LinkOpportunity[] = [];
-
-  for (const app of apps) {
-    try {
-      const response = await claude.messages.create({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 1024,
-        messages: [
-          {
-            role: "user",
-            content: `Find 3-5 high-quality link building opportunities for "${app.domain}" (${app.description}).
-            
-Keywords: ${app.keywords}
-
-For each opportunity, suggest:
-1. Target website (niche relevant, high domain authority)
-2. Contact email if possible
-3. Pitch angle (how ${app.domain} provides value to their audience)
-
-Return as JSON array with fields: domain, suggested_content, pitch_angle, potential_contact`,
-          },
-        ],
-      });
-
-      const content = response.content[0];
-      if (content.type === "text") {
-        // Parse Claude's response and create opportunities
-        const opportunities_found = JSON.parse(content.text);
-        
-        for (const opp of opportunities_found) {
-          const code = await generateSubscriptionCode();
-          opportunities.push({
-            domain: opp.domain || "",
-            url: `https://${opp.domain}`,
-            domain_authority: 45, // Placeholder - would need API call
-            relevance_score: 0.8,
-            email: opp.potential_contact || "",
-            contact_name: "",
-            subscription_offered: "expense_tracker_pro_annual",
-            subscription_code: code,
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`Error finding opportunities for ${app.domain}:`, error);
-    }
-  }
-
-  return opportunities;
-}
-
-async function auditContent() {
-  console.log("📊 Starting content audit...");
-
-  const apps = ["outlayapp.net", "technologistan.pk"];
-
-  for (const domain of apps) {
-    try {
-      const response = await claude.messages.create({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 512,
-        messages: [
-          {
-            role: "user",
-            content: `Perform an SEO audit checklist for ${domain}:
-1. Title tag optimization
-2. Meta description
-3. Header structure (H1, H2, H3)
-4. Internal linking opportunities
-5. Mobile responsiveness
-6. Page load speed considerations
-7. Content depth and comprehensiveness
-
-Return as JSON with priority levels (critical, high, medium, low) and specific recommendations.`,
-          },
-        ],
-      });
-
-      const content = response.content[0];
-      if (content.type === "text") {
-        const findings = JSON.parse(content.text);
-        
-        await supabase.from("guest_post_audits").insert({
-          app_domain: domain,
-          audit_type: "seo",
-          findings,
-          recommendations: findings,
-          priority: "high",
-          status: "completed",
-        });
-      }
-    } catch (error) {
-      console.error(`Error auditing ${domain}:`, error);
-    }
-  }
-}
-
-async function draftPitches(opportunities: LinkOpportunity[]) {
-  console.log("✍️ Drafting guest post pitches...");
-
-  for (const opp of opportunities.slice(0, 3)) {
-    // Limit to 3 per run
-    try {
-      const response = await claude.messages.create({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 512,
-        messages: [
-          {
-            role: "user",
-            content: `Draft a personalized guest post pitch for ${opp.domain}.
-We represent Outlay (${opp.subscription_offered || "expense tracker app"}).
-
-Pitch angle: We offer ${opp.subscription_offered} (free yearly subscription) for guest post.
-
-Create:
-1. Subject line
-2. Opening sentence (personalized to their audience)
-3. Value proposition (why our app helps their readers)
-4. Call to action (free subscription link)
-
-Keep it under 200 words. Be concise and professional.`,
-          },
-        ],
-      });
-
-      const content = response.content[0];
-      if (content.type === "text") {
-        const { subject_line, body } = JSON.parse(content.text);
-        
-        const { data: linkOpp } = await supabase
-          .from("link_opportunities")
-          .select("id")
-          .eq("domain", opp.domain)
-          .single();
-
-        if (linkOpp) {
-          await supabase.from("guest_post_pitches").insert({
-            link_opportunity_id: linkOpp.id,
-            title: subject_line,
-            pitch_text: body,
-            status: "draft",
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`Error drafting pitch for ${opp.domain}:`, error);
-    }
-  }
-}
-
-async function saveLinkOpportunities(opportunities: LinkOpportunity[]) {
-  console.log(`💾 Saving ${opportunities.length} link opportunities...`);
-
-  for (const opp of opportunities) {
-    try {
-      // Check if already exists
-      const { data: exists } = await supabase
-        .from("link_opportunities")
-        .select("id")
-        .eq("domain", opp.domain)
-        .single();
-
-      if (!exists) {
-        await supabase.from("link_opportunities").insert(opp);
-      }
-    } catch (error) {
-      console.error(`Error saving opportunity ${opp.domain}:`, error);
-    }
-  }
+  return summary;
 }
 
 async function main() {
-  console.log("🚀 SEO/ASO Agent Starting...");
-  
+  console.log("🚀 Enhanced SEO/ASO Agent Starting...");
+
   try {
-    // Step 1: Find link opportunities
-    const opportunities = await findLinkOpportunities();
-    await saveLinkOpportunities(opportunities);
+    // Find forum opportunities
+    const forumsFound = await findForumOpportunities();
+    await logAgentAction("find_forum_opportunities", "success", { count: forumsFound });
 
-    await logAgentAction({
-      agent_type: "seo_aso",
-      action: "find_link_opportunities",
-      status: "success",
-      details: { opportunities_found: opportunities.length },
-    });
+    // Create profile opportunities
+    const profilesFound = await createProfileOpportunities();
+    await logAgentAction("create_profile_opportunities", "success", { count: profilesFound });
 
-    // Step 2: Audit content
-    await auditContent();
+    // Suggest comments
+    const commentsFound = await suggestCommentOpportunities();
+    await logAgentAction("suggest_comments", "success", { count: commentsFound });
 
-    await logAgentAction({
-      agent_type: "seo_aso",
-      action: "content_audit",
-      status: "success",
-      details: { apps_audited: 2 },
-    });
+    // Generate daily report
+    const report = await generateDailyReport();
+    await logAgentAction("generate_daily_report", "success", { summary: report });
 
-    // Step 3: Draft pitches
-    await draftPitches(opportunities);
-
-    await logAgentAction({
-      agent_type: "seo_aso",
-      action: "draft_pitches",
-      status: "success",
-      details: { pitches_drafted: Math.min(opportunities.length, 3) },
-    });
-
-    console.log("✅ SEO/ASO Agent completed successfully");
+    console.log("✅ Enhanced SEO Agent completed successfully");
 
     return {
       status: "success",
-      opportunities_found: opportunities.length,
+      forums_found: forumsFound,
+      profiles_suggested: profilesFound,
+      comments_suggested: commentsFound,
+      report_generated: true,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("❌ SEO/ASO Agent error:", error);
+    console.error("❌ Enhanced SEO Agent error:", error);
 
-    await logAgentAction({
-      agent_type: "seo_aso",
-      action: "agent_run",
-      status: "error",
-      details: { error: String(error) },
-      error_message: String(error),
-    });
+    await logAgentAction(
+      "agent_run",
+      "error",
+      { error: String(error) }
+    );
 
     return {
       status: "error",
@@ -295,7 +263,7 @@ async function main() {
 
 Deno.serve(async () => {
   const result = await main();
-  return new Response(JSON.stringify(result), { 
+  return new Response(JSON.stringify(result), {
     headers: { "Content-Type": "application/json" },
     status: result.status === "success" ? 200 : 500,
   });
