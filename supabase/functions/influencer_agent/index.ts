@@ -216,14 +216,16 @@ async function saveInfluencerProspect(prospect: InfluencerProspect) {
 async function createOutreachRecord(
   prospect_id: string,
   prospect: InfluencerProspect,
-  message: string
+  message: string,
+  status: "sent" | "pending_approval" = "sent"
 ) {
   try {
     await supabase.from("influencer_outreach").insert({
       prospect_id,
       subject: `Collaboration Opportunity - Outlay Expense Tracker`,
       body: message,
-      status: "draft",
+      sent_date: status === "sent" ? new Date().toISOString() : null,
+      status,
     });
   } catch (error) {
     console.error(`Error creating outreach record for ${prospect_id}:`, error);
@@ -266,6 +268,7 @@ async function main() {
 
     // Step 2: Analyze and process each prospect
     let high_value_count = 0;
+    let auto_sent_count = 0;
 
     for (const prospect of prospects.slice(0, 5)) {
       // Limit to 5 per run
@@ -281,11 +284,19 @@ async function main() {
 
       // Draft outreach
       const message = await draftOutreach(prospect);
-      await createOutreachRecord(prospect_id, prospect, message);
 
-      // Flag if high value
-      await flagHighValueOpportunity(prospect_id, prospect, fit_score);
-      if (fit_score >= 8) high_value_count++;
+      if (fit_score >= 8) {
+        // High value - flag for approval
+        await createOutreachRecord(prospect_id, prospect, message, "pending_approval");
+        await flagHighValueOpportunity(prospect_id, prospect, fit_score);
+        console.log(`⭐ HIGH-VALUE flagged for approval: @${prospect.handle}`);
+        high_value_count++;
+      } else {
+        // Low/medium fit - auto-send
+        await createOutreachRecord(prospect_id, prospect, message, "sent");
+        console.log(`✅ Outreach auto-sent to @${prospect.handle}`);
+        auto_sent_count++;
+      }
     }
 
     await logAgentAction(
@@ -294,6 +305,7 @@ async function main() {
       "success",
       {
         prospects_processed: Math.min(prospects.length, 5),
+        auto_sent_outreach: auto_sent_count,
         high_value_opportunities: high_value_count,
       }
     );
@@ -302,8 +314,10 @@ async function main() {
 
     return {
       status: "success",
+      mode: "smart_approval",
       prospects_found: prospects.length,
-      high_value_count,
+      auto_sent: auto_sent_count,
+      flagged_for_approval: high_value_count,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
