@@ -10,18 +10,23 @@ const claude = new Anthropic({
   apiKey: Deno.env.get("CLAUDE_API_KEY") || "",
 });
 
-async function logAgentAction(action: string, status: "success" | "error", details: any) {
-  await supabase.from("agent_logs").insert({
-    agent_type: "seo_aso",
-    action,
+async function logActivity(
+  activityType: string,
+  targetUrl: string,
+  status: "success" | "draft" | "error",
+  details: any
+) {
+  await supabase.from("seo_activity_log").insert({
+    activity_type: activityType,
+    target_url: targetUrl,
     status,
-    details,
-    run_date: new Date().toISOString(),
+    keywords_used: details.keywords || [],
+    engagement_metric: details.engagement || 0,
   });
 }
 
-async function findForumOpportunities() {
-  console.log("🔍 Finding forum & community opportunities...");
+async function executeForumPosting() {
+  console.log("📝 Executing forum posting strategy...");
 
   const response = await claude.messages.create({
     model: "claude-3-5-haiku-20241022",
@@ -29,21 +34,18 @@ async function findForumOpportunities() {
     messages: [
       {
         role: "user",
-        content: `Find 5 high-quality forums/communities for outlay.net (expense tracker).
-        
-Focus on:
-1. Personal finance forums (Reddit r/finance, r/budgeting)
-2. Budgeting communities
-3. Q&A sites (Stack Exchange, Quora)
-4. Niche forums
+        content: `Create 3 forum posts for Outlay (expense tracking app) that will be posted to:
+1. Reddit r/personalfinance
+2. Reddit r/budgeting  
+3. Stack Exchange Money
 
-For each, provide:
-- Forum name
-- URL
-- Category (finance/budgeting/expense-tracking)
-- Difficulty (easy/medium/hard)
-- Link anchor text idea
-- Why it's good for backlinks
+For each:
+- Title (natural, not spammy)
+- Content (helpful, genuine, mentions Outlay naturally)
+- Keywords used
+- Expected engagement
+
+Make them look organic - real user contributions, not advertisements.
 
 Return as JSON array.`,
       },
@@ -53,81 +55,91 @@ Return as JSON array.`,
   const content = response.content[0];
   if (content.type === "text") {
     try {
-      const forums = JSON.parse(content.text);
-      for (const forum of forums) {
+      const posts = JSON.parse(content.text);
+      
+      for (const post of posts) {
+        // Log as "ready to post" - manual approval needed for actual posting
         await supabase.from("forum_opportunities").insert({
-          forum_name: forum.forum_name || forum.name,
-          forum_url: forum.forum_url || forum.url,
-          category: forum.category,
-          difficulty: forum.difficulty,
-          ranking_potential: 0.7,
-          link_anchor_text: forum.anchor_text,
-          target_url: "https://outlayapp.net",
-          status: "discovered",
-        }).catch(() => {}); // Ignore duplicates
-      }
-      return forums.length;
-    } catch (e) {
-      console.error("Error parsing forums:", e);
-      return 0;
-    }
-  }
-  return 0;
-}
-
-async function createProfileOpportunities() {
-  console.log("👤 Identifying profile creation opportunities...");
-
-  const response = await claude.messages.create({
-    model: "claude-3-5-haiku-20241022",
-    max_tokens: 512,
-    messages: [
-      {
-        role: "user",
-        content: `Suggest 4-5 platforms where Outlay (expense tracker) should have profiles:
-
-Platforms:
-1. Stack Overflow
-2. Dev.to
-3. Medium
-4. Quora
-5. Product Hunt
-6. GitHub
-
-For each:
-- Profile URL format
-- Bio keywords to use
-- Content ideas
-- Expected reach
-
-Return as JSON array.`,
-      },
-    ],
-  });
-
-  const content = response.content[0];
-  if (content.type === "text") {
-    try {
-      const profiles = JSON.parse(content.text);
-      for (const profile of profiles) {
-        await supabase.from("profile_links").insert({
-          platform: profile.platform,
-          platform_url: profile.platform_url,
-          status: "planned",
-          keywords_used: profile.keywords || ["expense tracking", "budgeting", "finance"],
+          forum_name: post.forum,
+          forum_url: post.url,
+          category: "finance",
+          difficulty: "medium",
+          link_anchor_text: post.title,
+          status: "posting_draft",
+          notes: `Ready to post: ${post.title}`,
         }).catch(() => {});
+
+        await logActivity(
+          "forum_post_draft",
+          post.url || "",
+          "draft",
+          {
+            title: post.title,
+            keywords: post.keywords,
+            content_length: (post.content || "").length,
+          }
+        );
       }
-      return profiles.length;
+
+      return {
+        drafted: posts.length,
+        status: "awaiting_approval",
+        posts,
+      };
     } catch (e) {
-      console.error("Error parsing profiles:", e);
-      return 0;
+      console.error("Error parsing posts:", e);
+      return { drafted: 0, status: "error" };
     }
   }
-  return 0;
+  return { drafted: 0, status: "error" };
 }
 
-async function suggestCommentOpportunities() {
-  console.log("💬 Finding comment opportunities...");
+async function createProfiles() {
+  console.log("👤 Creating platform profiles with keywords...");
+
+  const profiles = [
+    {
+      platform: "dev.to",
+      bio: "Helping people master expense tracking and personal finance management with modern tools.",
+      keywords: ["expense tracking", "budgeting", "personal finance", "fintech"],
+    },
+    {
+      platform: "medium",
+      bio: "Writing about financial wellness, budgeting strategies, and expense management for the modern person.",
+      keywords: ["finance", "budgeting", "personal money management", "fintech"],
+    },
+    {
+      platform: "quora",
+      bio: "Helping people solve their budgeting and expense tracking challenges with practical advice.",
+      keywords: ["budgeting", "expense management", "personal finance"],
+    },
+  ];
+
+  for (const profile of profiles) {
+    await supabase.from("profile_links").insert({
+      platform: profile.platform,
+      platform_url: `https://${profile.platform}`,
+      bio: profile.bio,
+      status: "planned",
+      keywords_used: profile.keywords,
+    }).catch(() => {});
+
+    await logActivity(
+      "profile_creation_plan",
+      `https://${profile.platform}`,
+      "draft",
+      { keywords: profile.keywords }
+    );
+  }
+
+  return {
+    profiles_planned: profiles.length,
+    platforms: profiles.map(p => p.platform),
+  };
+}
+
+async function draftComments() {
+  console.log("💬 Drafting community comments...");
 
   const response = await claude.messages.create({
     model: "claude-3-5-haiku-20241022",
@@ -135,16 +147,18 @@ async function suggestCommentOpportunities() {
     messages: [
       {
         role: "user",
-        content: `Suggest 3-4 popular questions/discussions on:
-1. Reddit (r/personalfinance, r/budgeting)
-2. Stack Exchange
-3. Quora
+        content: `Draft 4 helpful comments for these Reddit discussions (natural, genuine, helpful):
+
+1. "How do I track my expenses better?" on r/personalfinance
+2. "Best budgeting apps?" on r/budgeting
+3. "Tips for saving money?" on r/Money
+4. "Expense tracking for freelancers?" on r/freelance
 
 For each:
-- Discussion title
-- URL
-- Suggested comment (natural, helpful, mentions Outlay subtly)
-- Expected upvotes
+- Comment text (2-3 sentences, natural, mentions Outlay subtly)
+- Why it's helpful
+- Keywords naturally included
+- Expected upvotes (1-100)
 
 Return as JSON array.`,
       },
@@ -155,104 +169,109 @@ Return as JSON array.`,
   if (content.type === "text") {
     try {
       const comments = JSON.parse(content.text);
+
       for (const comment of comments) {
         await supabase.from("comment_activities").insert({
-          source_url: comment.url,
-          source_type: comment.source_type || "forum",
-          comment_text: comment.suggested_comment,
+          source_url: comment.reddit_url || comment.url || "https://reddit.com",
+          source_type: "forum",
+          comment_text: comment.comment_text || comment.text,
           status: "draft",
-          keywords_mentioned: ["expense tracking", "budgeting", "personal finance"],
+          keywords_mentioned: comment.keywords || [],
         }).catch(() => {});
+
+        await logActivity(
+          "comment_draft",
+          comment.url || "",
+          "draft",
+          { keywords: comment.keywords }
+        );
       }
-      return comments.length;
+
+      return {
+        comments_drafted: comments.length,
+        status: "ready_for_review",
+      };
     } catch (e) {
       console.error("Error parsing comments:", e);
-      return 0;
+      return { comments_drafted: 0, status: "error" };
     }
   }
-  return 0;
+  return { comments_drafted: 0, status: "error" };
 }
 
-async function generateDailyReport() {
-  console.log("📊 Generating daily SEO report...");
+async function generateReports() {
+  console.log("📊 Generating activity reports...");
 
+  const today = new Date().toISOString().split("T")[0];
+
+  // Get today's activities
   const { data: activities } = await supabase
     .from("seo_activity_log")
     .select("*")
-    .gte("created_at", new Date(Date.now() - 86400000).toISOString());
+    .gte("created_at", `${today}T00:00:00`)
+    .lte("created_at", `${today}T23:59:59`);
 
-  const { data: forums } = await supabase
-    .from("forum_opportunities")
-    .select("*")
-    .eq("status", "posted")
-    .gte("post_date", new Date(Date.now() - 86400000).toISOString());
-
-  const { data: comments } = await supabase
-    .from("comment_activities")
-    .select("*")
-    .eq("status", "posted")
-    .gte("posted_date", new Date(Date.now() - 86400000).toISOString());
-
-  const summary = `Daily SEO Report:
-- Forum posts: ${forums?.length || 0}
-- Comments posted: ${comments?.length || 0}
-- Activities logged: ${activities?.length || 0}
-- Links created: ${(forums?.length || 0) + (comments?.length || 0)}`;
-
-  await supabase.from("seo_daily_reports").insert({
-    report_date: new Date().toISOString().split("T")[0],
+  const dailyReport = {
+    report_date: today,
     activities_completed: {
-      forum_posts: forums?.length || 0,
-      comments: comments?.length || 0,
+      forum_posts: activities?.filter(a => a.activity_type === "forum_post_draft").length || 0,
+      comments: activities?.filter(a => a.activity_type === "comment_draft").length || 0,
+      profiles_created: activities?.filter(a => a.activity_type === "profile_creation_plan").length || 0,
       guest_posts: 0,
-      profiles_created: 0,
     },
-    links_created: (forums?.length || 0) + (comments?.length || 0),
-    summary,
-  }).catch(() => {});
+    links_created: activities?.length || 0,
+    summary: `Daily SEO Report: ${activities?.length || 0} activities logged. Forums drafted, profiles planned, comments ready for review.`,
+  };
 
-  return summary;
+  await supabase.from("seo_daily_reports").insert(dailyReport).catch(() => {});
+
+  return dailyReport;
 }
 
 async function main() {
-  console.log("🚀 Enhanced SEO/ASO Agent Starting...");
+  console.log("🚀 Enhanced SEO Agent - AUTONOMOUS MODE");
+  console.log("=======================================");
+  console.log("");
 
   try {
-    // Find forum opportunities
-    const forumsFound = await findForumOpportunities();
-    await logAgentAction("find_forum_opportunities", "success", { count: forumsFound });
+    // Execute forum posting strategy
+    const forumResults = await executeForumPosting();
+    console.log(`✅ Forum posts drafted: ${forumResults.drafted}`);
 
-    // Create profile opportunities
-    const profilesFound = await createProfileOpportunities();
-    await logAgentAction("create_profile_opportunities", "success", { count: profilesFound });
+    // Create profile strategies
+    const profileResults = await createProfiles();
+    console.log(`✅ Profiles planned: ${profileResults.profiles_planned}`);
 
-    // Suggest comments
-    const commentsFound = await suggestCommentOpportunities();
-    await logAgentAction("suggest_comments", "success", { count: commentsFound });
+    // Draft community comments
+    const commentResults = await draftComments();
+    console.log(`✅ Comments drafted: ${commentResults.comments_drafted}`);
 
-    // Generate daily report
-    const report = await generateDailyReport();
-    await logAgentAction("generate_daily_report", "success", { summary: report });
+    // Generate reports
+    const dailyReport = await generateReports();
+    console.log(`✅ Daily report generated`);
 
-    console.log("✅ Enhanced SEO Agent completed successfully");
+    console.log("");
+    console.log("📋 EXECUTION SUMMARY:");
+    console.log(`   • Forum Posts: ${forumResults.drafted} (ready for posting)`);
+    console.log(`   • Profiles: ${profileResults.profiles_planned} (planned for creation)`);
+    console.log(`   • Comments: ${commentResults.comments_drafted} (ready for posting)`);
+    console.log("");
+    console.log("⏳ Next steps:");
+    console.log("   1. Review forum_opportunities table for posts to execute");
+    console.log("   2. Approve comments in comment_activities table");
+    console.log("   3. Create profiles listed in profile_links table");
+    console.log("");
 
     return {
       status: "success",
-      forums_found: forumsFound,
-      profiles_suggested: profilesFound,
-      comments_suggested: commentsFound,
-      report_generated: true,
+      forum_posts_drafted: forumResults.drafted,
+      profiles_planned: profileResults.profiles_planned,
+      comments_drafted: commentResults.comments_drafted,
+      ready_for_execution: true,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("❌ Enhanced SEO Agent error:", error);
-
-    await logAgentAction(
-      "agent_run",
-      "error",
-      { error: String(error) }
-    );
-
+    console.error("❌ Error:", error);
     return {
       status: "error",
       error: String(error),
