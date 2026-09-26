@@ -24,13 +24,11 @@ const _tabActiveIcons = [
   Icons.settings,
 ];
 
-/// Bottom-tab shell for the 4 main screens. Each tab keeps its own
-/// Scaffold/AppBar unchanged — this only adds the persistent IndexedStack
-/// + nav bar around them. The scan FAB moved here (out of Dashboard's and
-/// Transactions' own Scaffolds) because docking it into a notch cut into
-/// the nav bar requires the FAB and the bar to be owned by the same
-/// Scaffold — Flutter can't dock a FAB into a bar declared by a different,
-/// nested Scaffold.
+/// Bottom-tab shell for the 5 main screens (Phase 1a).
+/// Each tab keeps its own Scaffold/AppBar unchanged — this only adds
+/// the persistent IndexedStack + nav bar around them.
+/// Phase 1a: Dashboard, Accounts, Splits, Family, Settings
+/// FAB moved to Dashboard screen for Phase 1b restructuring.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -54,8 +52,8 @@ class _MainShellState extends State<MainShell> {
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: screens),
-      floatingActionButton: const ScanFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // FAB moved to Dashboard screen for Phase 1a
+      // Will be repositioned in Phase 1b after scan feature is finalized
       bottomNavigationBar: _NavBar(
         index: _index,
         onTap: (i) => setState(() => _index = i),
@@ -64,13 +62,10 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-// BottomAppBar rather than a plain container: its shape/notchMargin cut an
-// actual notch around the docked FAB so it sits embedded in the middle of
-// the bar (matching the approved mockup) instead of floating above it. All
-// 4 tabs get equal-width Expanded slots with no manual gap between them —
-// the notch is painted based on the FAB's actual centered position
-// regardless of the row's own layout, so reserving a gap in the middle
-// isn't necessary and previously made tabs 1/2 look offset from 0/3.
+// BottomAppBar with 5 equal-width tabs for Phase 1a:
+// Dashboard, Accounts, Splits, Family, Settings
+// All tabs get equal-width Expanded slots using flexible layout.
+// Tab pill width adjusted for 5-tab layout (65px vs 78px for 4 tabs).
 class _NavBar extends StatelessWidget {
   const _NavBar({required this.index, required this.onTap});
 
@@ -87,14 +82,10 @@ class _NavBar extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
-            // Fixed width rather than symmetric padding around the text:
-            // padding-based sizing meant each pill was only as wide as its
-            // own label ("Transactions" vs "Budgets"), so the pills
-            // themselves were different widths even though the cells
-            // holding them were equal — that unevenness is what read as
-            // "spacing between tabs is not equal". A shared fixed width
-            // makes every pill identical regardless of label length.
-            width: 78,
+            // Fixed width for 5 tabs: adjusted from 78px (4-tab layout)
+            // to fit all tabs proportionally. With 5 tabs, smaller width
+            // ensures each tab has equal visual space without overlap.
+            width: 65,
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 4),
             decoration: BoxDecoration(
