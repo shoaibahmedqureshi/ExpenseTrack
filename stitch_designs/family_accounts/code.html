@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Space+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container": "#e7eefe", "inverse-surface": "#2a313d", "surface-dim": "#d3daea", "on-tertiary-fixed-variant": "#005236", "on-primary-fixed-variant": "#003ea8", "primary-container": "#2563eb", "surface-tint": "#0053db", "outline-variant": "#c3c6d7", "surface-bright": "#f9f9ff", "tertiary-fixed": "#6ffbbe", "error-container": "#ffdad6", "on-primary-container": "#eeefff", "on-surface-variant": "#434655", "secondary-fixed-dim": "#8dd4c4", "on-surface": "#151c27", "surface-container-highest": "#dce2f3", "outline": "#737686", "secondary-fixed": "#a8f0e0", "secondary": "#1d695d", "tertiary-fixed-dim": "#4edea3", "warning-amber": "#F59E0B", "border-subtle": "#E5E7EB", "surface-white": "#FFFFFF", "on-tertiary-container": "#bdffdb", "surface": "#f9f9ff", "on-error-container": "#93000a", "on-secondary-fixed": "#00201b", "on-error": "#ffffff", "header-teal-deep": "#004D40", "on-tertiary-fixed": "#002113", "danger-red": "#EF4444", "error": "#ba1a1a", "inverse-primary": "#b4c5ff", "on-secondary": "#ffffff", "surface-container-high": "#e2e8f8", "background": "#f9f9ff", "surface-neutral-tint": "#F3F4F6", "header-teal": "#005A4E", "inverse-on-surface": "#ebf1ff", "canvas-bg": "#F9FAFB", "surface-variant": "#dce2f3", "on-primary": "#ffffff", "primary-fixed": "#dbe1ff", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00174b", "on-secondary-fixed-variant": "#005046", "primary-fixed-dim": "#b4c5ff", "text-muted": "#9CA3AF", "tertiary": "#006242", "secondary-container": "#a5eedd", "on-tertiary": "#ffffff", "surface-container-low": "#f0f3ff", "tertiary-container": "#007d55", "on-secondary-container": "#236e61", "on-background": "#151c27", "primary": "#004ac6", "text-dark": "#1F2937" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-md": "1rem", "gutter-tablet": "1.5rem", "space-xl": "2rem", "margin-tablet": "2rem", "space-lg": "1.5rem", "gutter": "1rem", "margin": "1rem", "space-sm": "0.5rem" }, fontFamily: { "headline-xl-mobile": ["Space Grotesk"], "body-lg": ["Inter"], "label-sm": ["Space Mono"], "headline-xl": ["Space Grotesk"], "body-sm": ["Inter"], "currency-display": ["Space Mono"], "headline-lg": ["Space Grotesk"], "currency-md": ["Space Mono"], "body-md": ["Inter"], "headline-md": ["Space Grotesk"] }, fontSize: { "headline-xl-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500" }], "headline-xl": ["32px", { "lineHeight": "40px", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "currency-display": ["28px", { "lineHeight": "36px", "fontWeight": "700" }], "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }], "currency-md": ["16px", { "lineHeight": "22px", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-header-teal shadow-[0_1px_8px_rgba(0,0,0,0.06)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Brand logo. - Primary color: #2563eb
+- Font: spaceGrotesk
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X-XMtn8d3wActBg-HqhwGK6ItdlBFw99rMeHv9tpGs57Eu4Cq4leXKxNfIn4OJCvgi6j3QIoH5oIw0sK0jBSL__eVY8lydv4saimUUErrO5evW6yGh-NY-U7ZTuve3ATyEcFeHp3SVgVBu4USsl2QVUV2rDon4BTjm9HxQjdin723Kb62Hwp5syrwE4QcS9pPTVR85tWWCQsYW6F9F3qjYUUjawNWtNXP_kNYVAqDICh1sZg2hF6I75iHv"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-surface-white font-bold leading-none tracking-tight">Outlay Pro</span><span class="font-label-sm text-label-sm text-secondary-fixed leading-tight tracking-wider uppercase opacity-90">Family</span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notifications" class="w-11 h-11 flex items-center justify-center text-surface-white rounded-full hover:bg-header-teal-deep transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface"><div class="flex flex-col w-full px-margin space-y-gutter pb-6">
+<!-- Header Context & Tier Banner -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-header-teal flex items-center justify-center text-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[22px]">diversity_3</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h1 class="font-headline-md text-headline-md text-on-surface leading-tight">Family Budget</h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-warning-amber/15 text-warning-amber font-label-sm text-[10px] font-bold tracking-wide">
+            MAX TIER
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Multi-user pool • ₨599/mo</p>
+</div>
+</div>
+<button aria-label="Family Settings" class="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<!-- Family Account Hero Card -->
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-header-teal via-header-teal-deep to-primary text-surface-white p-space-md shadow-md">
+<div class="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-secondary-fixed/10 blur-2xl pointer-events-none"></div>
+<div class="absolute -left-10 -bottom-10 w-36 h-36 rounded-full bg-primary-container/20 blur-xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-secondary-fixed tracking-wider uppercase">Shared Vault</span>
+<h2 class="font-headline-lg text-headline-lg text-surface-white font-bold leading-tight mt-0.5">The Khan Family</h2>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-white/15 backdrop-blur-md text-surface-white font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse"></span>
+          5 Active
+        </span>
+</div>
+<div class="bg-surface-white/10 backdrop-blur-md rounded-xl p-3 flex flex-col gap-1">
+<span class="font-body-sm text-body-sm text-surface-white/80">Available Pool Balance</span>
+<div class="flex items-baseline justify-between">
+<span class="font-currency-display text-currency-display text-surface-white font-bold tracking-tight">₨ 185,000.00</span>
+<span class="font-label-sm text-label-sm text-secondary-fixed font-semibold">of ₨ 300,000 cap</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-white/20 mt-1.5 overflow-hidden">
+<div class="h-full bg-secondary-fixed rounded-full" style="width: 61.6%;"></div>
+</div>
+</div>
+<!-- Overlapping Avatar Circles & Quick Stats -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center -space-x-2.5 overflow-hidden">
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm bg-surface-container" data-alt="Close up portrait photo of a mid-40s South Asian father smiling gently, clean tech lighting, deep teal ambient reflections." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjiWoQQN05N79PvH68o2N4CeuMEhA6qZyL8zIjIjw_NkcdqFGpS-WBRZH4Qy4kroOwKYcBifa4JcnrHMmY8KXAxPiZw6bVJx6Afng_a_e0hydRLodivjDdCC0Q7qM-rOdCgZZB9i7PWot80UyTM2YXJ4XbSL1AoRPtxRLmPqiMrmBKf82UvpPawDXcBrIi5Zi-wQpYQ-9AiJVW-WKSoOPU9KlpYmhQpXG4fSrijLrx5-yQ5So59ui7PA"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-fixed ring-2 ring-header-teal"></span>
+</div>
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm bg-surface-container" data-alt="Portrait photo of a stylish 40s South Asian woman with warm smile, casual chic home interior, natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIzUfTwqGmXah159xswN8OVPCFJFBEQNU7X2GAWS7YOlGnalyWiK75D_u1Gk_io_VaKkm39pBvUD1QbgcJq_6Ov2vDIhWhuXbpljjVxiWfUSl9bmuAxdDYrbQno-rGjaSOW-k-VpiQbhDMqP2nYUO5FFbYuSflo4drRZmc3nLMjuE7o9ZC8KFz094eiyxeK4nV6ANALj39bQkiACfN2hk2a-KeDX02VbCBEMoNqLcHmbsIq8Wmo20djg"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-fixed ring-2 ring-header-teal"></span>
+</div>
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm bg-surface-container" data-alt="Portrait of a young college male student smiling confidently, natural outdoor park setting, warm light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYbYZ0vLhAogNOUMyi7K1dObalKRmgLZ9oanH2jFP5vJdCQ_YRIWT4nQb_A1XyT8F7pheIP4XqvMlNdYB-rgmgSkNpIgK5hJ0r8jJITsHWydZo5Ih_hY0YuCQHzI2QiC5LKqGmLV5xKhcKpEuBllvPnSYuuTEwL9X9Me0VeqBahts2asKt917uEv19ReRoZu7m_0fTG88XtuP5XXwyS01Y6bgJ1NASWdNP2wt3RRm0Kt6NzqO5K12_xw"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-fixed ring-2 ring-header-teal"></span>
+</div>
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm bg-surface-container" data-alt="Portrait of a young university woman studying with headphones, soft diffused library lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAetBuaMZG94lOYl6F_RrrWIlowugR6yvzpB___YOFBg1xVyAahabt5TLwmAVlQH2rbya2nSGANNsJzTotcmun1hO28p2oBOZB7uANUxoFuJPm2SB09jXUjYSUNx4ymf-9NYtJzsyVApP7wQ7AnLS8cidfmt-dpie_tZsQqKUx7zcAGnkq55KYa2aSaYmibW9UZloshxQq-AuTqIZw_IK75h3VApTzCZ6PlThOhSqSRFCuTuzuyZ_GZrA"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-outline-variant ring-2 ring-header-teal"></span>
+</div>
+<div class="w-9 h-9 rounded-full bg-surface-white text-header-teal font-headline-md text-[13px] flex items-center justify-center font-bold shadow-sm ring-2 ring-header-teal">
+            +1
+          </div>
+</div>
+<button class="px-3 h-9 rounded-lg bg-surface-white text-primary font-headline-md text-[13px] font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-transform" onclick="document.getElementById('inviteModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+          Invite
+        </button>
+</div>
+</div>
+</div>
+<!-- Transaction Approval Queue (Admin Feature) -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="flex h-2.5 w-2.5 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-amber opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-warning-amber"></span>
+</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Approvals Queue</h3>
+</div>
+<span class="font-label-sm text-label-sm text-warning-amber font-bold bg-warning-amber/10 px-2 py-0.5 rounded-full">2 Pending</span>
+</div>
+<!-- Alert Items Stack -->
+<div class="space-y-2.5" id="approvalQueue">
+<!-- Item 1: Metro Cash & Carry -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm transition-all duration-300" id="card-approval-1">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Hamza Khan</span>
+<span class="font-label-sm text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant">Son</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Metro Cash &amp; Carry • Groceries</p>
+</div>
+</div>
+<span class="font-currency-md text-currency-md text-on-surface font-bold whitespace-nowrap">₨ 12,500</span>
+</div>
+<div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-surface-container">
+<button class="flex-1 h-9 rounded-lg bg-tertiary text-on-tertiary font-headline-md text-[13px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform" onclick="resolveApproval('card-approval-1', 'Approved')">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Approve
+          </button>
+<button class="h-9 px-3 rounded-lg bg-error-container text-on-error-container font-headline-md text-[13px] font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform" onclick="resolveApproval('card-approval-1', 'Declined')">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+            Reject
+          </button>
+</div>
+</div>
+<!-- Item 2: University Books -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm transition-all duration-300" id="card-approval-2">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Sara Khan</span>
+<span class="font-label-sm text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant">Daughter</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">University Books &amp; Supplies</p>
+</div>
+</div>
+<span class="font-currency-md text-currency-md text-on-surface font-bold whitespace-nowrap">₨ 7,200</span>
+</div>
+<div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-surface-container">
+<button class="flex-1 h-9 rounded-lg bg-tertiary text-on-tertiary font-headline-md text-[13px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform" onclick="resolveApproval('card-approval-2', 'Approved')">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Approve
+          </button>
+<button class="h-9 px-3 rounded-lg bg-surface-container text-on-surface-variant font-headline-md text-[13px] font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform" onclick="openReviewModal('Sara Khan', '₨ 7,200', 'University Books &amp; Supplies')">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+            Review
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Individual Member Breakdown -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Monthly Spend Share</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Total spend: ₨ 115,000</p>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold px-2 py-1 rounded bg-surface-container">This Month</span>
+</div>
+<!-- Proportional Segmented Bar -->
+<div class="flex h-3.5 w-full rounded-full overflow-hidden bg-surface-container gap-0.5 p-0.5">
+<div class="bg-primary rounded-l-full transition-all duration-500" style="width: 38%;" title="You: 38%"></div>
+<div class="bg-secondary transition-all duration-500" style="width: 32%;" title="Ayesha: 32%"></div>
+<div class="bg-tertiary-container transition-all duration-500" style="width: 16%;" title="Hamza: 16%"></div>
+<div class="bg-warning-amber transition-all duration-500" style="width: 12%;" title="Sara: 12%"></div>
+<div class="bg-outline rounded-r-full transition-all duration-500" style="width: 2%;" title="Bilal: 2%"></div>
+</div>
+<!-- Member Breakdown List -->
+<div class="space-y-3 pt-1">
+<!-- You -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-3 h-3 rounded-full bg-primary flex-shrink-0"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">You (Admin)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-currency-md text-currency-md text-on-surface font-bold">₨ 45,200</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-9 text-right font-medium">38%</span>
+</div>
+</div>
+<!-- Ayesha -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-3 h-3 rounded-full bg-secondary flex-shrink-0"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Ayesha (Spouse)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-currency-md text-currency-md text-on-surface font-bold">₨ 38,400</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-9 text-right font-medium">32%</span>
+</div>
+</div>
+<!-- Hamza -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-3 h-3 rounded-full bg-tertiary-container flex-shrink-0"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Hamza (Son)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-currency-md text-currency-md text-on-surface font-bold">₨ 19,500</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-9 text-right font-medium">16%</span>
+</div>
+</div>
+<!-- Sara -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-3 h-3 rounded-full bg-warning-amber flex-shrink-0"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Sara (Daughter)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-currency-md text-currency-md text-on-surface font-bold">₨ 14,300</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-9 text-right font-medium">12%</span>
+</div>
+</div>
+<!-- Bilal -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-3 h-3 rounded-full bg-outline flex-shrink-0"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Bilal (Viewer)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-currency-md text-currency-md text-on-surface font-bold">₨ 2,600</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant w-9 text-right font-medium">2%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Family Members Directory & Permission Toggles -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Member Directory &amp; Limits</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">5 Accounts</span>
+</div>
+<!-- Member 1: You (Admin) -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<img class="w-10 h-10 rounded-full object-cover bg-surface-container" data-alt="Portrait photo of Tariq Khan, smiling mature professional, crisp soft studio lighting with gentle cyan undertones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAX5dEVgXoKV8xv2NytyHvR3Zu_TCX0Z8VletDwc7afaWuVk97DqNIvDnnaopDAHCaq-6kV71Ah9sfXWUXeiUVO31N3mlvaJv4G9jPVQ126LiWmQhYdXHh9RuUh4GaoFQu3e4J9mDDr9oWZrqbiKb1t2MK_9psICMloHcAljXQFeCnik8C4KpeaXcj6gDbeUNPRyZTuZwTXe0Xq5pwBjs4WkJFjZ1gijCsHmsWtgnXPiuvRqXXtx1xUIg"/>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Tariq Khan</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-[11px] font-bold inline-flex items-center gap-0.5">
+                👑 Admin
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Unlimited Primary Owner</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-[11px] text-tertiary font-bold bg-tertiary/10 px-2 py-0.5 rounded-full">Full Control</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 45%;"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-[11px] text-on-surface-variant">
+<span>₨ 45,200 spent</span>
+<span>No Limit set</span>
+</div>
+</div>
+<!-- Member 2: Hamza (Member with strict limit) -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<img class="w-10 h-10 rounded-full object-cover bg-surface-container" data-alt="Close up portrait photo of Hamza, 21 year old student with friendly expression, natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_wilfUwlmDjSiolBOZxbKZqPvXvsDjsz5FhDlIbTtt93lOC4emGTv8cHPaZCvBYGhpaaGH_3aHdk2eY_QZ56LDnrByB7Ugxfp436pd_tPfK87V7GY8RPCXE06K8PxwS2EVhTiVM6vECJdRYEGJb5-AKPjTc6811V9Ecg3omnTzWgtL7i8DAQSzMLqu8XFclumPRWTMyrmgQoOct02zuNa0qsgwlriWTOHBiXHmpssDSTZkecKccQ1qg"/>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Hamza Khan</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-label-sm text-[11px] font-bold inline-flex items-center gap-0.5">
+                👤 Member
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Daily tap limit: ₨ 10,000</span>
+</div>
+</div>
+<!-- Toggle button for auto-approvals -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-white after:border-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-warning-amber h-full rounded-full" style="width: 78%;"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-[11px]">
+<span class="text-on-surface font-semibold">₨ 19,500 spent</span>
+<span class="text-on-surface-variant">Limit: ₨ 25,000 (78%)</span>
+</div>
+</div>
+<!-- Member 3: Sara (Member) -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<img class="w-10 h-10 rounded-full object-cover bg-surface-container" data-alt="Close up portrait photo of Sara, young adult smiling softly indoors with book background, modern minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGY3tcrUSn3PQDguPVquQ1-kebIu4fhJUgBcZEi0SWsr5gEnLq28iYS2TlzT_kLsnDPSLpREo2ug_tk-g6nFyXIhz7DBj869BOs3r48gd4BnrnErbpmfBkX5qlHNBxwxGtCaeJMt1U2kB5Bjw66PflNLeAu_yDx1XmjFZ9DL-7LhLrCDI9hXrb6_vfTg4yJEvC8gTYNEwfvhb_3Fm6Fl88Vo9MnvYF-AYZeHPxvsC0QO_DGrKg8-yT-w"/>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Sara Khan</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-label-sm text-[11px] font-bold inline-flex items-center gap-0.5">
+                👤 Member
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Requires approval &gt; ₨ 5k</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-white after:border-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 47%;"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-[11px]">
+<span class="text-on-surface font-semibold">₨ 14,300 spent</span>
+<span class="text-on-surface-variant">Limit: ₨ 30,000 (47%)</span>
+</div>
+</div>
+<!-- Member 4: Bilal (Viewer) -->
+<div class="rounded-xl bg-surface-container-lowest p-3.5 shadow-sm space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-headline-md font-bold text-on-surface-variant">
+            BK
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Bilal Khan</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-[11px] font-bold inline-flex items-center gap-0.5">
+                👁️ Viewer
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Read-only auditor</span>
+</div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">No Card</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 26%;"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-[11px]">
+<span class="text-on-surface font-semibold">₨ 2,600 reimbursed</span>
+<span class="text-on-surface-variant">Allowance: ₨ 10,000</span>
+</div>
+</div>
+</div>
+<!-- Primary Bottom Action: Invite Family Member -->
+<div class="pt-2">
+<button class="w-full h-12 rounded-xl bg-primary text-on-primary font-headline-md text-headline-md font-bold flex items-center justify-center gap-2 shadow-md hover:bg-primary-container active:scale-[0.99] transition-all" onclick="document.getElementById('inviteModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+<span>+ Invite Family Member</span>
+</button>
+<p class="font-body-sm text-body-sm text-center text-on-surface-variant mt-2">
+      Included in Outlay Max Tier (up to 7 accounts at no extra cost)
+    </p>
+</div>
+<!-- Invite Modal Overlay -->
+<div class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" id="inviteModal">
+<div class="w-full max-w-sm rounded-2xl bg-surface-container-lowest p-space-lg shadow-2xl space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Invite to Family</h3>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="document.getElementById('inviteModal').classList.add('hidden')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Send a private joining link to add a family member to the shared pool budget.
+      </p>
+<div class="space-y-2">
+<label class="font-body-sm text-body-sm font-semibold text-on-surface">Member Role</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="h-10 rounded-lg bg-primary/10 text-primary font-headline-md text-[13px] font-bold flex items-center justify-center gap-1">
+            👤 Regular Member
+          </button>
+<button class="h-10 rounded-lg bg-surface-container text-on-surface-variant font-headline-md text-[13px] font-medium flex items-center justify-center gap-1">
+            👁️ Viewer Only
+          </button>
+</div>
+</div>
+<div class="space-y-2 pt-1">
+<button class="w-full h-11 rounded-lg bg-tertiary text-on-tertiary font-headline-md text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="sendInvite('WhatsApp')">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+          Send via WhatsApp
+        </button>
+<button class="w-full h-11 rounded-lg bg-surface-container text-on-surface font-headline-md text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform" onclick="sendInvite('SMS')">
+<span class="material-symbols-outlined text-[18px]">sms</span>
+          Send via SMS
+        </button>
+</div>
+</div>
+</div>
+<!-- Review Modal Overlay -->
+<div class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm" id="reviewModal">
+<div class="w-full max-w-sm rounded-2xl bg-surface-container-lowest p-space-lg shadow-2xl space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Transaction Review</h3>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="document.getElementById('reviewModal').classList.add('hidden')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="rounded-xl bg-surface-container p-3.5 space-y-2">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Applicant</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface" id="reviewApplicant">Sara Khan</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Category / Item</span>
+<span class="font-body-md text-body-md text-on-surface" id="reviewItem">University Books</span>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-surface-container-high">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Requested Sum</span>
+<span class="font-currency-md text-currency-md font-bold text-primary" id="reviewAmount">₨ 7,200</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2">
+<button class="flex-1 h-11 rounded-lg bg-tertiary text-on-tertiary font-headline-md text-[13px] font-bold" onclick="resolveApproval('card-approval-2', 'Approved'); document.getElementById('reviewModal').classList.add('hidden');">
+          Approve Now
+        </button>
+<button class="h-11 px-4 rounded-lg bg-surface-container text-on-surface font-headline-md text-[13px] font-semibold" onclick="document.getElementById('reviewModal').classList.add('hidden')">
+          Dismiss
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function resolveApproval(cardId, actionText) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.style.transform = 'scale(0.95)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+      card.innerHTML = `
+        <div class="flex items-center justify-center gap-2 py-3 text-on-surface-variant font-headline-md text-[13px]">
+          <span class="material-symbols-outlined text-[18px] ${actionText === 'Approved' ? 'text-tertiary' : 'text-error'}">
+            ${actionText === 'Approved' ? 'check_circle' : 'cancel'}
+          </span>
+          <span>Transaction ${actionText}</span>
+        </div>
+      `;
+      card.style.opacity = '1';
+      card.style.transform = 'scale(1)';
+    }, 200);
+  }
+
+  function openReviewModal(applicant, amount, item) {
+    document.getElementById('reviewApplicant').textContent = applicant;
+    document.getElementById('reviewAmount').textContent = amount;
+    document.getElementById('reviewItem').textContent = item;
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+
+  function sendInvite(channel) {
+    const modal = document.getElementById('inviteModal');
+    modal.classList.add('hidden');
+    alert(`Encrypted family invitation link generated for ${channel}!`);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-white/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary-container font-semibold"><div class="h-14 px-space-xs flex items-center justify-around"><a class="flex flex-col items-center justify-center w-14 h-11 gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-body-sm text-body-sm text-[11px] leading-none">Dashboard</span></a><a class="flex flex-col items-center justify-center w-14 h-11 gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="accounts" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="font-body-sm text-body-sm text-[11px] leading-none">Accounts</span></a><a class="flex flex-col items-center justify-center w-14 h-11 gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="splits" href="#"><span class="material-symbols-outlined text-[22px]">call_split</span><span class="font-body-sm text-body-sm text-[11px] leading-none">Splits</span></a><a aria-current="page" class="flex flex-col items-center justify-center w-14 h-11 gap-0.5 transition-colors text-primary-container font-semibold" data-path="family" href="#"><span class="material-symbols-outlined text-[22px]">group</span><span class="font-body-sm text-body-sm text-[11px] leading-none">Family</span></a><a class="flex flex-col items-center justify-center w-14 h-11 gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="font-body-sm text-body-sm text-[11px] leading-none">Settings</span></a></div></nav></body></html>
