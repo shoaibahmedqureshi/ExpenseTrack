@@ -1,0 +1,124 @@
+{
+  "platforms": [
+    {
+      "name": "Dev.to",
+      "domain": "dev.to",
+      "signup_url": "https://dev.to/enter",
+      "username": "outlayapp",
+      "profile_url_template": "https://dev.to/outlayapp",
+      "bio": "Smart expense tracking & budget management for everyone",
+      "can_post": true,
+      "post_url": "https://dev.to/new",
+      "priority": 1
+    },
+    {
+      "name": "Medium",
+      "domain": "medium.com",
+      "signup_url": "https://medium.com/m/signin",
+      "username": "@outlayapp",
+      "profile_url_template": "https://medium.com/@outlayapp",
+      "bio": "Smart expense tracking & budget management for everyone",
+      "can_post": true,
+      "post_url": "https://medium.com/new-story",
+      "priority": 1
+    },
+    {
+      "name": "Quora",
+      "domain": "quora.com",
+      "signup_url": "https://www.quora.com/auth/signup",
+      "username": "OutlayApp",
+      "profile_url_template": "https://www.quora.com/profile/OutlayApp",
+      "bio": "Smart expense tracking & budget management",
+      "can_post": true,
+      "priority": 1
+    },
+    {
+      "name": "Hashnode",
+      "domain": "hashnode.com",
+      "signup_url": "https://hashnode.com/signup",
+      "username": "outlayapp",
+      "profile_url_template": "https://hashnode.com/@outlayapp",
+      "bio": "Smart expense tracking & budget management",
+      "can_post": true,
+      "post_url": "https://hashnode.com/new",
+      "priority": 2
+    },
+    {
+      "name": "LinkedIn",
+      "domain": "linkedin.com",
+      "signup_url": "https://www.linkedin.com/signup",
+      "username": "outlayapp",
+      "profile_url_template": "https://www.linkedin.com/company/outlayapp",
+      "bio": "Smart expense tracking & budget management",
+      "can_post": true,
+      "priority": 2
+    },
+    {
+      "name": "HackerNews",
+      "domain": "news.ycombinator.com",
+      "signup_url": "https://news.ycombinator.com/login",
+      "username": "outlayapp",
+      "profile_url_template": "https://news.ycombinator.com/user?id=outlayapp",
+      "bio": "Expense tracking app",
+      "can_post": false,
+      "priority": 3
+    },
+    {
+      "name": "Reddit",
+      "domain": "reddit.com",
+      "signup_url": "https://www.reddit.com/register",
+      "username": "outlayapp",
+      "profile_url_template": "https://www.reddit.com/user/outlayapp",
+      "bio": "Expense tracking & personal finance",
+      "can_post": true,
+      "priority": 2
+    },
+    {
+      "name": "Twitter",
+      "domain": "twitter.com",
+      "signup_url": "https://twitter.com/i/flow/signup",
+      "username": "@outlayapp",
+      "profile_url_template": "https://twitter.com/outlayapp",
+      "bio": "Smart expense tracking app",
+      "can_post": true,
+      "priority": 2
+    },
+    {
+      "name": "Substack",
+      "domain": "substack.com",
+      "signup_url": "https://substack.com/signup",
+      "username": "outlayapp",
+      "profile_url_template": "https://substack.com/@outlayapp",
+      "bio": "Smart expense tracking & budget management",
+      "can_post": true,
+      "post_url": "https://substack.com/new",
+      "priority": 2
+    },
+    {
+      "name": "Ghost",
+      "domain": "ghost.io",
+      "signup_url": "https://ghost.org/pricing",
+      "username": "outlayapp",
+      "profile_url_template": "https://outlayapp.ghost.io",
+      "bio": "Smart expense tracking",
+      "can_post": true,
+      "priority": 3
+    }
+  ],
+  "content_sites": [
+    "dev.to",
+    "medium.com",
+    "hashnode.com",
+    "substack.com",
+    "ghost.io"
+  ],
+  "social_networks": [
+    "linkedin.com",
+    "twitter.com",
+    "reddit.com",
+    "quora.com"
+  ],
+  "aggregate_sites": [
+    "news.ycombinator.com"
+  ]
+}

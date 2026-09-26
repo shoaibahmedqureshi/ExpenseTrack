@@ -345,7 +345,13 @@
       "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent -H 'Content-Type: application/json' -d '{}')",
       "Bash(curl -s -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnYXZ4YnVlem1pdm5zZXloa3llIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTM3NTUyMywiZXhwIjoyMDk2OTUxNTIzfQ.XCcaeI2McS442mS1E0nXNN4QITERW47w4Q_cWVzf3G0' -d '{}')",
       "Bash(chmod +x /tmp/test_smtp.sh)",
-      "Bash(/tmp/test_smtp.sh)"
+      "Bash(/tmp/test_smtp.sh)",
+      "Bash(chmod +x /tmp/test_supabase_connection.sh)",
+      "Bash(/tmp/test_supabase_connection.sh)",
+      "Bash(curl -s -X GET 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/email_drafts?select=count\\(\\)' -H 'apikey: __TRACKED_VAR__' -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "Bash(wait 42020)",
+      "Bash(timeout 60 npm start)",
+      "Bash(npx puppeteer *)"
     ]
   }
 }
