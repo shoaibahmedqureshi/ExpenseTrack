@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import '../../features/budgets/presentation/screens/budgets_screen.dart';
+import '../../features/accounts/presentation/screens/accounts_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../features/expenses/presentation/screens/expense_list_screen.dart';
-import '../../features/reports/presentation/screens/reports_screen.dart';
+import '../../features/splits/presentation/screens/splits_screen.dart';
+import '../../features/family/presentation/screens/family_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/receipt_scanner/presentation/widgets/scan_fab.dart';
 
-const _tabLabels = ['Dashboard', 'Transactions', 'Budgets', 'Reports'];
+const _tabLabels = ['Dashboard', 'Accounts', 'Splits', 'Family', 'Settings'];
 const _tabIcons = [
   Icons.home_outlined,
-  Icons.receipt_long_outlined,
-  Icons.pie_chart_outline,
-  Icons.bar_chart_outlined,
+  Icons.account_balance_wallet_outlined,
+  Icons.people_outline,
+  Icons.group_outlined,
+  Icons.settings_outlined,
 ];
 const _tabActiveIcons = [
   Icons.home,
-  Icons.receipt_long,
-  Icons.pie_chart,
-  Icons.bar_chart,
+  Icons.account_balance_wallet,
+  Icons.people,
+  Icons.group,
+  Icons.settings,
 ];
 
 /// Bottom-tab shell for the 4 main screens. Each tab keeps its own
@@ -40,16 +43,14 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // Not a static const list: Dashboard's "Show more" button needs a way
-    // to switch to the Transactions tab, so it takes a callback rather
-    // than being a fixed widget. IndexedStack still preserves each
-    // screen's State across rebuilds since they stay at the same list
-    // position with the same widget type.
+    // 5-tab navigation: Dashboard, Accounts, Splits, Family, Settings
+    // Each screen's state is preserved across tab switches via IndexedStack
     final screens = [
       DashboardScreen(onSeeAllTransactions: () => setState(() => _index = 1)),
-      const ExpenseListScreen(),
-      const BudgetsScreen(),
-      const ReportsScreen(),
+      const AccountsScreen(),
+      const SplitsScreen(),
+      const FamilyScreen(),
+      const SettingsScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: screens),
@@ -148,6 +149,7 @@ class _NavBar extends StatelessWidget {
             _item(1),
             _item(2),
             _item(3),
+            _item(4),
           ],
         ),
       ),

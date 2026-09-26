@@ -351,7 +351,22 @@
       "Bash(curl -s -X GET 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/email_drafts?select=count\\(\\)' -H 'apikey: __TRACKED_VAR__' -H 'Authorization: Bearer __TRACKED_VAR__')",
       "Bash(wait 42020)",
       "Bash(timeout 60 npm start)",
-      "Bash(npx puppeteer *)"
+      "Bash(npx puppeteer *)",
+      "Bash(chmod +x setup-deployment.sh)",
+      "Bash(bash setup-deployment.sh)",
+      "Bash(gh secret *)",
+      "Bash(gh workflow *)",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/agent_logs?agent_type=eq.profile_automation&select=*&order=run_date.desc&limit=5' -H 'apikey: sb_publishable_cTHDiUVcracNw3eF9w5ATQ_Pd7Afi5Y')",
+      "Bash(curl -s 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/profile_links?order=created_at.desc&limit=10' -H 'apikey: sb_publishable_cTHDiUVcracNw3eF9w5ATQ_Pd7Afi5Y')",
+      "Bash(gh run *)",
+      "mcp__773b55b1-7f00-4228-8cfa-b745b91abc09__editJiraIssue",
+      "WebFetch(domain:www.splitwise.com)",
+      "WebFetch(domain:www.ynab.com)",
+      "WebFetch(domain:settleup.io)",
+      "Bash(unzip -q stitch_outlay_pro_design_handoff.zip)",
+      "Bash(unzip -q \"stitch_outlay_pro_design_handoff \\(2\\).zip\")",
+      "Bash(rm -rf \"stitch_outlay_pro_design_handoff \\(2\\)\")",
+      "Bash(unzip -qo \"stitch_outlay_pro_design_handoff \\(2\\).zip\" -d \"stitch_designs_v2\")"
     ]
   }
 }
