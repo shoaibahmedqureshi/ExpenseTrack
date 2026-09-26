@@ -43,7 +43,7 @@ class RecurringSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor.withOpacity(0.12),
+                  color: AppTheme.incomeColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -51,7 +51,7 @@ class RecurringSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.successColor,
+                    color: AppTheme.incomeColor,
                   ),
                 ),
               ),

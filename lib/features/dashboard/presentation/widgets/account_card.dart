@@ -64,7 +64,7 @@ class AccountCard extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor,
+                  color: AppTheme.incomeColor,
                   shape: BoxShape.circle,
                 ),
               ),

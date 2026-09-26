@@ -64,11 +64,11 @@ class _StatusHeader extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor,
+                  color: AppTheme.incomeColor,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.successColor.withOpacity(0.5),
+                      color: AppTheme.incomeColor.withOpacity(0.5),
                       blurRadius: 4,
                     ),
                   ],
@@ -170,7 +170,7 @@ class _PermissionCard extends StatelessWidget {
               Switch(
                 value: provider.isSmsEnabled,
                 onChanged: provider.toggleSmsLogging,
-                activeColor: AppTheme.successColor,
+                activeColor: AppTheme.incomeColor,
               ),
             ],
           ),
@@ -288,7 +288,6 @@ class _BankCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        opacity: isEnabled ? 1.0 : 0.8,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -326,7 +325,7 @@ class _BankCard extends StatelessWidget {
               Icon(
                 isEnabled ? Icons.check_circle : Icons.schedule,
                 size: 18,
-                color: isEnabled ? AppTheme.successColor : AppTheme.textSecondary,
+                color: isEnabled ? AppTheme.incomeColor : AppTheme.textSecondary,
               ),
             ],
           ),
@@ -348,7 +347,7 @@ class _BankCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 11,
-              color: isEnabled ? AppTheme.successColor : AppTheme.textSecondary,
+              color: isEnabled ? AppTheme.incomeColor : AppTheme.textSecondary,
             ),
           ),
         ],
@@ -396,7 +395,7 @@ class _StatisticsCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor.withOpacity(0.12),
+                  color: AppTheme.incomeColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -404,7 +403,7 @@ class _StatisticsCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.successColor,
+                    color: AppTheme.incomeColor,
                   ),
                 ),
               ),
@@ -443,7 +442,7 @@ class _StatisticsCard extends StatelessWidget {
                         'Transactions',
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppTheme.successColor,
+                          color: AppTheme.incomeColor,
                         ),
                       ),
                     ],
@@ -508,7 +507,7 @@ class _StatisticsCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.successColor,
+                  color: AppTheme.incomeColor,
                 ),
               ),
             ],
@@ -581,7 +580,7 @@ class _RecentTransactionsSection extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: (tx.amount < 0
                               ? const Color(0xFFEF4444)
-                              : AppTheme.successColor)
+                              : AppTheme.incomeColor)
                           .withOpacity(0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -590,7 +589,7 @@ class _RecentTransactionsSection extends StatelessWidget {
                       size: 18,
                       color: tx.amount < 0
                           ? const Color(0xFFEF4444)
-                          : AppTheme.successColor,
+                          : AppTheme.incomeColor,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -628,7 +627,7 @@ class _RecentTransactionsSection extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: tx.amount < 0
                               ? const Color(0xFFEF4444)
-                              : AppTheme.successColor,
+                              : AppTheme.incomeColor,
                           fontFamily: 'Courier',
                         ),
                       ),
