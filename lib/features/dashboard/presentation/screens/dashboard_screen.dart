@@ -15,6 +15,8 @@ import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../sync/sync_service.dart';
+import '../widgets/account_card.dart';
+import '../widgets/recurring_section.dart';
 
 // Kept deliberately short — the Dashboard is meant to be a glanceable
 // summary, not a second copy of the Transactions tab. "Show more" hands
@@ -290,7 +292,10 @@ class _DashboardBody extends StatelessWidget {
           ],
         ),
         _BalanceHero(balance: balance, deltaPct: deltaPct),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
+        // Account Cards Section (Phase 1a)
+        _AccountCardsSection(),
+        const SizedBox(height: 18),
         _IncomeExpenseRow(income: income, expense: expense),
         const SizedBox(height: 18),
         if (isYearView && loadingYear)
@@ -314,6 +319,9 @@ class _DashboardBody extends StatelessWidget {
             expensesInPeriod:
                 expenseProvider.inRange(periodStart, periodEnd),
           ),
+        // Recurring This Month Section (Phase 1a)
+        const SizedBox(height: 16),
+        const RecurringSection(),
         if (isCurrentMonth) ...[
           const SizedBox(height: 14),
           _BurnRateLine(monthStart: monthStart, spentSoFar: expense),
@@ -346,6 +354,84 @@ class _DashboardBody extends StatelessWidget {
         const SizedBox(height: 6),
         ..._buildGroupedTransactions(
             expenseProvider.expenses.take(_recentTransactionCount).toList()),
+      ],
+    );
+  }
+
+  Widget _AccountCardsSection() {
+    // Mock accounts for Phase 1a
+    final accounts = [
+      MockAccount(
+        name: 'HBL Checking',
+        type: '•• 4920',
+        balance: 64200,
+        icon: Icons.account_balance,
+        accentColor: AppTheme.primaryColor,
+      ),
+      MockAccount(
+        name: 'Meezan Savings',
+        type: '•• 8812',
+        balance: 35000,
+        icon: Icons.savings,
+        accentColor: const Color(0xFF10B981),
+      ),
+      MockAccount(
+        name: 'JazzCash',
+        type: '•• 1234',
+        balance: 15250,
+        icon: Icons.account_balance_wallet,
+        accentColor: const Color(0xFFEF4444),
+      ),
+      MockAccount(
+        name: 'Cash',
+        type: 'Personal',
+        balance: 11000,
+        icon: Icons.payments,
+        accentColor: const Color(0xFFF59E0B),
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Linked Accounts',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Navigate to Accounts tab
+              },
+              child: const Text(
+                'Manage (4)',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: accounts.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) => AccountCard(
+              account: accounts[index],
+            ),
+          ),
+        ),
       ],
     );
   }
