@@ -27,7 +27,7 @@ class AccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 160,
+      width: 150,
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -39,30 +39,31 @@ class AccountCard extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Account icon + sync indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   color: account.accentColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(
                   account.icon,
-                  size: 18,
+                  size: 14,
                   color: account.accentColor,
                 ),
               ),
               Container(
-                width: 8,
-                height: 8,
+                width: 6,
+                height: 6,
                 decoration: BoxDecoration(
                   color: AppTheme.incomeColor,
                   shape: BoxShape.circle,
@@ -70,48 +71,48 @@ class AccountCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           // Account name
           Text(
             account.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 1),
           // Account type (secondary)
           Text(
             account.type,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               color: AppTheme.textSecondary,
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 6),
           // Balance
           Text(
             CurrencyFormatter.format(account.balance),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
               fontFamily: 'Courier',
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           // Updated time
           Text(
             '2m ago',
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: AppTheme.textSecondary,
             ),
           ),

@@ -422,11 +422,11 @@ class _DashboardBody extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 120,
+          height: 115,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: accounts.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, index) => AccountCard(
               account: accounts[index],
             ),
