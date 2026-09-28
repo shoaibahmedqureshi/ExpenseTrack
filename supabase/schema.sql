@@ -54,6 +54,21 @@ create table if not exists public.expenses (
   updated_at  timestamptz not null default now()
 );
 
+-- ── Accounts ─────────────────────────────────────────────────
+create table if not exists public.accounts (
+  id          bigserial primary key,
+  user_id     uuid not null references public.profiles(id) on delete cascade,
+  name        text not null,
+  account_type text not null,     -- checking, savings, wallet, cash, etc.
+  last_four   text,               -- last 4 digits or identifier
+  balance     numeric(12,2) not null default 0,
+  icon_key    text,               -- for UI icon selection
+  color       text,               -- hex color code
+  is_linked   boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
 -- ── Budgets ──────────────────────────────────────────────────
 create table if not exists public.budgets (
   id          bigserial primary key,
@@ -70,6 +85,7 @@ create table if not exists public.budgets (
 alter table public.profiles  enable row level security;
 alter table public.categories enable row level security;
 alter table public.expenses  enable row level security;
+alter table public.accounts  enable row level security;
 alter table public.budgets   enable row level security;
 
 -- Profiles: users can read, insert, and update only their own row.
@@ -91,6 +107,10 @@ create policy "categories_all" on public.categories for all
 create policy "expenses_all" on public.expenses for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- Accounts: full CRUD on own rows.
+create policy "accounts_all" on public.accounts for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 -- Budgets: full CRUD on own rows.
 create policy "budgets_all" on public.budgets for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -99,6 +119,7 @@ create policy "budgets_all" on public.budgets for all
 create index if not exists idx_expenses_user   on public.expenses(user_id);
 create index if not exists idx_expenses_date   on public.expenses(date desc);
 create index if not exists idx_categories_user on public.categories(user_id);
+create index if not exists idx_accounts_user   on public.accounts(user_id);
 create index if not exists idx_budgets_user    on public.budgets(user_id);
 create index if not exists idx_budgets_month   on public.budgets(month desc);
 

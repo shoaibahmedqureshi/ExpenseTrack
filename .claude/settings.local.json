@@ -366,7 +366,13 @@
       "Bash(unzip -q stitch_outlay_pro_design_handoff.zip)",
       "Bash(unzip -q \"stitch_outlay_pro_design_handoff \\(2\\).zip\")",
       "Bash(rm -rf \"stitch_outlay_pro_design_handoff \\(2\\)\")",
-      "Bash(unzip -qo \"stitch_outlay_pro_design_handoff \\(2\\).zip\" -d \"stitch_designs_v2\")"
+      "Bash(unzip -qo \"stitch_outlay_pro_design_handoff \\(2\\).zip\" -d \"stitch_designs_v2\")",
+      "Bash(chmod +x /tmp/send_smtp_emails.sh)",
+      "Bash(/tmp/send_smtp_emails.sh)",
+      "Bash(curl -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent -H 'Authorization: Bearer sb_secret_REDACTED' -H 'Content-Type: application/json' -d '{\"action\": \"send_approved_emails\"}')",
+      "Bash(node send_emails.js)",
+      "Bash(curl -s -H 'Authorization: Bearer sb_secret_REDACTED' -H 'apikey: sb_secret_REDACTED' 'https://xgavxbuezmivnseyhkye.supabase.co/rest/v1/email_drafts?status=eq.approved&limit=1')",
+      "Bash(pkill -f \"flutter run\")"
     ]
   }
 }

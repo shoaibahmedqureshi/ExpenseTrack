@@ -6,7 +6,6 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splits/presentation/screens/splits_screen.dart';
 import '../../features/family/presentation/screens/family_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../../features/receipt_scanner/presentation/widgets/scan_fab.dart';
 
 const _tabLabels = ['Dashboard', 'Accounts', 'Splits', 'Family', 'Settings'];
 const _tabIcons = [

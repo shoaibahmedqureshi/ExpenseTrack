@@ -15,6 +15,18 @@ import 'features/auth/data/auth_repository_impl.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 
+import 'features/accounts/data/repositories/account_repository_impl.dart';
+import 'features/accounts/presentation/providers/account_provider.dart';
+
+import 'features/scanner/data/repositories/scanner_repository_impl.dart';
+import 'features/scanner/data/services/receipt_parser_service.dart';
+import 'features/scanner/presentation/providers/scanner_provider.dart';
+
+import 'features/import/presentation/providers/import_provider.dart';
+
+import 'features/notifications/data/repositories/notification_repository_impl.dart';
+import 'features/notifications/presentation/providers/notification_provider.dart';
+
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/presentation/providers/category_provider.dart';
 
@@ -33,6 +45,7 @@ import 'features/budgets/presentation/providers/budget_provider.dart';
 import 'core/widgets/main_shell.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'features/reports/presentation/providers/reports_provider.dart';
+import 'features/reports/presentation/providers/tax_report_provider.dart';
 import 'features/sync/sync_service.dart';
 import 'features/subscription/data/subscription_service.dart';
 
@@ -60,6 +73,27 @@ void main() async {
           create: (_) => SubscriptionService(prefs),
         ),
         ChangeNotifierProvider(
+          create: (_) => AccountProvider(
+            repository: AccountRepositoryImpl(supabase: Supabase.instance.client),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ScannerProvider(
+            repository: ScannerRepositoryImpl(
+              supabase: Supabase.instance.client,
+              parserService: ReceiptParserService(),
+            ),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ImportProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(
+            repository: NotificationRepositoryImpl(prefs: prefs),
+          ),
+        ),
+        ChangeNotifierProvider(
           create: (_) => CategoryProvider(CategoryRepositoryImpl(db)),
         ),
         ChangeNotifierProvider(
@@ -78,6 +112,9 @@ void main() async {
             final repo = ExpenseRepositoryImpl(datasource);
             return ReportsProvider(getExpenses: GetExpensesUsecase(repo));
           },
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TaxReportProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) {

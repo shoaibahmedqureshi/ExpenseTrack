@@ -47,69 +47,89 @@ async function logAgentAction(
 }
 
 async function findInfluencers(): Promise<InfluencerProspect[]> {
-  console.log("🔍 Searching for influencers...");
+  console.log("🔍 Searching for TikTok creators for Stitchify...");
 
   const niches = [
-    "personal finance",
-    "expense tracking",
-    "budgeting",
-    "financial tips",
-    "money management",
-  ];
-  const platforms: ("instagram" | "tiktok" | "youtube")[] = [
-    "instagram",
-    "tiktok",
-    "youtube",
+    "photography",
+    "photo editing",
+    "visual content",
+    "image stitching",
+    "photo combining",
+    "creative content",
+    "travel photography",
+    "lifestyle photography",
+    "content creation",
   ];
 
+  // TikTok only for Stitchify
+  const platform = "tiktok";
   const prospects: InfluencerProspect[] = [];
 
-  for (const platform of platforms) {
-    try {
-      const response = await claude.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 1024,
-        messages: [
-          {
-            role: "user",
-            content: `Find 3-5 micro to mid-tier influencers on ${platform} in these niches: ${niches.join(", ")}.
+  try {
+    const response = await claude.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      messages: [
+        {
+          role: "user",
+          content: `Find 5-10 TikTok creators in these niches: ${niches.join(", ")}.
 
-Focus on:
-1. Engagement rate > 3% (estimated)
-2. Authentic audience (not bot followers)
-3. Regular posting about personal finance/budgeting
-4. Audience size: 10k-500k followers
-5. Likely email contact available
+Criteria:
+1. Follower count: 1,000+ (micro-influencers welcome)
+2. Engagement rate > 2% (estimated)
+3. Authentic audience (not bot followers)
+4. Regular posting about photography, visual content, or photo editing
+5. Likely to have email or contact info available
 
-Return JSON array with: handle, estimated_followers, niche, engagement_description, contact_email_guess
+These creators are perfect for promoting Stitchify - a photo combining/stitching app that helps combine multiple photos into one seamless image.
 
-${platform.toUpperCase()} Search tip: Look for hashtags like #personalfinance #budgettips #moneysaving`,
-          },
-        ],
-      });
+Return VALID JSON array with objects like:
+[
+  {"handle": "creator_name", "estimated_followers": 15000, "niche": "photography", "engagement_description": "high engagement", "contact_email_guess": "creator@example.com"},
+  ...
+]
 
-      const content = response.content[0];
-      if (content.type === "text") {
-        try {
-          const influencers = JSON.parse(content.text);
-          for (const inf of influencers) {
-            prospects.push({
-              platform: platform as "instagram" | "tiktok" | "youtube",
-              handle: inf.handle || "",
-              follower_count: inf.estimated_followers || 0,
-              engagement_rate: 0.05, // Placeholder
-              niche: inf.niche || "personal finance",
-              email: inf.contact_email_guess || "",
-              contact_method: "email",
-            });
-          }
-        } catch (e) {
-          console.error(`Error parsing influencers for ${platform}:`, e);
+IMPORTANT: Return valid JSON only, no markdown code blocks.
+
+Hashtags to search: #photography #photoediting #contentcreator #visualcontent #photostitching #imagecombine #creativecontent #travelphotography`,
+        },
+      ],
+    });
+
+    const content = response.content[0];
+    if (content.type === "text") {
+      try {
+        // Parse JSON - remove markdown code blocks if present
+        let jsonText = content.text.trim();
+        if (jsonText.startsWith("```json")) {
+          jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+        } else if (jsonText.startsWith("```")) {
+          jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
         }
+
+        const influencers = JSON.parse(jsonText);
+        if (Array.isArray(influencers)) {
+          for (const inf of influencers) {
+            if (inf.handle && inf.estimated_followers >= 1000) {
+              prospects.push({
+                platform: "tiktok",
+                handle: inf.handle || "",
+                follower_count: inf.estimated_followers || 0,
+                engagement_rate: 0.03, // Conservative estimate
+                niche: inf.niche || "photography",
+                email: inf.contact_email_guess || "",
+                contact_method: "email",
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error(`Error parsing TikTok creators:`, e);
+        console.error(`Raw response: ${content.text.substring(0, 200)}`);
       }
-    } catch (error) {
-      console.error(`Error searching ${platform}:`, error);
     }
+  } catch (error) {
+    console.error(`Error searching TikTok:`, error);
   }
 
   return prospects;
@@ -126,21 +146,33 @@ async function analyzeInfluencerFit(prospect: InfluencerProspect): Promise<{
       messages: [
         {
           role: "user",
-          content: `Rate the fit of @${prospect.handle} (${prospect.platform}, ${prospect.follower_count} followers, ${prospect.niche} niche) for promoting Outlay expense tracker.
+          content: `Rate the fit of @${prospect.handle} (${prospect.platform}, ${prospect.follower_count} followers, niche: ${prospect.niche}) for promoting Stitchify - a photo combining/stitching app.
 
-Score 1-10 where:
-10 = Perfect fit (financial niche, right audience size)
-5 = Could work (some alignment)
-1 = Poor fit (wrong audience)
+Scoring guide:
+10 = Perfect fit: Creates photo content, travel/lifestyle creator, audience regularly shares photos
+8-9 = Great fit: Photography/visual content, audience would benefit from photo combining
+6-7 = Good fit: Content sometimes involves photos, could add value to their audience
+4-5 = Moderate fit: Creative/visual content but not primarily photo-focused
+1-3 = Poor fit: Niche doesn't align with photo content
 
-Return JSON: {fit_score: number, reasoning: "brief explanation"}`,
+Return VALID JSON: {"fit_score": number, "reasoning": "brief explanation"}`,
         },
       ],
     });
 
     const content = response.content[0];
     if (content.type === "text") {
-      return JSON.parse(content.text);
+      try {
+        let jsonText = content.text.trim();
+        if (jsonText.startsWith("```json")) {
+          jsonText = jsonText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+        } else if (jsonText.startsWith("```")) {
+          jsonText = jsonText.replace(/^```\n?/, "").replace(/\n?```$/, "");
+        }
+        return JSON.parse(jsonText);
+      } catch (e) {
+        console.error(`Error parsing fit score:`, e);
+      }
     }
   } catch (error) {
     console.error(`Error analyzing fit for @${prospect.handle}:`, error);
@@ -157,18 +189,25 @@ async function draftOutreach(prospect: InfluencerProspect): Promise<string> {
       messages: [
         {
           role: "user",
-          content: `Draft a personalized outreach message to @${prospect.handle} on ${prospect.platform}.
+          content: `Draft a personalized outreach message to @${prospect.handle} on TikTok.
 
-They are interested in: ${prospect.niche}
+They create content about: ${prospect.niche}
 Follower count: ${prospect.follower_count}
 
-Pitch:
-"Hi [Name], I found your amazing content about ${prospect.niche}. Your audience would love Outlay - our expense tracking app helps people manage budgets effortlessly. We'd love to partner with you. Free yearly subscription + revenue share opportunity."
+Partnership offer - TWO premium apps, free for 1 year (up to 5 users each):
+1. Stitchify Premium - Photo combining/stitching app (perfect for combining travel photos, event collages, before/afters)
+2. Outlay Pro - Expense tracking app (for personal finance content)
 
-Keep it:
-- Personal and genuine (not spammy)
-- Under 150 words
-- End with: "Interested? Let's chat!"`,
+Draft an authentic, casual message that:
+1. Opens with genuine acknowledgment of their content style
+2. Explains how BOTH apps benefit their audience
+3. States the offer: "1 year free Stitchify Premium + 1 year free Outlay Pro (up to 5 users each)"
+4. Emphasizes they can create authentic content with both tools
+5. Keep it under 120 words
+6. Ends with clear CTA ("Would you be interested?" or "Let me know if this is something you'd like to explore!")
+
+Important: No revenue share mentioned. This is about providing free premium access for 1 year.
+Keep it genuine, not sales-y. TikTok creators respond to personalized, honest pitches.`,
         },
       ],
     });
@@ -216,7 +255,8 @@ async function saveInfluencerProspect(prospect: InfluencerProspect) {
 async function sendEmailViaSMTP(
   to: string,
   subject: string,
-  body: string
+  body: string,
+  fromName: string
 ): Promise<boolean> {
   try {
     const smtpHost = Deno.env.get("NAMECHEAP_SMTP_HOST") || "mail.namecheap.com";
@@ -225,35 +265,64 @@ async function sendEmailViaSMTP(
     const smtpPassword = Deno.env.get("NAMECHEAP_SMTP_PASSWORD") || "";
     const fromEmail = Deno.env.get("AGENT_EMAIL_FROM") || smtpUser;
 
-    const message = `From: ${fromEmail}\r\nTo: ${to}\r\nSubject: ${subject}\r\n\r\n${body}`;
+    console.log(`📧 Sending email to ${to}`);
+    console.log(`   Subject: ${subject}`);
+    console.log(`   From: "${fromName}" <${fromEmail}>`);
 
+    // Use Deno's native TCP capabilities to connect to SMTP
+    const conn = await Deno.connect({ hostname: smtpHost, port: smtpPort });
     const encoder = new TextEncoder();
-    const encodedMessage = encoder.encode(message);
+    const decoder = new TextDecoder();
 
-    const response = await fetch(`smtp://${smtpHost}:${smtpPort}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to,
-        from: fromEmail,
-        subject,
-        text: body,
-      }),
-    }).catch((e) => {
-      console.error("SMTP fetch failed, trying direct connection:", e);
-      return null;
-    });
-
-    if (!response) {
-      console.log(
-        `Email would be sent to ${to} (SMTP test mode - no actual connection)`
-      );
-      return true;
+    async function sendCommand(cmd: string): Promise<string> {
+      await conn.write(encoder.encode(cmd + "\r\n"));
+      const buffer = new Uint8Array(1024);
+      const n = await conn.read(buffer);
+      return decoder.decode(buffer.subarray(0, n));
     }
 
-    console.log(`✉️ Email sent to ${to}`);
+    // SMTP handshake
+    let response = await sendCommand("EHLO mail.namecheap.com");
+    if (!response.includes("250")) throw new Error(`EHLO failed: ${response}`);
+
+    response = await sendCommand("AUTH LOGIN");
+    if (!response.includes("334")) throw new Error(`AUTH LOGIN failed: ${response}`);
+
+    const userBase64 = btoa(smtpUser);
+    response = await sendCommand(userBase64);
+    if (!response.includes("334")) throw new Error(`Username auth failed: ${response}`);
+
+    const passBase64 = btoa(smtpPassword);
+    response = await sendCommand(passBase64);
+    if (!response.includes("235")) throw new Error(`Password auth failed: ${response}`);
+
+    response = await sendCommand(`MAIL FROM:<${fromEmail}>`);
+    if (!response.includes("250")) throw new Error(`MAIL FROM failed: ${response}`);
+
+    response = await sendCommand(`RCPT TO:<${to}>`);
+    if (!response.includes("250")) throw new Error(`RCPT TO failed: ${response}`);
+
+    response = await sendCommand("DATA");
+    if (!response.includes("354")) throw new Error(`DATA failed: ${response}`);
+
+    const emailMessage = `From: "${fromName}" <${fromEmail}>\r\nTo: ${to}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}\r\n.`;
+    response = await sendCommand(emailMessage);
+    if (!response.includes("250")) throw new Error(`Message send failed: ${response}`);
+
+    await sendCommand("QUIT");
+    conn.close();
+
+    console.log(`✅ Email sent successfully to ${to}`);
+
+    // Update database
+    await supabase
+      .from("email_drafts")
+      .update({
+        status: "sent",
+        sent_date: new Date().toISOString()
+      })
+      .eq("recipient_email", to);
+
     return true;
   } catch (error) {
     console.error(`Error sending email to ${to}:`, error);
@@ -274,8 +343,8 @@ async function createEmailDraft(
       recipient_name: prospect.handle,
       recipient_email: prospect.email || `${prospect.handle}@${prospect.platform}.com`,
       recipient_platform: prospect.platform,
-      recipient_url: `https://${prospect.platform}.com/${prospect.handle}`,
-      subject: `Collaboration Opportunity - Outlay Expense Tracker`,
+      recipient_url: `https://tiktok.com/@${prospect.handle}`,
+      subject: `Partnership: Free Stitchify + Revenue Share for Creators`,
       body: message,
       status: draftStatus,
       metadata: {
@@ -284,13 +353,15 @@ async function createEmailDraft(
         follower_count: prospect.follower_count,
         engagement_rate: prospect.engagement_rate,
         niche: prospect.niche,
+        product: "stitchify",
+        offer: "free_yearly_subscription + 20_percent_revenue_share",
       },
     }).select();
 
     if (draftStatus === "pending_review") {
-      console.log(`⭐ HIGH-VALUE draft created for @${prospect.handle} (fit: ${fitScore}/10)`);
+      console.log(`⭐ HIGH-POTENTIAL creator for Stitchify: @${prospect.handle} (fit: ${fitScore}/10)`);
     } else {
-      console.log(`✅ Auto-approved draft created for @${prospect.handle} (fit: ${fitScore}/10)`);
+      console.log(`✅ Outreach ready for @${prospect.handle} (fit: ${fitScore}/10)`);
     }
 
     return data?.[0]?.id;
@@ -319,86 +390,93 @@ async function flagHighValueOpportunity(
 }
 
 async function main() {
-  console.log("🚀 Influencer Agent Starting...");
+  console.log("🚀 Stitchify Influencer Agent - EMAIL SENDING MODE");
 
   try {
-    // Step 1: Find influencers
-    const prospects = await findInfluencers();
-    console.log(`Found ${prospects.length} potential influencers`);
+    // Step 1: Get all approved emails ready to send
+    const { data: approvedDrafts } = await supabase
+      .from("email_drafts")
+      .select("*")
+      .eq("status", "approved")
+      .eq("metadata->>product", "stitchify");
 
-    await logAgentAction(
-      "influencer",
-      "find_influencers",
-      "success",
-      { prospects_found: prospects.length }
-    );
+    console.log(`📧 Found ${approvedDrafts?.length || 0} approved emails to send`);
 
-    // Step 2: Analyze and process each prospect
-    let high_value_count = 0;
-    let auto_sent_count = 0;
+    let sent_count = 0;
+    let failed_count = 0;
 
-    for (const prospect of prospects.slice(0, 5)) {
-      // Limit to 5 per run
-      // Save prospect
-      const prospect_id = await saveInfluencerProspect(prospect);
-      if (!prospect_id) continue;
+    // Step 2: Send each approved email
+    if (approvedDrafts && approvedDrafts.length > 0) {
+      for (const draft of approvedDrafts) {
+        const success = await sendEmailViaSMTP(
+          draft.recipient_email,
+          draft.subject,
+          draft.body,
+          draft.recipient_name
+        );
 
-      // Analyze fit
-      const { fit_score, reasoning } = await analyzeInfluencerFit(prospect);
-      console.log(
-        `@${prospect.handle}: Fit score ${fit_score}/10 - ${reasoning}`
-      );
-
-      // Draft outreach
-      const message = await draftOutreach(prospect);
-
-      // Create email draft (approval workflow)
-      const draftId = await createEmailDraft(prospect, message, fit_score);
-
-      if (fit_score >= 8) {
-        // High value - flag for review
-        high_value_count++;
-      } else {
-        // Low/medium fit - auto-approved (ready to send)
-        auto_sent_count++;
+        if (success) {
+          sent_count++;
+          console.log(
+            `✅ Email sent to @${draft.recipient_name} (${draft.recipient_email})`
+          );
+        } else {
+          failed_count++;
+          console.log(
+            `❌ Failed to send to @${draft.recipient_name} (${draft.recipient_email})`
+          );
+        }
       }
     }
 
+    // Step 3: Log the sending action
     await logAgentAction(
       "influencer",
-      "analyze_and_outreach",
+      "send_emails",
       "success",
       {
-        prospects_processed: Math.min(prospects.length, 5),
-        auto_sent_outreach: auto_sent_count,
-        high_value_opportunities: high_value_count,
+        emails_sent: sent_count,
+        emails_failed: failed_count,
+        total_reach: approvedDrafts?.reduce(
+          (sum, d) => sum + (d.metadata?.follower_count || 0),
+          0
+        ) || 0,
+        product: "stitchify",
+        platform: "tiktok",
       }
     );
 
-    console.log("✅ Influencer Agent completed successfully");
+    console.log("✅ Stitchify Email Campaign Completed");
 
     return {
       status: "success",
-      mode: "approval_workflow",
-      prospects_found: prospects.length,
-      drafts_created: auto_sent_count + high_value_count,
-      auto_approved: auto_sent_count,
-      pending_review: high_value_count,
+      product: "stitchify",
+      platform: "tiktok",
+      mode: "email_sending",
+      emails_sent: sent_count,
+      emails_failed: failed_count,
+      total_emails: approvedDrafts?.length || 0,
+      total_reach: approvedDrafts?.reduce(
+        (sum, d) => sum + (d.metadata?.follower_count || 0),
+        0
+      ) || 0,
+      offer: "1 year free Stitchify Premium + 1 year free Outlay Pro (up to 5 users each)",
       timestamp: new Date().toISOString(),
-      action: "Check Supabase email_drafts table for approval",
+      next_step: "Monitor responses in email_drafts table",
     };
   } catch (error) {
-    console.error("❌ Influencer Agent error:", error);
+    console.error("❌ Agent error:", error);
 
     await logAgentAction(
       "influencer",
       "agent_run",
       "error",
-      { error: String(error) }
+      { error: String(error), product: "stitchify" }
     );
 
     return {
       status: "error",
+      product: "stitchify",
       error: String(error),
       timestamp: new Date().toISOString(),
     };

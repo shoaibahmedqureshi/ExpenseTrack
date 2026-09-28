@@ -38,6 +38,7 @@ dependencies:
   intl: ^0.19.0
   google_mlkit_text_recognition: ^0.16.0
   image_picker: ^1.1.2
+  file_picker: ^6.0.0
   image: ^4.9.1
   # Native guided capture: ML Kit Document Scanner UI on Android, VisionKit
   # on iOS — live edge detection, auto-crop/perspective correction, flash.
@@ -67,6 +68,7 @@ dependencies:
   share_plus: ^10.0.0
   url_launcher: ^6.3.1
   webview_flutter: ^4.10.0
+  pdfx: ^2.4.0
 
 dev_dependencies:
   flutter_test:
