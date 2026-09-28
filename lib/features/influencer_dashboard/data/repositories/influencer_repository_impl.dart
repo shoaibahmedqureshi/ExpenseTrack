@@ -223,8 +223,8 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .select('revenue_amount')
         .eq('user_id', userId);
 
-    return (response as List)
-        .fold(0.0, (sum, r) => sum + (r['revenue_amount'] as num).toDouble());
+    return (response as List).fold<double>(
+        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
   }
 
   @override
@@ -239,8 +239,8 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .gte('transaction_date', startOfMonth.toIso8601String());
 
     final response = await query;
-    return (response as List)
-        .fold(0.0, (sum, r) => sum + (r['revenue_amount'] as num).toDouble());
+    return (response as List).fold<double>(
+        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
   }
 
   @override
@@ -255,8 +255,8 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .gte('transaction_date', startOfYear.toIso8601String());
 
     final response = await query;
-    return (response as List)
-        .fold(0.0, (sum, r) => sum + (r['revenue_amount'] as num).toDouble());
+    return (response as List).fold<double>(
+        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
   }
 
   @override
