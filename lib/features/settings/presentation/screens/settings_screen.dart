@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
+import '../../../influencer_dashboard/presentation/screens/influencer_dashboard_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -45,6 +46,24 @@ class SettingsScreen extends StatelessWidget {
                       builder: (_) => PendingInvitationsScreen(
                         userEmail: userEmail,
                       ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          _SettingSection(
+            title: 'Influencer',
+            children: [
+              _SettingTile(
+                icon: Icons.trending_up,
+                title: 'Revenue Dashboard',
+                subtitle: 'Track influencer codes',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const InfluencerDashboardScreen(),
                     ),
                   );
                 },

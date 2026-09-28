@@ -30,6 +30,9 @@ import 'features/notifications/presentation/providers/notification_provider.dart
 import 'features/family_accounts/data/repositories/family_repository_impl.dart';
 import 'features/family_accounts/presentation/providers/family_provider.dart';
 
+import 'features/influencer_dashboard/data/repositories/influencer_repository_impl.dart';
+import 'features/influencer_dashboard/presentation/providers/influencer_provider.dart';
+
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/presentation/providers/category_provider.dart';
 
@@ -100,6 +103,13 @@ void main() async {
           create: (_) => FamilyProvider(
             repository: FamilyRepositoryImpl(supabase: Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => InfluencerProvider(
+            repository: InfluencerRepositoryImpl(
+              supabase: Supabase.instance.client,
+            ),
           ),
         ),
         ChangeNotifierProvider(
