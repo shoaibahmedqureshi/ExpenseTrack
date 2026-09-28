@@ -27,6 +27,9 @@ import 'features/import/presentation/providers/import_provider.dart';
 import 'features/notifications/data/repositories/notification_repository_impl.dart';
 import 'features/notifications/presentation/providers/notification_provider.dart';
 
+import 'features/family_accounts/data/repositories/family_repository_impl.dart';
+import 'features/family_accounts/presentation/providers/family_provider.dart';
+
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/presentation/providers/category_provider.dart';
 
@@ -91,6 +94,12 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => NotificationProvider(
             repository: NotificationRepositoryImpl(prefs: prefs),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FamilyProvider(
+            repository: FamilyRepositoryImpl(supabase: Supabase.instance.client),
+            getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
           ),
         ),
         ChangeNotifierProvider(
