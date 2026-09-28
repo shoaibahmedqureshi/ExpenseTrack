@@ -69,7 +69,14 @@ class SubscriptionService extends ChangeNotifier {
   // and Google Play Console.
   static const String kProMonthlyId = 'expense_tracker_pro_monthly';
   static const String kProAnnualId = 'expense_tracker_pro_annual';
-  static const Set<String> _kProductIds = {kProMonthlyId, kProAnnualId};
+  static const String kMaxMonthlyId = 'expense_tracker_max_monthly';
+  static const String kMaxAnnualId = 'expense_tracker_max_annual';
+  static const Set<String> _kProductIds = {
+    kProMonthlyId,
+    kProAnnualId,
+    kMaxMonthlyId,
+    kMaxAnnualId,
+  };
 
   // SharedPreferences keys. _kScanMonth/_kScanCount are a display cache of
   // the server-authoritative count in Supabase's scan_counts table — never
@@ -112,6 +119,10 @@ class SubscriptionService extends ChangeNotifier {
 
   ProductDetails? get annualProduct => _basePlanProduct(kProAnnualId);
 
+  ProductDetails? get maxMonthlyProduct => _basePlanProduct(kMaxMonthlyId);
+
+  ProductDetails? get maxAnnualProduct => _basePlanProduct(kMaxAnnualId);
+
   /// Android's queryProductDetails returns one [GooglePlayProductDetails]
   /// per *offer* on a subscription (base plan + every configured offer,
   /// e.g. an influencer discount), all sharing the same product id — not
@@ -138,6 +149,18 @@ class SubscriptionService extends ChangeNotifier {
       }
     }
     return matches.firstOrNull;
+  }
+
+  SubscriptionPlan? _planFromProductId(String? productId) {
+    return productId == kMaxAnnualId
+        ? SubscriptionPlan.maxAnnual
+        : productId == kMaxMonthlyId
+            ? SubscriptionPlan.maxMonthly
+            : productId == kProAnnualId
+                ? SubscriptionPlan.proAnnual
+                : productId == kProMonthlyId
+                    ? SubscriptionPlan.proMonthly
+                    : null;
   }
 
   Future<void> _init() async {
@@ -199,11 +222,7 @@ class SubscriptionService extends ChangeNotifier {
         return;
       }
       final productId = result['productId'] as String?;
-      final plan = productId == kProAnnualId
-          ? SubscriptionPlan.proAnnual
-          : productId == kProMonthlyId
-              ? SubscriptionPlan.proMonthly
-              : null;
+      final plan = _planFromProductId(productId);
       if (plan != null) {
         await _prefs.setString(_kPlan, plan.name);
       }
@@ -215,11 +234,7 @@ class SubscriptionService extends ChangeNotifier {
       // the currently-active `plan` exactly when a downgrade/crossgrade
       // (e.g. Annual → Monthly) is pending but hasn't taken effect yet.
       final autoRenewProductId = result['autoRenewProductId'] as String?;
-      _pendingPlan = autoRenewProductId == kProAnnualId
-          ? SubscriptionPlan.proAnnual
-          : autoRenewProductId == kProMonthlyId
-              ? SubscriptionPlan.proMonthly
-              : null;
+      _pendingPlan = _planFromProductId(autoRenewProductId);
       notifyListeners();
     } catch (e) {
       debugPrint('[SubscriptionService] getSubscriptionStatus failed: $e');

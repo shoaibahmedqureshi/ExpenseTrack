@@ -421,3 +421,150 @@ $$;
 
 grant execute on function public.check_auth_email_rate_limit(text, int, int)
   to anon, authenticated;
+
+-- ── Family Accounts (Phase 2: MAX subscription tier) ──────────────────
+-- Enables multi-user family account management for MAX tier subscribers
+create table if not exists public.family_groups (
+  id            bigserial primary key,
+  user_id       uuid not null references public.profiles(id) on delete cascade,  -- creator
+  name          text not null,
+  description   text,
+  avatar_url    text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
+create table if not exists public.family_members (
+  id            bigserial primary key,
+  family_id     bigint not null references public.family_groups(id) on delete cascade,
+  user_id       uuid not null references public.profiles(id) on delete cascade,
+  role          text not null check (role in ('admin', 'member', 'viewer')),
+  joined_at     timestamptz not null default now()
+);
+
+create table if not exists public.family_invitations (
+  id            bigserial primary key,
+  family_id     bigint not null references public.family_groups(id) on delete cascade,
+  invited_email text not null,
+  invited_by    uuid not null references public.profiles(id) on delete cascade,
+  role          text not null check (role in ('member', 'viewer')),
+  status        text not null default 'pending' check (status in ('pending', 'accepted', 'rejected', 'expired')),
+  created_at    timestamptz not null default now(),
+  expires_at    timestamptz not null default now() + interval '7 days'
+);
+
+alter table public.family_groups enable row level security;
+alter table public.family_members enable row level security;
+alter table public.family_invitations enable row level security;
+
+-- Family Groups: users can read and manage families they are members of
+create policy "family_groups_select" on public.family_groups
+  for select using (
+    auth.uid() in (
+      select user_id from public.family_members where family_id = family_groups.id
+    ) or auth.uid() = user_id
+  );
+
+create policy "family_groups_insert" on public.family_groups
+  for insert with check (auth.uid() = user_id);
+
+create policy "family_groups_update" on public.family_groups
+  for update using (
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_groups.id and role = 'admin'
+    ) or auth.uid() = user_id
+  );
+
+create policy "family_groups_delete" on public.family_groups
+  for delete using (auth.uid() = user_id);
+
+-- Family Members: members can view their own family's members
+create policy "family_members_select" on public.family_members
+  for select using (
+    auth.uid() in (
+      select user_id from public.family_members where family_id = family_members.family_id
+    )
+  );
+
+create policy "family_members_insert" on public.family_members
+  for insert with check (
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_members.family_id and role = 'admin'
+    )
+  );
+
+create policy "family_members_update" on public.family_members
+  for update using (
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_members.family_id and role = 'admin'
+    )
+  );
+
+create policy "family_members_delete" on public.family_members
+  for delete using (
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_members.family_id and role = 'admin'
+    )
+  );
+
+-- Family Invitations: users can view and manage their own invitations
+create policy "family_invitations_select" on public.family_invitations
+  for select using (
+    invited_email = auth.jwt() ->> 'email'
+  );
+
+create policy "family_invitations_insert" on public.family_invitations
+  for insert with check (
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_invitations.family_id and role = 'admin'
+    )
+  );
+
+create policy "family_invitations_update" on public.family_invitations
+  for update using (
+    invited_email = auth.jwt() ->> 'email' or
+    auth.uid() in (
+      select user_id from public.family_members 
+      where family_id = family_invitations.family_id and role = 'admin'
+    )
+  );
+
+-- Indexes for performance
+create index if not exists idx_family_groups_user on public.family_groups(user_id);
+create index if not exists idx_family_members_family on public.family_members(family_id);
+create index if not exists idx_family_members_user on public.family_members(user_id);
+create index if not exists idx_family_invitations_family on public.family_invitations(family_id);
+create index if not exists idx_family_invitations_email on public.family_invitations(invited_email);
+
+-- ── Influencer Revenue (Phase 2: MAX subscription tier) ──────────────────
+-- Tracks subscription revenue attributed to influencer codes
+create table if not exists public.influencer_revenue (
+  id               bigserial primary key,
+  user_id          uuid not null references public.profiles(id) on delete cascade,
+  family_id        bigint references public.family_groups(id) on delete set null,
+  influencer_code  text not null,
+  subscription_plan text not null,  -- max_monthly, max_annual, pro_monthly, pro_annual
+  revenue_amount   numeric(10,2) not null,
+  currency         text not null default 'PKR',
+  transaction_date timestamptz not null default now(),
+  created_at       timestamptz not null default now()
+);
+
+alter table public.influencer_revenue enable row level security;
+
+-- Influencer Revenue: users can view their own revenue records
+create policy "influencer_revenue_select" on public.influencer_revenue
+  for select using (auth.uid() = user_id);
+
+create policy "influencer_revenue_insert" on public.influencer_revenue
+  for insert with check (auth.uid() = user_id);
+
+-- Indexes for performance
+create index if not exists idx_influencer_revenue_user on public.influencer_revenue(user_id);
+create index if not exists idx_influencer_revenue_code on public.influencer_revenue(influencer_code);
+create index if not exists idx_influencer_revenue_date on public.influencer_revenue(transaction_date desc);
