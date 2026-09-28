@@ -21,7 +21,9 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
   void initState() {
     super.initState();
     userId = Supabase.instance.client.auth.currentUser?.id ?? '';
-    _loadDashboardData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDashboardData();
+    });
   }
 
   void _loadDashboardData() {
