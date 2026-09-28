@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 import '../../features/accounts/presentation/screens/accounts_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splits/presentation/screens/splits_screen.dart';
-import '../../features/family/presentation/screens/family_screen.dart';
+import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
 const _tabLabels = ['Dashboard', 'Accounts', 'Splits', 'Family', 'Settings'];
@@ -46,7 +46,7 @@ class _MainShellState extends State<MainShell> {
       DashboardScreen(onSeeAllTransactions: () => setState(() => _index = 1)),
       const AccountsScreen(),
       const SplitsScreen(),
-      const FamilyScreen(),
+      const FamilySettingsScreen(),
       const SettingsScreen(),
     ];
     return Scaffold(
@@ -77,46 +77,44 @@ class _NavBar extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onTap(i),
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            // Fixed width for 5 tabs: adjusted from 78px (4-tab layout)
-            // to fit all tabs proportionally. With 5 tabs, smaller width
-            // ensures each tab has equal visual space without overlap.
-            width: 65,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            decoration: BoxDecoration(
-              color: active
-                  ? AppTheme.primaryColor.withOpacity(0.12)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  active ? _tabActiveIcons[i] : _tabIcons[i],
-                  size: 20,
-                  color: active ? AppTheme.primaryColor : AppTheme.textSecondary,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _tabLabels[i],
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10,
-                    height: 1.0,
-                    fontWeight: FontWeight.w600,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              decoration: BoxDecoration(
+                color: active
+                    ? AppTheme.primaryColor.withOpacity(0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    active ? _tabActiveIcons[i] : _tabIcons[i],
+                    size: 20,
                     color: active ? AppTheme.primaryColor : AppTheme.textSecondary,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    _tabLabels[i],
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1.0,
+                      fontWeight: FontWeight.w600,
+                      color: active ? AppTheme.primaryColor : AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
