@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../family_accounts/presentation/screens/family_settings_screen.dart';
+import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final userEmail = Supabase.instance.client.auth.currentUser?.email ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -12,6 +17,40 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          // Family Section (MAX Tier)
+          _SettingSection(
+            title: 'Family (MAX)',
+            children: [
+              _SettingTile(
+                icon: Icons.group,
+                title: 'Family Settings',
+                subtitle: 'Manage family & members',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FamilySettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _SettingTile(
+                icon: Icons.mail,
+                title: 'Pending Invitations',
+                subtitle: 'View family invites',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PendingInvitationsScreen(
+                        userEmail: userEmail,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           _SettingSection(
             title: 'App',
             children: [

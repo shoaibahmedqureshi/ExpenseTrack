@@ -20,6 +20,8 @@ import '../../../scanner/presentation/screens/scanner_screen.dart';
 import '../../../import/presentation/screens/import_screen.dart';
 import '../../../reports/presentation/screens/tax_report_screen.dart';
 import '../../../notifications/presentation/screens/notification_center_screen.dart';
+import '../../../family_accounts/presentation/providers/family_provider.dart';
+import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 import '../../../sync/sync_service.dart';
 import '../widgets/recurring_section.dart';
 
@@ -136,9 +138,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: Consumer4<ExpenseProvider, BudgetProvider, CategoryProvider, AccountProvider>(
+      body: Consumer5<ExpenseProvider, BudgetProvider, CategoryProvider, AccountProvider, FamilyProvider>(
         builder:
-            (context, expenseProvider, budgetProvider, categoryProvider, accountProvider, _) {
+            (context, expenseProvider, budgetProvider, categoryProvider, accountProvider, familyProvider, _) {
           // Full-screen loader only when there's truly nothing to show yet
           // (the very first load). Once hasLoadedOnce flips true, the
           // screen must never go blank again — a background sync firing
@@ -150,6 +152,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           }
+
+          // Load pending invitations on first build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final userEmail = context.read<AuthProvider>().profile?.email;
+            if (userEmail != null && familyProvider.pendingInvitations.isEmpty) {
+              familyProvider.loadPendingInvitations(userEmail);
+            }
+          });
+
           return ValueListenableBuilder<bool>(
             valueListenable: SyncService.isSyncingNotifier,
             builder: (context, isSyncing, child) {
@@ -161,6 +172,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       valueColor:
                           AlwaysStoppedAnimation(AppTheme.primaryColor),
                     ),
+                  // Pending Invitations Alert
+                  if (familyProvider.pendingInvitations.isNotEmpty)
+                    _buildPendingInvitationsAlert(context, familyProvider),
                   Expanded(child: child!),
                 ],
               );
@@ -263,6 +277,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPendingInvitationsAlert(BuildContext context, FamilyProvider familyProvider) {
+    final count = familyProvider.pendingInvitations.length;
+    final userEmail = context.read<AuthProvider>().profile?.email;
+
+    return Container(
+      color: AppTheme.primaryColor.withOpacity(0.1),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          const Icon(Icons.mail_outline, color: AppTheme.primaryColor, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'You have $count pending ${count == 1 ? 'invitation' : 'invitations'}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                const Text(
+                  'Tap to view and respond',
+                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                if (userEmail != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PendingInvitationsScreen(userEmail: userEmail),
+                    ),
+                  );
+                }
+              },
+              child: const Icon(
+                Icons.chevron_right,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
