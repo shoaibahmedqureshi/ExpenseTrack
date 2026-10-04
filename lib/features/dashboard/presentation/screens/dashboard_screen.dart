@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
-import '../../../accounts/domain/entities/account.dart';
-import '../../../accounts/presentation/providers/account_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../budgets/domain/entities/budget.dart';
 import '../../../budgets/presentation/providers/budget_provider.dart';
@@ -16,14 +14,7 @@ import '../../../expenses/domain/entities/expense.dart';
 import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
-import '../../../scanner/presentation/screens/scanner_screen.dart';
-import '../../../import/presentation/screens/import_screen.dart';
-import '../../../reports/presentation/screens/tax_report_screen.dart';
-import '../../../notifications/presentation/screens/notification_center_screen.dart';
-import '../../../family_accounts/presentation/providers/family_provider.dart';
-import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 import '../../../sync/sync_service.dart';
-import '../widgets/recurring_section.dart';
 
 // Kept deliberately short — the Dashboard is meant to be a glanceable
 // summary, not a second copy of the Transactions tab. "Show more" hands
@@ -55,7 +46,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context.read<ExpenseProvider>().loadAll();
       context.read<BudgetProvider>().load();
       context.read<CategoryProvider>().loadAll();
-      context.read<AccountProvider>().loadAll();
     });
   }
 
@@ -138,9 +128,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: Consumer5<ExpenseProvider, BudgetProvider, CategoryProvider, AccountProvider, FamilyProvider>(
+      body: Consumer3<ExpenseProvider, BudgetProvider, CategoryProvider>(
         builder:
-            (context, expenseProvider, budgetProvider, categoryProvider, accountProvider, familyProvider, _) {
+            (context, expenseProvider, budgetProvider, categoryProvider, _) {
           // Full-screen loader only when there's truly nothing to show yet
           // (the very first load). Once hasLoadedOnce flips true, the
           // screen must never go blank again — a background sync firing
@@ -152,15 +142,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           }
-
-          // Load pending invitations on first build
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final userEmail = context.read<AuthProvider>().profile?.email;
-            if (userEmail != null && familyProvider.pendingInvitations.isEmpty) {
-              familyProvider.loadPendingInvitations(userEmail);
-            }
-          });
-
           return ValueListenableBuilder<bool>(
             valueListenable: SyncService.isSyncingNotifier,
             builder: (context, isSyncing, child) {
@@ -172,9 +153,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       valueColor:
                           AlwaysStoppedAnimation(AppTheme.primaryColor),
                     ),
-                  // Pending Invitations Alert
-                  if (familyProvider.pendingInvitations.isNotEmpty)
-                    _buildPendingInvitationsAlert(context, familyProvider),
                   Expanded(child: child!),
                 ],
               );
@@ -189,7 +167,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 expenseProvider: expenseProvider,
                 budgetProvider: budgetProvider,
                 categoryProvider: categoryProvider,
-                accountProvider: accountProvider,
                 isYearView: _isYearView,
                 selectedYear: _selectedYear,
                 yearSummary: _yearSummary,
@@ -203,135 +180,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showPhase1bMenu(context),
-        tooltip: 'Phase 1b Tools',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _showPhase1bMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                'Phase 1b Tools',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Scan Receipt'),
-              subtitle: const Text('OCR extraction'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ScannerScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.file_download),
-              title: const Text('Import Bank Statement'),
-              subtitle: const Text('CSV or PDF'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ImportScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.assessment),
-              title: const Text('Tax Report'),
-              subtitle: const Text('Generate & export'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TaxReportScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
-              subtitle: const Text('View & manage'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NotificationCenterScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPendingInvitationsAlert(BuildContext context, FamilyProvider familyProvider) {
-    final count = familyProvider.pendingInvitations.length;
-    final userEmail = context.read<AuthProvider>().profile?.email;
-
-    return Container(
-      color: AppTheme.primaryColor.withOpacity(0.1),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.mail_outline, color: AppTheme.primaryColor, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'You have $count pending ${count == 1 ? 'invitation' : 'invitations'}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-                const Text(
-                  'Tap to view and respond',
-                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                if (userEmail != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PendingInvitationsScreen(userEmail: userEmail),
-                    ),
-                  );
-                }
-              },
-              child: const Icon(
-                Icons.chevron_right,
-                color: AppTheme.primaryColor,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -341,7 +189,6 @@ class _DashboardBody extends StatelessWidget {
     required this.expenseProvider,
     required this.budgetProvider,
     required this.categoryProvider,
-    required this.accountProvider,
     required this.isYearView,
     required this.selectedYear,
     required this.yearSummary,
@@ -355,7 +202,6 @@ class _DashboardBody extends StatelessWidget {
   final ExpenseProvider expenseProvider;
   final BudgetProvider budgetProvider;
   final CategoryProvider categoryProvider;
-  final AccountProvider accountProvider;
   final bool isYearView;
   final int selectedYear;
   final ({double budgeted, double spent})? yearSummary;
@@ -444,10 +290,7 @@ class _DashboardBody extends StatelessWidget {
           ],
         ),
         _BalanceHero(balance: balance, deltaPct: deltaPct),
-        const SizedBox(height: 18),
-        // Account Cards Section (Phase 1a)
-        _AccountCardsSection(),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _IncomeExpenseRow(income: income, expense: expense),
         const SizedBox(height: 18),
         if (isYearView && loadingYear)
@@ -471,9 +314,6 @@ class _DashboardBody extends StatelessWidget {
             expensesInPeriod:
                 expenseProvider.inRange(periodStart, periodEnd),
           ),
-        // Recurring This Month Section (Phase 1a)
-        const SizedBox(height: 16),
-        const RecurringSection(),
         if (isCurrentMonth) ...[
           const SizedBox(height: 14),
           _BurnRateLine(monthStart: monthStart, spentSoFar: expense),
@@ -507,162 +347,6 @@ class _DashboardBody extends StatelessWidget {
         ..._buildGroupedTransactions(
             expenseProvider.expenses.take(_recentTransactionCount).toList()),
       ],
-    );
-  }
-
-  Widget _AccountCardsSection() {
-    final accounts = accountProvider.accounts;
-    final isEmpty = accounts.isEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Linked Accounts',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // TODO: Navigate to Accounts tab
-              },
-              child: Text(
-                isEmpty ? 'Link account' : 'Manage (${accounts.length})',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (isEmpty)
-          Container(
-            height: 110,
-            decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
-            ),
-            child: const Center(
-              child: Text(
-                'No linked accounts yet',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-            ),
-          )
-        else
-          SizedBox(
-            height: 110,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: accounts.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 6),
-              itemBuilder: (context, index) =>
-                  _AccountCard(account: accounts[index]),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _AccountCard({required Account account}) {
-    return Container(
-      width: 145,
-      decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: account.getDisplayColor().withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Icon(
-                  account.getDisplayIcon(),
-                  size: 12,
-                  color: account.getDisplayColor(),
-                ),
-              ),
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppTheme.incomeColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 3),
-          Text(
-            account.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          Text(
-            account.displayIdentifier,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 8,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            CurrencyFormatter.format(account.balance),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-              fontFamily: 'Courier',
-            ),
-          ),
-          Text(
-            'Updated',
-            style: const TextStyle(
-              fontSize: 7,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
