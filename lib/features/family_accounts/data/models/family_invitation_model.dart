@@ -24,8 +24,11 @@ class FamilyInvitationModel extends FamilyInvitation {
     return FamilyInvitationModel(
       id: json['id'].toString(),
       familyGroupId: json['family_id'].toString(),
-      familyGroupName: json['family_group_name'] as String? ?? '',
-      invitedEmail: json['invited_email'] as String,
+      familyGroupName: (json['family_groups'] is Map
+          ? json['family_groups']['name']
+          : json['family_group_name']) as String? ??
+          '',
+      invitedEmail: (json['email'] ?? json['invited_email']) as String,
       invitedById: json['invited_by'] as String? ?? '',
       invitedByEmail: json['invited_by_email'] as String? ?? '',
       role: json['role'] as String? ?? 'member',
@@ -53,7 +56,7 @@ class FamilyInvitationModel extends FamilyInvitation {
   Map<String, dynamic> toInsertJson() {
     return {
       'family_id': int.tryParse(familyGroupId) ?? 0,
-      'invited_email': invitedEmail,
+      'email': invitedEmail,
       'invited_by': invitedById,
       'role': role,
     };

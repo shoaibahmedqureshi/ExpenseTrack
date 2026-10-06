@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/family_group.dart';
 import '../../domain/entities/family_member.dart';
@@ -23,6 +24,10 @@ class FamilyRepositoryImpl implements FamilyRepository {
     String? description,
     String? avatarUrl,
   }) async {
+    if ((await getUserFamilyGroups(userId)).isNotEmpty) {
+      throw Exception(
+          'You are already in a family. Leave it before creating a new one.');
+    }
     final response = await supabase
         .from('family_groups')
         .insert({
@@ -65,10 +70,18 @@ class FamilyRepositoryImpl implements FamilyRepository {
   @override
   Future<List<FamilyGroup>> getUserFamilyGroups(String userId) async {
     try {
+      final memberships = await supabase
+          .from('family_members')
+          .select('family_id')
+          .eq('user_id', userId);
+      final joinedIds =
+          (memberships as List).map((m) => m['family_id'] as int).toList();
+
       final response = await supabase
           .from('family_groups')
           .select()
-          .eq('user_id', userId);
+          .or('user_id.eq.$userId${joinedIds.isEmpty ? '' : ',id.in.(${joinedIds.join(',')})'}')
+          .order('id');
 
       return (response as List)
           .map((json) => FamilyGroupModel.fromJson(json))
@@ -159,20 +172,28 @@ class FamilyRepositoryImpl implements FamilyRepository {
     String userId,
     String newRole,
   ) async {
-    await supabase
+    final updated = await supabase
         .from('family_members')
         .update({'role': newRole})
         .eq('family_id', int.parse(familyGroupId))
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select('id');
+    if ((updated as List).isEmpty) {
+      throw Exception('You do not have permission to change this role');
+    }
   }
 
   @override
   Future<void> removeFamilyMember(String familyGroupId, String userId) async {
-    await supabase
+    final removed = await supabase
         .from('family_members')
         .delete()
         .eq('family_id', int.parse(familyGroupId))
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select('id');
+    if ((removed as List).isEmpty) {
+      throw Exception('You do not have permission to remove this member');
+    }
   }
 
   // ── Family Invitation Operations ─────────────────────────────────
@@ -184,18 +205,79 @@ class FamilyRepositoryImpl implements FamilyRepository {
     required String invitedById,
     required String role,
   }) async {
-    final response = await supabase
-        .from('family_invitations')
-        .insert({
-          'family_id': int.parse(familyGroupId),
-          'invited_email': invitedEmail,
-          'invited_by': invitedById,
-          'role': role,
-        })
-        .select()
-        .single();
+    final email = invitedEmail.trim().toLowerCase();
+    final emailPattern = email.replaceAll('_', r'\_').replaceAll('%', r'\%');
+    final familyId = int.parse(familyGroupId);
 
-    return FamilyInvitationModel.fromJson(response);
+    final existingMember = await supabase
+        .from('family_members')
+        .select('id')
+        .eq('family_id', familyId)
+        .ilike('email', emailPattern)
+        .maybeSingle();
+    if (existingMember != null) {
+      throw Exception('$email is already a member of this family');
+    }
+
+    // One open invitation per email: resend it instead of creating another.
+    final open = await supabase
+        .from('family_invitations')
+        .select()
+        .eq('family_id', familyId)
+        .ilike('email', emailPattern)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+    if (open != null) {
+      final sentAt = DateTime.parse(open['created_at'] as String);
+      if (DateTime.now().difference(sentAt) < const Duration(minutes: 10)) {
+        throw Exception(
+            '$email was already invited a moment ago. Check their inbox, or try again in a few minutes.');
+      }
+    }
+
+    final response = open ??
+        await supabase
+            .from('family_invitations')
+            .insert({
+              'family_id': familyId,
+              'email': email,
+              'invited_by': invitedById,
+              'role': role,
+            })
+            .select()
+            .single();
+
+    final invitation = FamilyInvitationModel.fromJson(response);
+
+    // Send invitation email via Edge Function
+    try {
+      // Get family and inviter details
+      final family = await getFamilyGroup(familyGroupId);
+      final inviterResponse = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', invitedById)
+          .maybeSingle();
+
+      final inviterName = inviterResponse?['name'] ?? supabase.auth.currentUser?.email ?? 'A user';
+      final familyName = family?.name ?? 'Shared Family';
+
+      // Call Edge Function to send email
+      await supabase.functions.invoke('send_family_invitation', body: {
+        'familyId': familyGroupId,
+        'invitedEmail': invitedEmail,
+        'invitedByName': inviterName,
+        'invitationToken': response['token'],
+        'familyName': familyName,
+      });
+
+      debugPrint('Invitation email sent to $invitedEmail');
+    } catch (e) {
+      debugPrint('Invitation saved but email failed: $e');
+    }
+
+    return invitation;
   }
 
   @override
@@ -203,8 +285,8 @@ class FamilyRepositoryImpl implements FamilyRepository {
     try {
       final response = await supabase
           .from('family_invitations')
-          .select()
-          .eq('invited_email', email)
+          .select('*, family_groups(name)')
+          .ilike('email', email.trim())
           .eq('status', 'pending');
 
       return (response as List)
@@ -235,19 +317,30 @@ class FamilyRepositoryImpl implements FamilyRepository {
     final invitation = await getInvitation(invitationId);
     if (invitation == null) return;
 
-    // Update invitation status
+    final mine = await getUserFamilyGroups(userId);
+    if (mine.any((f) => f.id != invitation.familyGroupId)) {
+      throw Exception(
+          'You are already in a family. Leave it before joining another one.');
+    }
+
+    // Join first: the join policy requires the invitation to still be pending.
+    final alreadyMember = await isUserInFamily(userId, invitation.familyGroupId);
+    if (!alreadyMember) {
+      await addFamilyMember(
+        familyGroupId: invitation.familyGroupId,
+        userId: userId,
+        email: invitation.invitedEmail,
+        role: invitation.role,
+      );
+    }
+
     await supabase
         .from('family_invitations')
-        .update({'status': 'accepted'})
+        .update({
+          'status': 'accepted',
+          'accepted_at': DateTime.now().toUtc().toIso8601String(),
+        })
         .eq('id', int.parse(invitationId));
-
-    // Add user as family member
-    await addFamilyMember(
-      familyGroupId: invitation.familyGroupId,
-      userId: userId,
-      email: invitation.invitedEmail,
-      role: invitation.role,
-    );
   }
 
   @override

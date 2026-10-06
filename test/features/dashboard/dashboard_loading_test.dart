@@ -21,6 +21,8 @@ import 'package:outlay/features/expenses/domain/repositories/expense_repository.
 import 'package:outlay/features/expenses/domain/usecases/get_expenses_usecase.dart';
 import 'package:outlay/features/expenses/domain/usecases/manage_expense_usecase.dart';
 import 'package:outlay/features/expenses/presentation/providers/expense_provider.dart';
+import 'package:outlay/features/inbox/data/inbox_repository.dart';
+import 'package:outlay/features/inbox/presentation/providers/inbox_provider.dart';
 import 'package:outlay/features/sync/sync_service.dart';
 
 class _FakeAuthRepository implements AuthRepository {
@@ -77,6 +79,13 @@ class _GatedExpenseRepository implements ExpenseRepository {
 /// CategoryProvider (Consumer3, not just ExpenseProvider) — empty-but-real
 /// fakes are all it needs since this file only asserts on loading/sync
 /// behavior, not budget or category content.
+/// The Dashboard's notification bell only reads InboxProvider state; nothing
+/// here is called because the test never starts the inbox.
+class _FakeInboxRepository implements InboxRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
+
 class _EmptyBudgetRepository implements BudgetRepository {
   @override
   Future<List<Budget>> getByMonth(DateTime month) async => [];
@@ -130,6 +139,12 @@ void main() {
           ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider.value(value: budgetProvider),
           ChangeNotifierProvider.value(value: categoryProvider),
+          ChangeNotifierProvider(
+            create: (_) => InboxProvider(
+              repository: _FakeInboxRepository(),
+              getCurrentUserId: () => 'test-user',
+            ),
+          ),
         ],
         child: const MaterialApp(home: DashboardScreen()),
       ),
@@ -217,6 +232,12 @@ void main() {
           ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider.value(value: budgetProvider),
           ChangeNotifierProvider.value(value: categoryProvider),
+          ChangeNotifierProvider(
+            create: (_) => InboxProvider(
+              repository: _FakeInboxRepository(),
+              getCurrentUserId: () => 'test-user',
+            ),
+          ),
         ],
         child: const MaterialApp(home: DashboardScreen()),
       ),

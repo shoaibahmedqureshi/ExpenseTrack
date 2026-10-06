@@ -15,6 +15,11 @@ import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../sync/sync_service.dart';
+import '../widgets/splits_summary_card.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
+import '../../../inbox/presentation/providers/inbox_provider.dart';
+import '../../../inbox/presentation/widgets/inbox_bell.dart';
 
 // Kept deliberately short — the Dashboard is meant to be a glanceable
 // summary, not a second copy of the Transactions tab. "Show more" hands
@@ -22,12 +27,18 @@ import '../../../sync/sync_service.dart';
 const _recentTransactionCount = 4;
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.onSeeAllTransactions});
+  const DashboardScreen({super.key, this.onSeeAllTransactions, this.onOpenSplits, this.onOpenFamily});
 
   /// Switches MainShell to the Transactions tab. Falls back to pushing
   /// ExpenseListScreen directly if not provided (e.g. if this screen is
   /// ever used outside MainShell), so this stays usable standalone.
   final VoidCallback? onSeeAllTransactions;
+
+  /// Switches MainShell to the Splits tab (null = the card is hidden).
+  final VoidCallback? onOpenSplits;
+
+  /// Switches MainShell to the Family tab.
+  final VoidCallback? onOpenFamily;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -90,6 +101,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  void _openFromInbox(String target) {
+    switch (target) {
+      case 'splits':
+        widget.onOpenSplits?.call();
+      case 'family':
+        widget.onOpenFamily?.call();
+      case 'invites':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PendingInvitationsScreen(
+              userEmail: Supabase.instance.client.auth.currentUser?.email ?? '',
+            ),
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,6 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text('Dashboard',
             style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
+          InboxBell(onTarget: _openFromInbox),
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               final initial = (auth.profile?.name?.isNotEmpty == true
@@ -159,6 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             child: RefreshIndicator(
               onRefresh: () async {
+                context.read<InboxProvider>().load(silent: true);
                 await expenseProvider.loadAll();
                 await budgetProvider.load();
                 if (_isYearView) await _loadYearSummary();
@@ -175,6 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPrevious: _previousPeriod,
                 onNext: _nextPeriod,
                 onSeeAllTransactions: widget.onSeeAllTransactions,
+                onOpenSplits: widget.onOpenSplits,
               ),
             ),
           );
@@ -197,6 +229,7 @@ class _DashboardBody extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     required this.onSeeAllTransactions,
+    this.onOpenSplits,
   });
 
   final ExpenseProvider expenseProvider;
@@ -206,6 +239,7 @@ class _DashboardBody extends StatelessWidget {
   final int selectedYear;
   final ({double budgeted, double spent})? yearSummary;
   final VoidCallback? onSeeAllTransactions;
+  final VoidCallback? onOpenSplits;
   final bool loadingYear;
   final void Function(bool isYear) onSetPeriod;
   final VoidCallback onPrevious;
@@ -293,6 +327,7 @@ class _DashboardBody extends StatelessWidget {
         const SizedBox(height: 16),
         _IncomeExpenseRow(income: income, expense: expense),
         const SizedBox(height: 18),
+        if (onOpenSplits != null) SplitsSummaryCard(onTap: onOpenSplits!),
         if (isYearView && loadingYear)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),

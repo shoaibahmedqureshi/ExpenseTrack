@@ -66,26 +66,30 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                       ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
-                _buildActionButton(
-                  context: context,
-                  icon: Icons.person_add,
-                  title: 'Invite Member',
-                  subtitle: 'Add someone to your family',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const InviteMembersScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
+                if (provider.isFamilyAdmin) ...[
+                  _buildActionButton(
+                    context: context,
+                    icon: Icons.person_add,
+                    title: 'Invite Member',
+                    subtitle: 'Add someone to your family',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const InviteMembersScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 _buildActionButton(
                   context: context,
                   icon: Icons.group,
                   title: 'Manage Members',
-                  subtitle: 'View and manage family members',
+                  subtitle: provider.isFamilyAdmin
+                      ? 'View and manage family members'
+                      : 'See who is in your family',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -97,6 +101,20 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                 ),
                 const SizedBox(height: 32),
 
+                if (!provider.isFamilyAdmin)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmLeave(context, provider),
+                      icon: const Icon(Icons.logout, color: Colors.red),
+                      label: const Text('Leave Family',
+                          style: TextStyle(color: Colors.red)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                      ),
+                    ),
+                  ),
+
                 // Danger Zone
                 if (provider.isFamilyAdmin)
                   Column(
@@ -104,10 +122,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                     children: [
                       Text(
                         'Danger Zone',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                               color: Colors.red,
                             ),
@@ -116,7 +131,8 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: () => _showDeleteConfirmation(context, provider, family.id),
+                          onPressed: () => _showDeleteConfirmation(
+                              context, provider, family.id),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.red),
                           ),
@@ -330,6 +346,35 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmLeave(
+      BuildContext context, FamilyProvider provider) async {
+    final name = provider.currentFamily?.name ?? 'this family';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Leave family?'),
+        content: Text(
+            'You will no longer see $name or its members. You can rejoin only if the admin invites you again.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Leave')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok = await provider.leaveFamily();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(ok
+            ? 'You left $name'
+            : (provider.error ?? 'Could not leave the family'))));
   }
 
   void _showDeleteConfirmation(

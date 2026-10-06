@@ -29,6 +29,10 @@ import 'features/notifications/presentation/providers/notification_provider.dart
 
 import 'features/family_accounts/data/repositories/family_repository_impl.dart';
 import 'features/family_accounts/presentation/providers/family_provider.dart';
+import 'features/expense_split/data/expense_split_repository.dart';
+import 'features/inbox/data/inbox_repository.dart';
+import 'features/inbox/presentation/providers/inbox_provider.dart';
+import 'features/expense_split/presentation/providers/expense_split_provider.dart';
 
 import 'features/influencer_dashboard/data/repositories/influencer_repository_impl.dart';
 import 'features/influencer_dashboard/presentation/providers/influencer_provider.dart';
@@ -102,6 +106,19 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => FamilyProvider(
             repository: FamilyRepositoryImpl(supabase: Supabase.instance.client),
+            getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => InboxProvider(
+            repository: InboxRepository(Supabase.instance.client),
+            getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+            onSplitActivity: () => ctx.read<ExpenseSplitProvider>().refresh(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ExpenseSplitProvider(
+            repository: ExpenseSplitRepository(Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
           ),
         ),
@@ -245,6 +262,9 @@ class _RootRouterState extends State<_RootRouter> {
   // trigger that actually covers "just signed in".
   void _onAuthChanged() {
     final status = _auth?.status;
+    if (status == AuthStatus.authenticated) {
+      context.read<InboxProvider>().start();
+    }
     if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
       _hasSyncedThisSession = true;
       SyncService(widget.db, Supabase.instance.client)
@@ -258,6 +278,9 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<CategoryProvider>().clear();
       context.read<ExpenseProvider>().clear();
       context.read<BudgetProvider>().clear();
+      context.read<FamilyProvider>().clear();
+      context.read<ExpenseSplitProvider>().clear();
+      context.read<InboxProvider>().stop();
     }
   }
 

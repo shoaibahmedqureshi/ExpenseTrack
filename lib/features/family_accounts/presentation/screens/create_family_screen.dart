@@ -39,7 +39,8 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
 
     setState(() => _isCreating = true);
 
-    final success = await context.read<FamilyProvider>().createFamily(
+    final provider = context.read<FamilyProvider>();
+    final success = await provider.createFamily(
           name: _nameController.text.trim(),
           description: _descriptionController.text.trim().isEmpty
               ? null
@@ -54,7 +55,7 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create family')),
+          SnackBar(content: Text(provider.error ?? 'Failed to create family')),
         );
         setState(() => _isCreating = false);
       }

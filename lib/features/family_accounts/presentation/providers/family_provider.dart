@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import '../../domain/entities/family_group.dart';
 import '../../domain/entities/family_member.dart';
 import '../../domain/entities/family_invitation.dart';
@@ -12,6 +13,11 @@ class FamilyProvider extends ChangeNotifier {
     required this.repository,
     required this.getCurrentUserId,
   });
+
+  String _msg(Object e) {
+    if (e is PostgrestException) return e.message;
+    return e.toString().replaceFirst('Exception: ', '');
+  }
 
   FamilyGroup? _currentFamily;
   List<FamilyGroup> _userFamilies = [];
@@ -31,18 +37,14 @@ class FamilyProvider extends ChangeNotifier {
   bool get hasFamily => _currentFamily != null;
   bool get isFamilyAdmin {
     if (_currentFamily == null) return false;
-    final currentMember = _familyMembers.firstWhere(
-      (m) => m.userId == getCurrentUserId(),
-      orElse: () => FamilyMember(
-        id: '',
-        familyGroupId: '',
-        userId: '',
-        email: '',
-        role: FamilyMemberRole.viewer,
-        joinedAt: DateTime.now(),
-      ),
-    );
-    return currentMember.isAdmin;
+    try {
+      final currentMember = _familyMembers.firstWhere(
+        (m) => m.userId == getCurrentUserId(),
+      );
+      return currentMember.isAdmin;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Create a new family group
@@ -69,7 +71,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -92,7 +94,7 @@ class FamilyProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       _isLoading = false;
       notifyListeners();
     }
@@ -108,7 +110,7 @@ class FamilyProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
     }
   }
@@ -119,7 +121,7 @@ class FamilyProvider extends ChangeNotifier {
       _familyMembers = await repository.getFamilyMembers(familyGroupId);
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
     }
   }
@@ -136,7 +138,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -156,7 +158,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -179,7 +181,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -191,7 +193,7 @@ class FamilyProvider extends ChangeNotifier {
       _pendingInvitations = await repository.getPendingInvitations(userEmail);
       notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
     }
   }
@@ -206,7 +208,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -220,7 +222,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -239,7 +241,7 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
       notifyListeners();
       return false;
     }
@@ -254,7 +256,28 @@ class FamilyProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _error = e.toString();
+      _error = _msg(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Leave the current family (non-admin members only; enforced by RLS too).
+  Future<bool> leaveFamily() async {
+    final family = _currentFamily;
+    if (family == null) return false;
+    try {
+      await repository.removeFamilyMember(family.id, getCurrentUserId());
+      _userFamilies.removeWhere((f) => f.id == family.id);
+      _currentFamily = _userFamilies.isNotEmpty ? _userFamilies.first : null;
+      _familyMembers = [];
+      if (_currentFamily != null) {
+        await loadFamilyMembers(_currentFamily!.id);
+      }
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = _msg(e);
       notifyListeners();
       return false;
     }

@@ -285,7 +285,8 @@ class _PendingInvitationsScreenState extends State<PendingInvitationsScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to accept invitation')),
+          SnackBar(
+              content: Text(provider.error ?? 'Failed to accept invitation')),
         );
       }
     }

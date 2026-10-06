@@ -51,46 +51,31 @@ class DuplicateDetector {
     return results;
   }
 
+  /// Score 0..1 out of a fixed 100 points: amount 50, date 40, description 10.
+  /// The amount must match (within tolerance) or the pair is not a candidate —
+  /// a same-day expense of a different amount is never a duplicate.
   static double _calculateSimilarityScore(
     BankStatementTransaction bankTxn,
     Expense expense, {
     required int dayThreshold,
     required double amountThreshold,
   }) {
-    double score = 0.0;
-    int maxScore = 0;
-
-    // 1. Date match (40 points)
-    final daysDiff = bankTxn.date.difference(expense.date).inDays.abs();
-    if (daysDiff <= dayThreshold) {
-      score += (40 * (1 - (daysDiff / dayThreshold)));
-      maxScore += 40;
-    }
-
-    // 2. Amount match (50 points)
     final amountDiff = (bankTxn.amount - expense.amount).abs();
-    final maxAmountDiff = expense.amount * amountThreshold;
-    if (amountDiff <= maxAmountDiff) {
-      if (amountDiff == 0) {
-        score += 50;
-      } else {
-        score += (50 * (1 - (amountDiff / maxAmountDiff)));
-      }
-      maxScore += 50;
-    }
+    final allowed = (expense.amount * amountThreshold).clamp(0.01, double.infinity);
+    if (amountDiff > allowed) return 0;
+    final amountPoints = 50 * (1 - amountDiff / allowed);
 
-    // 3. Description match (10 points)
+    final daysDiff = bankTxn.date.difference(expense.date).inDays.abs();
+    final datePoints =
+        daysDiff <= dayThreshold ? 40 * (1 - daysDiff / (dayThreshold + 1)) : 0.0;
+
     final similarity = _stringSimilarity(
       bankTxn.description.toLowerCase(),
       expense.title.toLowerCase(),
     );
-    if (similarity > 0.6) {
-      score += (10 * similarity);
-      maxScore += 10;
-    }
+    final descPoints = similarity > 0.6 ? 10 * similarity : 0.0;
 
-    // Normalize to 0-1
-    return maxScore > 0 ? score / maxScore : 0;
+    return (amountPoints + datePoints + descPoints) / 100;
   }
 
   /// Simple string similarity (Levenshtein-inspired)

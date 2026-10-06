@@ -59,7 +59,7 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
         _emailController.clear();
         _selectedRole = 'member';
       } else {
-        _showMessage('Failed to send invitation');
+        _showMessage(provider.error ?? 'Failed to send invitation');
       }
       setState(() => _isInviting = false);
     }
@@ -120,6 +120,9 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
                 TextField(
                   controller: _emailController,
                   enabled: !_isInviting,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textCapitalization: TextCapitalization.none,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hintText: 'example@email.com',

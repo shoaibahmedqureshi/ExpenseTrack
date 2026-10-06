@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../theme/app_theme.dart';
-import '../../features/accounts/presentation/screens/accounts_screen.dart';
+import '../../features/expenses/presentation/screens/expense_list_screen.dart';
+import '../../features/receipt_scanner/presentation/widgets/scan_fab.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splits/presentation/screens/splits_screen.dart';
+import '../../features/expense_split/presentation/providers/expense_split_provider.dart';
+import '../../features/family_accounts/presentation/providers/family_provider.dart';
 import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
-const _tabLabels = ['Dashboard', 'Accounts', 'Splits', 'Family', 'Settings'];
+const _tabLabels = ['Dashboard', 'Splits', 'Family', 'Settings'];
 const _tabIcons = [
   Icons.home_outlined,
-  Icons.account_balance_wallet_outlined,
   Icons.people_outline,
   Icons.group_outlined,
   Icons.settings_outlined,
 ];
 const _tabActiveIcons = [
   Icons.home,
-  Icons.account_balance_wallet,
   Icons.people,
   Icons.group,
   Icons.settings,
 ];
 
-/// Bottom-tab shell for the 5 main screens (Phase 1a).
+/// Bottom-tab shell for the 4 main screens with the scan button docked in
+/// the centre notch. Accounts lives under Settings.
 /// Each tab keeps its own Scaffold/AppBar unchanged — this only adds
 /// the persistent IndexedStack + nav bar around them.
-/// Phase 1a: Dashboard, Accounts, Splits, Family, Settings
-/// FAB moved to Dashboard screen for Phase 1b restructuring.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -40,31 +41,47 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // 5-tab navigation: Dashboard, Accounts, Splits, Family, Settings
     // Each screen's state is preserved across tab switches via IndexedStack
     final screens = [
-      DashboardScreen(onSeeAllTransactions: () => setState(() => _index = 1)),
-      const AccountsScreen(),
+      DashboardScreen(
+        onOpenSplits: () {
+          setState(() => _index = 1);
+          context.read<ExpenseSplitProvider>().refresh();
+        },
+        onOpenFamily: () {
+          setState(() => _index = 2);
+          context.read<FamilyProvider>().loadUserFamilies();
+        },
+        onSeeAllTransactions: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
+        ),
+      ),
       const SplitsScreen(),
       const FamilySettingsScreen(),
       const SettingsScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: screens),
-      // FAB moved to Dashboard screen for Phase 1a
-      // Will be repositioned in Phase 1b after scan feature is finalized
+      // The FAB and the bar must belong to the same Scaffold for the notch to
+      // cut around the docked button.
+      floatingActionButton: const ScanFab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _NavBar(
         index: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) {
+          setState(() => _index = i);
+          // IndexedStack keeps the Family tab alive, so refresh it on open.
+          if (i == 1) context.read<ExpenseSplitProvider>().refresh();
+          if (i == 2) context.read<FamilyProvider>().loadUserFamilies();
+        },
       ),
     );
   }
 }
 
-// BottomAppBar with 5 equal-width tabs for Phase 1a:
-// Dashboard, Accounts, Splits, Family, Settings
-// All tabs get equal-width Expanded slots using flexible layout.
-// Tab pill width adjusted for 5-tab layout (65px vs 78px for 4 tabs).
+// BottomAppBar with 4 equal-width tabs and a notch for the centred scan FAB:
+// Dashboard, Splits | scan | Family, Settings.
 class _NavBar extends StatelessWidget {
   const _NavBar({required this.index, required this.onTap});
 
@@ -137,7 +154,6 @@ class _NavBar extends StatelessWidget {
             _item(1),
             _item(2),
             _item(3),
-            _item(4),
           ],
         ),
       ),

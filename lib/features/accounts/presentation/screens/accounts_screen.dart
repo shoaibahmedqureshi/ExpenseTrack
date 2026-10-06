@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../sms_auto_logging/presentation/screens/sms_auto_logging_screen.dart';
 import '../../../sms_auto_logging/presentation/providers/sms_provider.dart';
+import '../../../import/presentation/screens/import_screen.dart';
 
 class AccountsScreen extends StatelessWidget {
   const AccountsScreen({super.key});
@@ -39,17 +40,16 @@ class AccountsScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 12),
-                // Bank Statement Import (Phase 1b)
                 _AccountTile(
                   icon: Icons.file_present,
                   title: 'Bank Statement Import',
-                  subtitle: 'Import PDF or CSV statements',
+                  subtitle: 'Import a CSV statement',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming in Phase 1b')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ImportScreen()),
                     );
                   },
-                  isComingSoon: true,
                 ),
               ],
             );

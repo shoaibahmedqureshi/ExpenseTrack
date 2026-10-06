@@ -70,6 +70,29 @@ class ExpenseProvider extends ChangeNotifier {
         _expenses = [expense.copyWith(id: id), ..._expenses];
       });
 
+  /// Inserts many expenses with a single loading cycle. Returns how many were
+  /// saved; stops at the first failure (earlier rows stay saved) and sets [error].
+  Future<int> addAll(List<Expense> expenses) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    final added = <Expense>[];
+    try {
+      for (final e in expenses) {
+        final id = await _manage.add(e);
+        added.add(e.copyWith(id: id));
+      }
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _expenses = [...added.reversed, ..._expenses];
+      _isLoading = false;
+      _hasLoadedOnce = true;
+      notifyListeners();
+    }
+    return added.length;
+  }
+
   Future<void> edit(Expense expense) => _run(() async {
         await _manage.edit(expense);
         final idx = _expenses.indexWhere((e) => e.id == expense.id);
