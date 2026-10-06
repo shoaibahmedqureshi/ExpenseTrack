@@ -4,6 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../accounts/presentation/screens/accounts_screen.dart';
+import '../../../budgets/presentation/screens/budgets_screen.dart';
+import '../../../expenses/presentation/screens/expense_list_screen.dart';
+import '../../../reports/presentation/screens/reports_screen.dart';
 import '../../../family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 import '../../../influencer_dashboard/presentation/screens/influencer_dashboard_screen.dart';
@@ -112,6 +115,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const AccountsScreen()),
+                  );
+                },
+              ),
+              _SettingTile(
+                icon: Icons.receipt_long,
+                title: 'Transactions',
+                subtitle: 'All income and expenses',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ExpenseListScreen()),
+                  );
+                },
+              ),
+              _SettingTile(
+                icon: Icons.pie_chart,
+                title: 'Budgets',
+                subtitle: 'Monthly and category budgets',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+                  );
+                },
+              ),
+              _SettingTile(
+                icon: Icons.bar_chart,
+                title: 'Reports',
+                subtitle: 'Spending by category and trends',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
                   );
                 },
               ),

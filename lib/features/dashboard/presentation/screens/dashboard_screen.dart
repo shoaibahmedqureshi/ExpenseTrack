@@ -13,6 +13,7 @@ import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../expenses/domain/entities/expense.dart';
 import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
+import '../../../reports/presentation/screens/reports_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../sync/sync_service.dart';
 import '../widgets/splits_summary_card.dart';
@@ -353,6 +354,8 @@ class _DashboardBody extends StatelessWidget {
           const SizedBox(height: 14),
           _BurnRateLine(monthStart: monthStart, spentSoFar: expense),
         ],
+        const SizedBox(height: 14),
+        const _ReportsLink(),
         const SizedBox(height: 22),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -676,17 +679,28 @@ class _BudgetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+       onTap: () => Navigator.push(
+         context,
+         MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+       ),
+       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // headline-sm: 20px/600, color on-surface-variant.
-            Text(isYearView ? 'Budget this year' : 'Budget this month',
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.onSurfaceVariant)),
+            Row(children: [
+              Expanded(
+                child: Text(isYearView ? 'Budget this year' : 'Budget this month',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurfaceVariant)),
+              ),
+              const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+            ]),
             const SizedBox(height: 24),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -709,6 +723,29 @@ class _BudgetCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+       ),
+      ),
+    );
+  }
+}
+
+class _ReportsLink extends StatelessWidget {
+  const _ReportsLink();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        leading: const Icon(Icons.bar_chart_outlined, color: AppTheme.primaryColor),
+        title: const Text('Reports', style: TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: const Text('Spending by category and trends'),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ReportsScreen()),
         ),
       ),
     );
