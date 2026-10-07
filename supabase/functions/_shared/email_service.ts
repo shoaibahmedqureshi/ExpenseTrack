@@ -7,6 +7,7 @@
  *    (subject prefixed with the intended recipient) so the pipeline can be proven
  *    end to end without contacting anyone else.
  *  - SENDGRID_SANDBOX="true" makes SendGrid validate the request without delivering.
+ *  - AGENT_BCC, when set, receives a hidden copy of every message (a stand-in for a Sent folder).
  *  - Addresses that are obviously fabricated (handle@tiktok.com etc.) are refused.
  */
 
@@ -36,6 +37,7 @@ export function getEmailConfig() {
     enabled: Deno.env.get("AGENT_EMAIL_ENABLED") === "true",
     sandbox: Deno.env.get("SENDGRID_SANDBOX") === "true",
     testRecipient: (Deno.env.get("AGENT_TEST_RECIPIENT") || "").trim(),
+    bcc: (Deno.env.get("AGENT_BCC") || "").trim(),
   };
 }
 
@@ -75,9 +77,12 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
     subject = `[TEST for ${intended}] ${subject}`;
   }
 
+  // SendGrid rejects a personalization where the same address appears twice.
+  const bcc = cfg.bcc && EMAIL_RE.test(cfg.bcc) && cfg.bcc.toLowerCase() !== to.toLowerCase() ? cfg.bcc : "";
+
   const body = cfg.footer ? `${args.text}\n\n--\n${cfg.footer}` : args.text;
   const payload = {
-    personalizations: [{ to: [{ email: to }] }],
+    personalizations: [{ to: [{ email: to }], ...(bcc ? { bcc: [{ email: bcc }] } : {}) }],
     from: { email: cfg.fromEmail, name: clean(cfg.fromName) },
     reply_to: { email: cfg.replyTo },
     subject,
