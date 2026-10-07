@@ -34,6 +34,7 @@ class InboxItem {
         'split_added' || 'payment_recorded' => 'splits',
         'family_invite' => 'invites',
         'member_joined' => 'family',
+        'creator_application' => 'growth',
         _ => '',
       };
 

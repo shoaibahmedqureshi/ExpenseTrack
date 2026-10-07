@@ -32,6 +32,8 @@ import 'features/family_accounts/presentation/providers/family_provider.dart';
 import 'features/expense_split/data/expense_split_repository.dart';
 import 'features/inbox/data/inbox_repository.dart';
 import 'features/inbox/presentation/providers/inbox_provider.dart';
+import 'features/growth/data/growth_repository.dart';
+import 'features/growth/presentation/providers/growth_provider.dart';
 import 'features/expense_split/presentation/providers/expense_split_provider.dart';
 
 import 'features/influencer_dashboard/data/repositories/influencer_repository_impl.dart';
@@ -121,6 +123,9 @@ void main() async {
             repository: ExpenseSplitRepository(Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GrowthProvider(repository: GrowthRepository(Supabase.instance.client)),
         ),
         ChangeNotifierProvider(
           create: (_) => InfluencerProvider(
@@ -264,6 +269,7 @@ class _RootRouterState extends State<_RootRouter> {
     final status = _auth?.status;
     if (status == AuthStatus.authenticated) {
       context.read<InboxProvider>().start();
+      context.read<GrowthProvider>().checkAdmin();
     }
     if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
       _hasSyncedThisSession = true;
@@ -280,6 +286,7 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<BudgetProvider>().clear();
       context.read<FamilyProvider>().clear();
       context.read<ExpenseSplitProvider>().clear();
+      context.read<GrowthProvider>().clear();
       context.read<InboxProvider>().stop();
     }
   }

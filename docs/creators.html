@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlay — Creator Program</title>
+<link rel="icon" href="assets/icon.png">
+<link rel="canonical" href="https://outlayapp.net/creators.html">
+<meta name="description" content="Share Outlay with your audience and earn 20% of what each subscriber pays. Apply to the Outlay Creator Program.">
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://outlayapp.net/creators.html" />
+<meta property="og:site_name" content="Outlay" />
+<meta property="og:title" content="Outlay — Creator Program" />
+<meta property="og:description" content="Earn 20% of what each subscriber you bring pays." />
+<meta property="og:image" content="https://outlayapp.net/assets/icon.png" />
+<style>
+  :root { --teal: #0F766E; --ink: #1c1c1e; --muted: #5b6169; --bg: #f7f8f7; --line: #e7e9e8; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; color: var(--ink); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px 60px; }
+  nav { display: flex; align-items: center; gap: 10px; padding: 24px 0; font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; }
+  nav img { width: 32px; height: 32px; border-radius: 8px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 40px; }
+  h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 17px; margin: 28px 0 10px; color: var(--teal); }
+  p, li { font-size: 15px; line-height: 1.65; color: #333; }
+  ul { margin: 0 0 12px; padding-left: 20px; }
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  label { display: block; font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
+  input[type=text], input[type=email], input[type=url], select, textarea { width: 100%; padding: 11px 12px; border: 1px solid #cfd4d2; border-radius: 8px; font: inherit; background: #fff; }
+  textarea { min-height: 90px; resize: vertical; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-top: 20px; }
+  .check input { margin-top: 4px; }
+  button { margin-top: 22px; background: var(--teal); color: #fff; border: 0; border-radius: 10px; padding: 13px 22px; font: inherit; font-weight: 700; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  .err { color: #b42318; font-size: 13px; margin-top: 4px; min-height: 0; }
+  .banner { padding: 14px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 15px; }
+  .ok { background: #f0f9f8; border-left: 4px solid var(--teal); }
+  .bad { background: #fef3f2; border-left: 4px solid #b42318; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .hidden { display: none; }
+  footer { text-align: center; font-size: 13px; color: var(--muted); padding-top: 32px; }
+  footer a { color: var(--muted); margin: 0 8px; }
+  @media (max-width: 520px) { .card { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="nav" href="index.html" style="display:flex;align-items:center;gap:10px;padding:24px 0;font-weight:800;font-size:18px;color:var(--ink)"><img src="assets/icon.png" alt="" width="32" height="32" style="border-radius:8px">Outlay</a>
+  <div class="card">
+    <div id="banner" class="banner hidden" role="status"></div>
+    <h1>Outlay Creator Program</h1>
+    <p>Outlay is a fast, private expense tracker. If you make content about money, budgeting or productivity, you can earn from the people you bring.</p>
+    <h2>How it works</h2>
+    <ul>
+      <li>You get a personal discount code to share with your audience.</li>
+      <li>You earn 20% of what each subscriber who uses your code pays, paid once per subscriber.</li>
+      <li>Apply below. We confirm your email, review your application by hand and reply to you personally.</li>
+    </ul>
+
+    <form id="form" novalidate>
+      <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label for="name">Your name</label>
+      <input type="text" id="name" maxlength="100" autocomplete="name" required>
+      <div class="err" data-err="name"></div>
+      <label for="email">Email</label>
+      <input type="email" id="email" maxlength="200" autocomplete="email" required>
+      <div class="err" data-err="email"></div>
+      <label for="platform">Main platform</label>
+      <select id="platform">
+        <option value="">Choose…</option>
+        <option value="tiktok">TikTok</option>
+        <option value="youtube">YouTube</option>
+        <option value="instagram">Instagram</option>
+        <option value="x">X</option>
+        <option value="other">Other</option>
+      </select>
+      <div class="err" data-err="platform"></div>
+      <label for="handle">Handle or channel name</label>
+      <input type="text" id="handle" maxlength="100" required>
+      <div class="err" data-err="handle"></div>
+      <label for="profile_url">Link to your profile (optional)</label>
+      <input type="url" id="profile_url" maxlength="300" placeholder="https://">
+      <div class="err" data-err="profile_url"></div>
+      <label for="audience_band">Audience size</label>
+      <select id="audience_band">
+        <option value="">Choose…</option>
+        <option value="under_1k">Under 1K</option>
+        <option value="1k_10k">1K to 10K</option>
+        <option value="10k_50k">10K to 50K</option>
+        <option value="50k_250k">50K to 250K</option>
+        <option value="over_250k">Over 250K</option>
+      </select>
+      <div class="err" data-err="audience_band"></div>
+      <label for="niche">What do you create content about?</label>
+      <input type="text" id="niche" maxlength="120" required>
+      <div class="err" data-err="niche"></div>
+      <label for="country">Country (optional)</label>
+      <input type="text" id="country" maxlength="60">
+      <label for="about">Anything else we should know (optional)</label>
+      <textarea id="about" maxlength="1000"></textarea>
+      <label class="check"><input type="checkbox" id="consent"> <span>I agree that Outlay may email me about the Creator Program. See the <a href="privacy.html">privacy policy</a>.</span></label>
+      <div class="err" data-err="consent"></div>
+      <button type="submit" id="submit">Apply</button>
+    </form>
+  </div>
+  <footer><a href="index.html">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a></footer>
+</div>
+<script>
+(function () {
+  var API = 'https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/creator_apply';
+  var loaded = Date.now();
+  var form = document.getElementById('form');
+  var banner = document.getElementById('banner');
+  var btn = document.getElementById('submit');
+
+  function show(msg, kind) {
+    banner.textContent = msg;
+    banner.className = 'banner ' + kind;
+    banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function clearErrors() {
+    document.querySelectorAll('[data-err]').forEach(function (e) { e.textContent = ''; });
+  }
+
+  var q = new URLSearchParams(location.search).get('confirmed');
+  if (q === '1') {
+    form.classList.add('hidden');
+    show('Thanks, your email is confirmed. We will review your application and reply to you personally.', 'ok');
+  } else if (q === '0') {
+    show('That confirmation link is invalid or has expired. Please apply again below.', 'bad');
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    clearErrors();
+    var v = function (id) { return document.getElementById(id).value.trim(); };
+    var body = {
+      name: v('name'), email: v('email'), platform: v('platform'), handle: v('handle'),
+      profile_url: v('profile_url'), audience_band: v('audience_band'), niche: v('niche'),
+      country: v('country'), about: v('about'),
+      consent: document.getElementById('consent').checked,
+      website: form.elements['website'].value,
+      elapsed_ms: Date.now() - loaded
+    };
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, data: d }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.data.ok) {
+          form.classList.add('hidden');
+          show(res.data.message || 'Check your inbox to confirm your email and finish applying.', 'ok');
+          return;
+        }
+        if (res.data && res.data.errors) {
+          Object.keys(res.data.errors).forEach(function (k) {
+            var el = document.querySelector('[data-err="' + k + '"]');
+            if (el) el.textContent = res.data.errors[k];
+          });
+        }
+        show((res.data && res.data.error) || 'Something went wrong. Please try again.', 'bad');
+      })
+      .catch(function () { show('Could not reach the server. Please check your connection and try again.', 'bad'); })
+      .then(function () { btn.disabled = false; btn.textContent = 'Apply'; });
+  });
+})();
+</script>
+</body>
+</html>

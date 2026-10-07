@@ -1,3 +1,4 @@
+import '../../../growth/presentation/screens/growth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -108,6 +109,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         widget.onOpenSplits?.call();
       case 'family':
         widget.onOpenFamily?.call();
+      case 'growth':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const GrowthScreen()));
       case 'invites':
         Navigator.push(
           context,

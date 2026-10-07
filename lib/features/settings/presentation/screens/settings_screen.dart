@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../growth/presentation/providers/growth_provider.dart';
+import '../../../growth/presentation/screens/growth_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../accounts/presentation/screens/accounts_screen.dart';
 import '../../../budgets/presentation/screens/budgets_screen.dart';
@@ -188,6 +190,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
+          if (context.watch<GrowthProvider>().isAdmin)
+            _SettingSection(
+              title: 'Growth (admin)',
+              children: [
+                _SettingTile(
+                  icon: Icons.campaign_outlined,
+                  title: 'Creator outreach',
+                  subtitle: 'Task queue and applications',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GrowthScreen()),
+                  ),
+                ),
+              ],
+            ),
           _SettingSection(
             title: 'Influencer',
             children: [

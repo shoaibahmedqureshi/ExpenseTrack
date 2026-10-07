@@ -24,6 +24,9 @@ export interface SendArgs {
   subject: string;
   text: string;
   categories?: string[];
+  /** A message the recipient asked for (e.g. a confirmation link). Skips the cold-outreach
+   *  lock and test redirect, and carries no unsubscribe footer. Sandbox mode still applies. */
+  transactional?: boolean;
 }
 
 export function getEmailConfig() {
@@ -56,7 +59,7 @@ function clean(s: string): string {
 export async function sendEmail(args: SendArgs): Promise<SendResult> {
   const cfg = getEmailConfig();
 
-  if (!cfg.enabled) {
+  if (!cfg.enabled && !args.transactional) {
     return { success: false, skipped: true, error: "Agent email is switched off (AGENT_EMAIL_ENABLED is not \"true\")" };
   }
   if (!cfg.apiKey) return { success: false, error: "SENDGRID_API_KEY is not set" };
@@ -70,7 +73,7 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
   let to = intended;
   let subject = clean(args.subject);
   let redirectedTo: string | undefined;
-  if (cfg.testRecipient) {
+  if (cfg.testRecipient && !args.transactional) {
     if (!EMAIL_RE.test(cfg.testRecipient)) return { success: false, error: "AGENT_TEST_RECIPIENT is not a valid address" };
     to = cfg.testRecipient;
     redirectedTo = to;
@@ -80,7 +83,7 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
   // SendGrid rejects a personalization where the same address appears twice.
   const bcc = cfg.bcc && EMAIL_RE.test(cfg.bcc) && cfg.bcc.toLowerCase() !== to.toLowerCase() ? cfg.bcc : "";
 
-  const body = cfg.footer ? `${args.text}\n\n--\n${cfg.footer}` : args.text;
+  const body = cfg.footer && !args.transactional ? `${args.text}\n\n--\n${cfg.footer}` : args.text;
   const payload = {
     personalizations: [{ to: [{ email: to }], ...(bcc ? { bcc: [{ email: bcc }] } : {}) }],
     from: { email: cfg.fromEmail, name: clean(cfg.fromName) },
@@ -88,7 +91,7 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
     subject,
     content: [{ type: "text/plain", value: body }],
     categories: (args.categories ?? ["agent"]).slice(0, 10),
-    headers: { "List-Unsubscribe": `<mailto:${cfg.replyTo}?subject=unsubscribe>` },
+    ...(args.transactional ? {} : { headers: { "List-Unsubscribe": `<mailto:${cfg.replyTo}?subject=unsubscribe>` } }),
     mail_settings: { sandbox_mode: { enable: cfg.sandbox } },
   };
 

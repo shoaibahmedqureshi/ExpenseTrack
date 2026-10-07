@@ -108,6 +108,7 @@ class _InboxScreenState extends State<InboxScreen> {
         'payment_recorded' => Icons.payments_outlined,
         'family_invite' => Icons.mail_outline,
         'member_joined' => Icons.person_add_alt,
+        'creator_application' => Icons.campaign_outlined,
         _ => Icons.notifications_none,
       };
 
