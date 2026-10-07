@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.24.3";
+import { sendEmail, isPlausibleRecipient } from "../_shared/email_service.ts";
 
 interface InfluencerProspect {
   platform: "instagram" | "tiktok" | "youtube";
@@ -252,96 +253,22 @@ async function saveInfluencerProspect(prospect: InfluencerProspect) {
   }
 }
 
-async function sendEmailViaSMTP(
-  to: string,
-  subject: string,
-  body: string,
-  fromName: string
-): Promise<boolean> {
-  try {
-    const smtpHost = Deno.env.get("NAMECHEAP_SMTP_HOST") || "mail.namecheap.com";
-    const smtpPort = parseInt(Deno.env.get("NAMECHEAP_SMTP_PORT") || "587");
-    const smtpUser = Deno.env.get("NAMECHEAP_SMTP_USER") || "";
-    const smtpPassword = Deno.env.get("NAMECHEAP_SMTP_PASSWORD") || "";
-    const fromEmail = Deno.env.get("AGENT_EMAIL_FROM") || smtpUser;
-
-    console.log(`📧 Sending email to ${to}`);
-    console.log(`   Subject: ${subject}`);
-    console.log(`   From: "${fromName}" <${fromEmail}>`);
-
-    // Use Deno's native TCP capabilities to connect to SMTP
-    const conn = await Deno.connect({ hostname: smtpHost, port: smtpPort });
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    async function sendCommand(cmd: string): Promise<string> {
-      await conn.write(encoder.encode(cmd + "\r\n"));
-      const buffer = new Uint8Array(1024);
-      const n = await conn.read(buffer);
-      return decoder.decode(buffer.subarray(0, n));
-    }
-
-    // SMTP handshake
-    let response = await sendCommand("EHLO mail.namecheap.com");
-    if (!response.includes("250")) throw new Error(`EHLO failed: ${response}`);
-
-    response = await sendCommand("AUTH LOGIN");
-    if (!response.includes("334")) throw new Error(`AUTH LOGIN failed: ${response}`);
-
-    const userBase64 = btoa(smtpUser);
-    response = await sendCommand(userBase64);
-    if (!response.includes("334")) throw new Error(`Username auth failed: ${response}`);
-
-    const passBase64 = btoa(smtpPassword);
-    response = await sendCommand(passBase64);
-    if (!response.includes("235")) throw new Error(`Password auth failed: ${response}`);
-
-    response = await sendCommand(`MAIL FROM:<${fromEmail}>`);
-    if (!response.includes("250")) throw new Error(`MAIL FROM failed: ${response}`);
-
-    response = await sendCommand(`RCPT TO:<${to}>`);
-    if (!response.includes("250")) throw new Error(`RCPT TO failed: ${response}`);
-
-    response = await sendCommand("DATA");
-    if (!response.includes("354")) throw new Error(`DATA failed: ${response}`);
-
-    const emailMessage = `From: "${fromName}" <${fromEmail}>\r\nTo: ${to}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}\r\n.`;
-    response = await sendCommand(emailMessage);
-    if (!response.includes("250")) throw new Error(`Message send failed: ${response}`);
-
-    await sendCommand("QUIT");
-    conn.close();
-
-    console.log(`✅ Email sent successfully to ${to}`);
-
-    // Update database
-    await supabase
-      .from("email_drafts")
-      .update({
-        status: "sent",
-        sent_date: new Date().toISOString()
-      })
-      .eq("recipient_email", to);
-
-    return true;
-  } catch (error) {
-    console.error(`Error sending email to ${to}:`, error);
-    return false;
-  }
-}
-
 async function createEmailDraft(
   prospect: InfluencerProspect,
   message: string,
   fitScore: number
 ) {
+  if (!prospect.email || !isPlausibleRecipient(prospect.email)) {
+    console.log(`⏭️ No usable email for @${prospect.handle}; not drafting outreach`);
+    return;
+  }
   try {
     const draftStatus = fitScore >= 8 ? "pending_review" : "approved";
 
     const { data } = await supabase.from("email_drafts").insert({
       agent_type: "influencer",
       recipient_name: prospect.handle,
-      recipient_email: prospect.email || `${prospect.handle}@${prospect.platform}.com`,
+      recipient_email: prospect.email,
       recipient_platform: prospect.platform,
       recipient_url: `https://tiktok.com/@${prospect.handle}`,
       subject: `Partnership: Free Stitchify + Revenue Share for Creators`,
@@ -408,23 +335,26 @@ async function main() {
     // Step 2: Send each approved email
     if (approvedDrafts && approvedDrafts.length > 0) {
       for (const draft of approvedDrafts) {
-        const success = await sendEmailViaSMTP(
-          draft.recipient_email,
-          draft.subject,
-          draft.body,
-          draft.recipient_name
-        );
+        const result = await sendEmail({
+          to: draft.recipient_email,
+          subject: draft.subject,
+          text: draft.body,
+          categories: ["agent", "influencer-outreach", "stitchify"],
+        });
 
-        if (success) {
+        if (result.success) {
           sent_count++;
-          console.log(
-            `✅ Email sent to @${draft.recipient_name} (${draft.recipient_email})`
-          );
+          await supabase
+            .from("email_drafts")
+            .update({ status: "sent", sent_date: new Date().toISOString() })
+            .eq("id", draft.id);
+          console.log(`✅ Email sent for @${draft.recipient_name}${result.redirectedTo ? " (redirected to test recipient)" : ""}`);
+        } else if (result.skipped) {
+          // Switched off or unusable address: leave the draft untouched, don't count as a failure.
+          console.log(`⏸️ Not sent for @${draft.recipient_name}: ${result.error}`);
         } else {
           failed_count++;
-          console.log(
-            `❌ Failed to send to @${draft.recipient_name} (${draft.recipient_email})`
-          );
+          console.log(`❌ Failed for @${draft.recipient_name}: ${result.error}`);
         }
       }
     }
