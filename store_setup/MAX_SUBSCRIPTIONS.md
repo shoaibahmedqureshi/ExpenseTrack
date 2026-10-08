@@ -82,21 +82,25 @@ Do NOT test Pro → MAX on Android yet, see the warning below.
 
 ---
 
-## 3. Android upgrade warning (needs a decision before launch)
+## 3. Changing plan on Android (built, needs a real-device test)
 
-On Android, Pro and MAX are separate subscriptions. Google does not turn a second purchase into an upgrade by itself: the app
-has to pass the old purchase and a replacement mode when it buys the new one. The app does not do that today. It uses the same
-plain purchase call for every plan, including Pro Monthly ↔ Pro Annual.
+On Android, Pro and MAX are separate subscriptions. When a subscriber changes plan, the app now tells Google Play which
+subscription is being replaced, so they never end up paying for two:
 
-Result: a Pro subscriber who taps MAX on Android would end up with **two active subscriptions and be billed twice**.
+- **Up** (Pro Monthly → Pro Annual, Pro → MAX, MAX Monthly → MAX Annual): takes effect **immediately**; the unused time on
+  the old plan is credited.
+- **Down** (MAX → Pro, Annual → Monthly): takes effect **when the current paid period ends**. The app remembers the queued
+  change and shows "Switching to …".
+- The app first asks Google Play what the account really has. If Play cannot be reached, nothing is bought (no risk of a
+  double subscription). If Play shows nothing active, the plan stored on the phone was out of date and the purchase goes
+  ahead as a new one.
 
-Options:
-- **A (recommended):** implement the upgrade properly (pass `ChangeSubscriptionParam` with the current purchase token and a
-  replacement mode). It also fixes Pro Monthly ↔ Annual on Android.
-- **B (quick safeguard):** on Android, when the user already has a paid plan, replace "switch" with a button that opens Google
-  Play's own subscription management, and only offer MAX to free users.
-
-Either way, do this before MAX goes live on Android. iOS is not affected, because Apple handles it within the subscription group.
+### Test on a real Android phone (licensed tester, internal testing build)
+1. Buy **Pro Monthly**. Then buy **MAX Monthly** from the paywall's MAX tab. Play's purchase sheet should say it replaces your
+   Pro subscription. Afterwards, Play Store → Payments & subscriptions → Subscriptions must list **only MAX**.
+2. Switch **MAX → Pro**. The app should say the plan switches when the billing period ends. Play must still list MAX, now with
+   Pro queued. (Test subscriptions renew every few minutes, so wait for the renewal and the plan will flip to Pro.)
+3. Cancel everything, then buy MAX as a fresh user.
 
 ---
 
@@ -105,6 +109,6 @@ Either way, do this before MAX goes live on Android. iOS is not affected, becaus
 - [ ] iOS: both subscriptions **Ready to Submit**, ranked in the Pro group, ticked in the next app version
 - [ ] Android: both subscriptions and base plans **Active**
 - [ ] Sandbox purchase of MAX works on iOS; MAX tab visible
-- [ ] Android upgrade behaviour (section 3) resolved
+- [ ] Android: Pro → MAX leaves exactly one subscription in Play (section 3), and MAX → Pro waits for the period end
 - [ ] Family tab creates a family after a MAX purchase
 - [ ] Re-enable the real ML Kit package before the store build (see the project notes)

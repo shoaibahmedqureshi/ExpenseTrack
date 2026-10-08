@@ -69,7 +69,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         await svc.redeemOffer(offer);
       } else {
         final product = svc.products.firstWhere((p) => p.id == _selectedId);
-        await svc.buy(product);
+        _announce(await svc.buy(product));
       }
     } finally {
       if (mounted) setState(() => _buying = false);
@@ -119,10 +119,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
   Future<void> _switchPlan(dynamic product) async {
     setState(() => _buying = true);
     try {
-      await context.read<SubscriptionService>().buy(product);
+      _announce(await context.read<SubscriptionService>().buy(product));
     } finally {
       if (mounted) setState(() => _buying = false);
     }
+  }
+
+  void _announce(BuyOutcome outcome) {
+    if (outcome != BuyOutcome.switchScheduled || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Your plan will switch when the current billing period ends. Nothing is lost.')));
   }
 
   @override

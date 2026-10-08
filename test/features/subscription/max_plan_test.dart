@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 import 'package:outlay/features/subscription/data/subscription_service.dart';
 import 'package:outlay/features/subscription/domain/subscription_status.dart';
@@ -13,10 +15,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Stands in for the store so a tap on Continue can be seen reaching "buy" with the right product.
 class _FakeStore extends InAppPurchasePlatform with MockPlatformInterfaceMixin {
   final bought = <String>[];
+  final params = <PurchaseParam>[];
 
   @override
   Future<bool> buyNonConsumable({required PurchaseParam purchaseParam}) async {
     bought.add(purchaseParam.productDetails.id);
+    params.add(purchaseParam);
     return true;
   }
 
@@ -42,6 +46,16 @@ PurchaseDetails _purchase(String id, {PurchaseStatus status = PurchaseStatus.pur
       transactionDate: null,
       status: status,
     );
+
+/// A subscription Google Play reports as active.
+GooglePlayPurchaseDetails _active(String productId, {String token = 'old-token'}) {
+  final wrapper = PurchaseWrapper(
+    orderId: 'GPA.1', packageName: 'com.outlay.app', purchaseTime: 1, purchaseToken: token, signature: 's',
+    products: [productId], isAutoRenewing: true, originalJson: '{}', isAcknowledged: true,
+    purchaseState: PurchaseStateWrapper.purchased,
+  );
+  return GooglePlayPurchaseDetails.fromPurchase(wrapper).single;
+}
 
 Future<SubscriptionService> _service({String? plan, List<ProductDetails>? products}) async {
   SharedPreferences.setMockInitialValues({if (plan != null) 'sub_plan': plan});
@@ -137,6 +151,157 @@ void main() {
     test('a MAX subscriber has unlimited scans, like Pro', () async {
       final svc = await _service(plan: 'maxMonthly');
       expect(await svc.tryIncrementScan(), isTrue);
+    });
+  });
+
+  group('changing plan on Android', () {
+    setUp(() => SubscriptionService.debugIsAndroid = true);
+    tearDown(() => SubscriptionService.debugIsAndroid = null);
+
+    ProductDetails prod(String id) => [..._pro, ..._max].firstWhere((p) => p.id == id);
+
+    test('Pro to MAX replaces the Pro subscription immediately, crediting the unused time', () async {
+      final svc = await _service(plan: 'proMonthly');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kProMonthlyId)];
+
+      final outcome = await svc.buy(prod(SubscriptionService.kMaxAnnualId));
+      expect(outcome, BuyOutcome.started);
+
+      final param = store.params.single as GooglePlayPurchaseParam;
+      expect(param.productDetails.id, SubscriptionService.kMaxAnnualId);
+      final change = param.changeSubscriptionParam!;
+      expect(change.oldPurchaseDetails.productID, SubscriptionService.kProMonthlyId);
+      expect(change.oldPurchaseDetails.billingClientPurchase.purchaseToken, 'old-token');
+      expect(change.replacementMode, ReplacementMode.withTimeProration);
+      expect(svc.status.pendingPlan, isNull);
+    });
+
+    test('Pro Monthly to Pro Annual is an upgrade too, so it also replaces the old subscription', () async {
+      final svc = await _service(plan: 'proMonthly');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kProMonthlyId)];
+      await svc.buy(prod(SubscriptionService.kProAnnualId));
+      final change = (store.params.single as GooglePlayPurchaseParam).changeSubscriptionParam!;
+      expect(change.replacementMode, ReplacementMode.withTimeProration);
+    });
+
+    test('MAX to Pro is a downgrade: it waits for the end of the paid period and is remembered', () async {
+      final svc = await _service(plan: 'maxAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxAnnualId)];
+
+      final outcome = await svc.buy(prod(SubscriptionService.kProMonthlyId));
+      expect(outcome, BuyOutcome.switchScheduled);
+
+      final change = (store.params.single as GooglePlayPurchaseParam).changeSubscriptionParam!;
+      expect(change.replacementMode, ReplacementMode.deferred);
+      // Still MAX until the period ends, with the switch queued.
+      expect(svc.status.plan, SubscriptionPlan.maxAnnual);
+      expect(svc.status.pendingPlan, SubscriptionPlan.proMonthly);
+      expect(svc.status.hasPendingPlanChange, isTrue);
+    });
+
+    test('a queued switch survives a restart and clears once the store reports the new plan', () async {
+      final svc = await _service(plan: 'maxAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxAnnualId)];
+      await svc.buy(prod(SubscriptionService.kProMonthlyId));
+
+      final prefs = await SharedPreferences.getInstance();
+      final restarted = SubscriptionService(prefs, debugProducts: [..._pro, ..._max]);
+      expect(restarted.status.pendingPlan, SubscriptionPlan.proMonthly);
+
+      await restarted.handlePurchaseForTest(_purchase(SubscriptionService.kProMonthlyId));
+      expect(restarted.status.plan, SubscriptionPlan.proMonthly);
+      expect(restarted.status.pendingPlan, isNull);
+    });
+
+    test('the store replaying the old purchase does not apply the queued downgrade early', () async {
+      final svc = await _service(plan: 'maxAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxAnnualId)];
+      await svc.buy(prod(SubscriptionService.kProMonthlyId));
+      await svc.handlePurchaseForTest(_purchase(SubscriptionService.kMaxAnnualId, status: PurchaseStatus.restored));
+      expect(svc.status.plan, SubscriptionPlan.maxAnnual);
+      expect(svc.status.pendingPlan, SubscriptionPlan.proMonthly);
+    });
+
+    test('with two active subscriptions the highest one is the one replaced', () async {
+      final svc = await _service(plan: 'maxMonthly');
+      svc.debugActivePurchases = () async => [
+            _active(SubscriptionService.kProMonthlyId, token: 'pro-token'),
+            _active(SubscriptionService.kMaxMonthlyId, token: 'max-token'),
+          ];
+      await svc.buy(prod(SubscriptionService.kMaxAnnualId));
+      final change = (store.params.single as GooglePlayPurchaseParam).changeSubscriptionParam!;
+      expect(change.oldPurchaseDetails.billingClientPurchase.purchaseToken, 'max-token');
+    });
+
+    test('asking for the plan Play says you already have buys nothing, even if the cached plan is stale', () async {
+      // The app's cache still says Pro Annual, but Google Play says MAX Monthly is active.
+      final svc = await _service(plan: 'proAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxMonthlyId)];
+      final outcome = await svc.buy(prod(SubscriptionService.kMaxMonthlyId));
+      expect(outcome, BuyOutcome.failed);
+      expect(svc.error, 'You already have this plan.');
+      expect(store.bought, isEmpty);
+    });
+
+    test('if Google Play cannot be reached nothing is bought, so there is no double subscription', () async {
+      final svc = await _service(plan: 'proMonthly');
+      svc.debugActivePurchases = () async => throw Exception('billing unavailable');
+      final outcome = await svc.buy(prod(SubscriptionService.kMaxAnnualId));
+      expect(outcome, BuyOutcome.failed);
+      expect(store.bought, isEmpty);
+      expect(svc.error, contains('Google Play'));
+    });
+
+    test('a lapsed subscription (Play shows none) is treated as a new purchase, not a replacement', () async {
+      final svc = await _service(plan: 'proAnnual');
+      svc.debugActivePurchases = () async => [];
+      final outcome = await svc.buy(prod(SubscriptionService.kMaxMonthlyId));
+      expect(outcome, BuyOutcome.started);
+      final param = store.params.single;
+      expect(param is GooglePlayPurchaseParam && param.changeSubscriptionParam != null, isFalse);
+      expect(svc.status.plan, SubscriptionPlan.free); // the stale plan was dropped
+    });
+
+    test('a free user simply buys, with no lookup at all', () async {
+      final svc = await _service();
+      var lookedUp = false;
+      svc.debugActivePurchases = () async {
+        lookedUp = true;
+        return [];
+      };
+      await svc.buy(prod(SubscriptionService.kMaxAnnualId));
+      expect(lookedUp, isFalse);
+      expect(store.bought, [SubscriptionService.kMaxAnnualId]);
+    });
+
+    test('a pending or unknown purchase is never chosen as the one to replace', () async {
+      final svc = await _service(plan: 'proMonthly');
+      final pending = GooglePlayPurchaseDetails(
+        productID: SubscriptionService.kMaxMonthlyId,
+        verificationData: PurchaseVerificationData(localVerificationData: '', serverVerificationData: 'p', source: 's'),
+        transactionDate: null,
+        billingClientPurchase: PurchaseWrapper(
+          orderId: 'x', packageName: 'p', purchaseTime: 1, purchaseToken: 'p', signature: 's',
+          products: [SubscriptionService.kMaxMonthlyId], isAutoRenewing: true, originalJson: '{}', isAcknowledged: false,
+          purchaseState: PurchaseStateWrapper.pending,
+        ),
+        status: PurchaseStatus.pending,
+      );
+      svc.debugActivePurchases = () async => [pending, _active('some_other_product'), _active(SubscriptionService.kProMonthlyId)];
+      await svc.buy(prod(SubscriptionService.kMaxAnnualId));
+      final change = (store.params.single as GooglePlayPurchaseParam).changeSubscriptionParam!;
+      expect(change.oldPurchaseDetails.productID, SubscriptionService.kProMonthlyId);
+    });
+  });
+
+  group('plan order', () {
+    test('ranks MAX Annual > MAX Monthly > Pro Annual > Pro Monthly > Free', () {
+      final order = [SubscriptionPlan.free, SubscriptionPlan.proMonthly, SubscriptionPlan.proAnnual, SubscriptionPlan.maxMonthly, SubscriptionPlan.maxAnnual];
+      for (var i = 0; i < order.length - 1; i++) {
+        expect(planChange(order[i], order[i + 1]), PlanChange.upgrade, reason: '${order[i]} -> ${order[i + 1]}');
+        expect(planChange(order[i + 1], order[i]), PlanChange.downgrade);
+      }
+      expect(planChange(SubscriptionPlan.maxAnnual, SubscriptionPlan.maxAnnual), PlanChange.none);
     });
   });
 

@@ -1,5 +1,22 @@
 enum SubscriptionPlan { free, proMonthly, proAnnual, maxMonthly, maxAnnual }
 
+/// Whether moving from one plan to another is a step up or down. The order is the one used to rank the plans in
+/// the App Store subscription group: MAX Annual, MAX Monthly, Pro Annual, Pro Monthly, then Free.
+enum PlanChange { upgrade, downgrade, none }
+
+int planRank(SubscriptionPlan p) => switch (p) {
+      SubscriptionPlan.free => 0,
+      SubscriptionPlan.proMonthly => 1,
+      SubscriptionPlan.proAnnual => 2,
+      SubscriptionPlan.maxMonthly => 3,
+      SubscriptionPlan.maxAnnual => 4,
+    };
+
+PlanChange planChange(SubscriptionPlan from, SubscriptionPlan to) {
+  final a = planRank(from), b = planRank(to);
+  return b > a ? PlanChange.upgrade : (b < a ? PlanChange.downgrade : PlanChange.none);
+}
+
 class SubscriptionStatus {
   const SubscriptionStatus({
     required this.plan,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart' show ReplacementMode;
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,6 +41,18 @@ class AppliedOffer {
   final String? androidOfferToken;
 }
 
+/// What happened when a purchase or plan change was started.
+enum BuyOutcome {
+  /// The store's purchase sheet was opened (a new purchase, or a change that takes effect now).
+  started,
+
+  /// A downgrade was accepted and will take effect at the end of the current billing period.
+  switchScheduled,
+
+  /// Nothing was started; see [SubscriptionService.error].
+  failed,
+}
+
 class SubscriptionService extends ChangeNotifier {
   // debugProducts skips the real _init()/IAP plugin call entirely and
   // seeds _products directly — the plugin talks to a platform channel
@@ -52,6 +65,7 @@ class SubscriptionService extends ChangeNotifier {
   // production entry point (see main.dart) — only the parameter is
   // test-only, not the constructor as a whole.
   SubscriptionService(this._prefs, {List<ProductDetails>? debugProducts}) {
+    _pendingPlan = SubscriptionPlan.values.where((p) => p.name == _prefs.getString(_kPendingPlan)).firstOrNull;
     if (debugProducts != null) {
       _products = debugProducts;
       _storeAvailable = true;
@@ -89,6 +103,7 @@ class SubscriptionService extends ChangeNotifier {
   static const _kPlan = 'sub_plan';
   static const _kScanMonth = 'scan_month';
   static const _kScanCount = 'scan_count';
+  static const _kPendingPlan = 'sub_pending_plan';
 
   List<ProductDetails> _products = [];
   bool _storeAvailable = false;
@@ -292,14 +307,75 @@ class SubscriptionService extends ChangeNotifier {
     }
   }
 
-  Future<void> buy(ProductDetails product) async {
+  /// Test hooks: pretend to be Android, and supply the subscriptions Google Play reports as active.
+  @visibleForTesting
+  static bool? debugIsAndroid;
+  @visibleForTesting
+  Future<List<GooglePlayPurchaseDetails>> Function()? debugActivePurchases;
+
+  bool get _isAndroid => debugIsAndroid ?? Platform.isAndroid;
+
+  /// The subscriptions Google Play says this account has right now, newest plan first. Throws if Play cannot be
+  /// reached, so a failed lookup is never mistaken for "no subscription".
+  Future<List<GooglePlayPurchaseDetails>> _activePlayPurchases() async {
+    final hook = debugActivePurchases;
+    final all = hook != null
+        ? await hook()
+        : (await _iap.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>().queryPastPurchases()).pastPurchases;
+    final ours = all
+        .where((p) => p.status == PurchaseStatus.purchased && planFromProductId(p.productID) != null)
+        .toList()
+      ..sort((a, b) => planRank(planFromProductId(b.productID)!).compareTo(planRank(planFromProductId(a.productID)!)));
+    return ours;
+  }
+
+  Future<BuyOutcome> buy(ProductDetails product) async {
     // Clear any previous failure before starting a new attempt — otherwise
     // a stale error from an earlier purchase/switch keeps showing even
     // after this new attempt succeeds (or fails for a different reason).
     _error = null;
     try {
-      final param = PurchaseParam(productDetails: product);
+      PurchaseParam param = PurchaseParam(productDetails: product);
+      var scheduled = false;
+
+      // On Android each plan is its own subscription. Buying a second one without saying which it replaces would
+      // leave the user paying for both, so a change of plan always names the subscription being replaced.
+      final target = planFromProductId(product.id);
+      if (_isAndroid && target != null && status.isPaid && target != status.plan) {
+        final active = await _activePlayPurchases();
+        if (active.isEmpty) {
+          // Google Play reports nothing active, so the cached plan is out of date (the subscription lapsed).
+          // There is nothing to replace; this is simply a new purchase.
+          await downgradeToFree();
+        } else {
+          final old = active.first;
+          final change = planChange(planFromProductId(old.productID)!, target);
+          if (change == PlanChange.none) {
+            _error = 'You already have this plan.';
+            notifyListeners();
+            return BuyOutcome.failed;
+          }
+          scheduled = change == PlanChange.downgrade;
+          param = GooglePlayPurchaseParam(
+            productDetails: product,
+            changeSubscriptionParam: ChangeSubscriptionParam(
+              oldPurchaseDetails: old,
+              // Up: immediately, crediting the unused time. Down: when the current period ends, so nothing already
+              // paid for is lost — the same rule the App Store applies.
+              replacementMode: scheduled ? ReplacementMode.deferred : ReplacementMode.withTimeProration,
+            ),
+          );
+        }
+      }
+
       await _iap.buyNonConsumable(purchaseParam: param);
+      if (scheduled) {
+        _pendingPlan = target;
+        await _prefs.setString(_kPendingPlan, target!.name);
+        notifyListeners();
+        return BuyOutcome.switchScheduled;
+      }
+      return BuyOutcome.started;
     } catch (e) {
       // buyNonConsumable() only throws for a request that never even
       // launched (e.g. store unreachable) — a request that launches but is
@@ -310,8 +386,12 @@ class SubscriptionService extends ChangeNotifier {
       // previously neither was ever shown to the user — a failed plan
       // switch just silently did nothing, with no way to tell it apart
       // from a UI refresh bug.
-      _error = e.toString();
+      _error = _isAndroid
+          ? 'We could not check your current subscription with Google Play. Try again, or use Manage Subscription.'
+          : e.toString();
+      if (!_isAndroid) debugPrint('[SubscriptionService] buy failed: $e');
       notifyListeners();
+      return BuyOutcome.failed;
     }
   }
 
@@ -337,6 +417,11 @@ class SubscriptionService extends ChangeNotifier {
       final plan = planFromProductId(purchase.productID);
       if (plan != null) {
         await _prefs.setString(_kPlan, plan.name);
+        // A scheduled change (Android) has taken effect once the store reports the plan it was waiting for.
+        if (_pendingPlan == plan) {
+          _pendingPlan = null;
+          await _prefs.remove(_kPendingPlan);
+        }
         notifyListeners();
       }
     } else if (purchase.status == PurchaseStatus.error) {
