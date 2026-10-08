@@ -82,7 +82,7 @@ Reply with ONLY JSON: {"niche": string|null, "fits": true|false|null, "fit_reaso
       fits: typeof o.fits === "boolean" ? o.fits : null,
       fit_reason: str(o.fit_reason, 900),
       evidence: evidence.join("\n"),
-      draft: subject ? `Subject: ${subject}\n\n${draft}` : draft,
+      draft: subject && (channel === "email" || channel === "youtube_email") ? `Subject: ${subject}\n\n${draft}` : draft,
     });
   } catch (e) {
     console.error("outreach_draft failed:", e instanceof Error ? e.message : e);

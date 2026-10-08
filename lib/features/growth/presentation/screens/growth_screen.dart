@@ -17,24 +17,34 @@ class _GrowthScreenState extends State<GrowthScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<GrowthProvider>().load());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => context.read<GrowthProvider>().load());
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.watch<GrowthProvider>();
     if (p.adminChecked && !p.isAdmin) {
-      return Scaffold(appBar: AppBar(title: const Text('Growth')), body: const Center(child: Text('Admins only')));
+      return Scaffold(
+          appBar: AppBar(title: const Text('Growth')),
+          body: const Center(child: Text('Admins only')));
     }
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Growth'),
-          bottom: TabBar(tabs: [
-            const Tab(text: 'Queue'),
-            Tab(text: p.awaitingReview > 0 ? 'Applications (${p.awaitingReview})' : 'Applications'),
-          ]),
+          bottom: TabBar(
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+              tabs: [
+                const Tab(text: 'Queue'),
+                Tab(
+                    text: p.awaitingReview > 0
+                        ? 'Applications (${p.awaitingReview})'
+                        : 'Applications'),
+              ]),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _openAdd(context),
@@ -56,7 +66,9 @@ class _GrowthScreenState extends State<GrowthScreen> {
         onRefresh: p.load,
         child: ListView(children: [
           const SizedBox(height: 120),
-          Center(child: Text(p.error ?? 'Nothing queued. Add a creator to start.')),
+          Center(
+              child:
+                  Text(p.error ?? 'Nothing queued. Add a creator to start.')),
         ]),
       );
     }
@@ -73,14 +85,16 @@ class _GrowthScreenState extends State<GrowthScreen> {
       if (b != last) {
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-          child: Text(titles[b]!, style: Theme.of(context).textTheme.titleSmall),
+          child:
+              Text(titles[b]!, style: Theme.of(context).textTheme.titleSmall),
         ));
         last = b;
       }
       children.add(_taskTile(t, now));
     }
     children.add(const SizedBox(height: 90));
-    return RefreshIndicator(onRefresh: p.load, child: ListView(children: children));
+    return RefreshIndicator(
+        onRefresh: p.load, child: ListView(children: children));
   }
 
   Widget _taskTile(OutreachTask t, DateTime now) {
@@ -98,7 +112,8 @@ class _GrowthScreenState extends State<GrowthScreen> {
         context: context,
         isScrollControlled: true,
         showDragHandle: true,
-        builder: (_) => ChangeNotifierProvider.value(value: p, child: _TaskSheet(task: t)),
+        builder: (_) =>
+            ChangeNotifierProvider.value(value: p, child: _TaskSheet(task: t)),
       ),
     );
   }
@@ -107,7 +122,10 @@ class _GrowthScreenState extends State<GrowthScreen> {
     if (p.applications.isEmpty) {
       return RefreshIndicator(
         onRefresh: p.load,
-        child: ListView(children: const [SizedBox(height: 120), Center(child: Text('No applications yet.'))]),
+        child: ListView(children: const [
+          SizedBox(height: 120),
+          Center(child: Text('No applications yet.'))
+        ]),
       );
     }
     return RefreshIndicator(
@@ -117,13 +135,17 @@ class _GrowthScreenState extends State<GrowthScreen> {
           for (final a in p.applications)
             ListTile(
               title: Text(a.name),
-              subtitle: Text('${platformLabels[a.platform] ?? a.platform} · ${a.handle} · ${a.status.label}'),
-              trailing: a.awaitingDecision ? const Icon(Icons.circle, size: 10, color: Colors.orange) : null,
+              subtitle: Text(
+                  '${platformLabels[a.platform] ?? a.platform} · ${a.handle} · ${a.status.label}'),
+              trailing: a.awaitingDecision
+                  ? const Icon(Icons.circle, size: 10, color: Colors.orange)
+                  : null,
               onTap: () => showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
                 showDragHandle: true,
-                builder: (_) => ChangeNotifierProvider.value(value: p, child: _ApplicationSheet(app: a)),
+                builder: (_) => ChangeNotifierProvider.value(
+                    value: p, child: _ApplicationSheet(app: a)),
               ),
             ),
           const SizedBox(height: 40),
@@ -138,7 +160,8 @@ class _GrowthScreenState extends State<GrowthScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => ChangeNotifierProvider.value(value: p, child: const _AddSheet()),
+      builder: (_) =>
+          ChangeNotifierProvider.value(value: p, child: const _AddSheet()),
     );
   }
 }
@@ -151,7 +174,8 @@ class _TaskSheet extends StatefulWidget {
 }
 
 class _TaskSheetState extends State<_TaskSheet> {
-  late final TextEditingController _notes = TextEditingController(text: widget.task.notes ?? '');
+  late final TextEditingController _notes =
+      TextEditingController(text: widget.task.notes ?? '');
 
   @override
   void dispose() {
@@ -159,12 +183,14 @@ class _TaskSheetState extends State<_TaskSheet> {
     super.dispose();
   }
 
-  Future<void> _do(Future<bool> Function() f, String ok, {bool close = true}) async {
+  Future<void> _do(Future<bool> Function() f, String ok,
+      {bool close = true}) async {
     final p = context.read<GrowthProvider>();
     final nav = Navigator.of(context);
     final msgr = ScaffoldMessenger.of(context);
     final good = await f();
-    msgr.showSnackBar(SnackBar(content: Text(good ? ok : (p.error ?? 'Something went wrong'))));
+    msgr.showSnackBar(SnackBar(
+        content: Text(good ? ok : (p.error ?? 'Something went wrong'))));
     if (good && close) nav.pop();
   }
 
@@ -174,14 +200,21 @@ class _TaskSheetState extends State<_TaskSheet> {
     final p = context.read<GrowthProvider>();
     final finished = t.bucket(DateTime.now()) == TaskBucket.finished;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(t.creatorName, style: Theme.of(context).textTheme.titleLarge),
           Text('${t.channel.label}${t.handle != null ? ' · ${t.handle}' : ''}'),
           if (t.niche != null) Text('Niche: ${t.niche}'),
-          if (t.fitReason != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Why: ${t.fitReason}')),
-          if (t.evidence != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('Evidence: ${t.evidence}')),
+          if (t.fitReason != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Why: ${t.fitReason}')),
+          if (t.evidence != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('Evidence: ${t.evidence}')),
           if (t.draftMessage != null) ...[
             const SizedBox(height: 12),
             Container(
@@ -202,7 +235,8 @@ class _TaskSheetState extends State<_TaskSheet> {
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: t.draftMessage!));
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Draft copied')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Draft copied')));
                   }
                 },
               ),
@@ -212,7 +246,8 @@ class _TaskSheetState extends State<_TaskSheet> {
                 label: const Text('Open profile'),
                 onPressed: () {
                   final u = Uri.tryParse(t.profileUrl!);
-                  if (u != null) launchUrl(u, mode: LaunchMode.externalApplication);
+                  if (u != null)
+                    launchUrl(u, mode: LaunchMode.externalApplication);
                 },
               ),
           ]),
@@ -220,32 +255,38 @@ class _TaskSheetState extends State<_TaskSheet> {
           TextField(
             controller: _notes,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Notes', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Notes', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 12),
           if (!finished)
             Wrap(spacing: 8, runSpacing: 8, children: [
               if (t.status != TaskStatus.sent)
                 FilledButton(
-                  onPressed: () => _do(() => p.markSent(t), 'Marked sent. Follow-up in 5 days'),
+                  onPressed: () => _do(
+                      () => p.markSent(t), 'Marked sent. Follow-up in 5 days'),
                   child: const Text('Mark sent'),
                 ),
               FilledButton.tonal(
-                onPressed: () => _do(() => p.setStatus(t, TaskStatus.replied), 'Marked replied'),
+                onPressed: () => _do(
+                    () => p.setStatus(t, TaskStatus.replied), 'Marked replied'),
                 child: const Text('Replied'),
               ),
               OutlinedButton(
-                onPressed: () => _do(() => p.setStatus(t, TaskStatus.declined), 'Marked declined'),
+                onPressed: () => _do(() => p.setStatus(t, TaskStatus.declined),
+                    'Marked declined'),
                 child: const Text('Declined'),
               ),
               OutlinedButton(
-                onPressed: () => _do(() => p.snooze(t, const Duration(days: 2)), 'Snoozed 2 days'),
+                onPressed: () => _do(() => p.snooze(t, const Duration(days: 2)),
+                    'Snoozed 2 days'),
                 child: const Text('Snooze 2d'),
               ),
             ]),
           Row(children: [
             TextButton(
-              onPressed: () => _do(() => p.saveNotes(t, _notes.text), 'Notes saved'),
+              onPressed: () =>
+                  _do(() => p.saveNotes(t, _notes.text), 'Notes saved'),
               child: const Text('Save notes'),
             ),
             const Spacer(),
@@ -268,7 +309,8 @@ class _ApplicationSheet extends StatefulWidget {
 }
 
 class _ApplicationSheetState extends State<_ApplicationSheet> {
-  late final TextEditingController _notes = TextEditingController(text: widget.app.adminNotes ?? '');
+  late final TextEditingController _notes =
+      TextEditingController(text: widget.app.adminNotes ?? '');
 
   @override
   void dispose() {
@@ -280,10 +322,14 @@ class _ApplicationSheetState extends State<_ApplicationSheet> {
     final p = context.read<GrowthProvider>();
     final nav = Navigator.of(context);
     final msgr = ScaffoldMessenger.of(context);
-    final ok = approve ? await p.approve(widget.app, _notes.text) : await p.reject(widget.app, _notes.text);
+    final ok = approve
+        ? await p.approve(widget.app, _notes.text)
+        : await p.reject(widget.app, _notes.text);
     msgr.showSnackBar(SnackBar(
         content: Text(ok
-            ? (approve ? 'Approved. A welcome task is in your queue' : 'Rejected')
+            ? (approve
+                ? 'Approved. A welcome task is in your queue'
+                : 'Rejected')
             : (p.error ?? 'Something went wrong'))));
     if (ok) nav.pop();
   }
@@ -292,39 +338,52 @@ class _ApplicationSheetState extends State<_ApplicationSheet> {
   Widget build(BuildContext context) {
     final a = widget.app;
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(a.name, style: Theme.of(context).textTheme.titleLarge),
           Text(a.email),
           const SizedBox(height: 8),
           Text('${platformLabels[a.platform] ?? a.platform} · ${a.handle}'),
-          Text('Audience: ${audienceBandLabels[a.audienceBand] ?? a.audienceBand}'),
+          Text(
+              'Audience: ${audienceBandLabels[a.audienceBand] ?? a.audienceBand}'),
           Text('Niche: ${a.niche}'),
           if (a.country != null) Text('Country: ${a.country}'),
-          if (a.about != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(a.about!)),
-          Text('Status: ${a.status.label}', style: const TextStyle(fontWeight: FontWeight.w600)),
+          if (a.about != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 8), child: Text(a.about!)),
+          Text('Status: ${a.status.label}',
+              style: const TextStyle(fontWeight: FontWeight.w600)),
           if (a.profileUrl != null)
             TextButton.icon(
               icon: const Icon(Icons.open_in_new, size: 18),
               label: const Text('Open profile'),
               onPressed: () {
                 final u = Uri.tryParse(a.profileUrl!);
-                if (u != null) launchUrl(u, mode: LaunchMode.externalApplication);
+                if (u != null)
+                  launchUrl(u, mode: LaunchMode.externalApplication);
               },
             ),
           const SizedBox(height: 8),
           TextField(
             controller: _notes,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Notes', border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                labelText: 'Notes', border: OutlineInputBorder()),
           ),
           const SizedBox(height: 12),
           if (a.awaitingDecision)
             Row(children: [
-              Expanded(child: FilledButton(onPressed: () => _decide(true), child: const Text('Approve'))),
+              Expanded(
+                  child: FilledButton(
+                      onPressed: () => _decide(true),
+                      child: const Text('Approve'))),
               const SizedBox(width: 8),
-              Expanded(child: OutlinedButton(onPressed: () => _decide(false), child: const Text('Reject'))),
+              Expanded(
+                  child: OutlinedButton(
+                      onPressed: () => _decide(false),
+                      child: const Text('Reject'))),
             ])
           else if (a.status == ApplicationStatus.pendingConfirmation)
             const Text('Waiting for the applicant to confirm their email.'),
@@ -361,8 +420,9 @@ class _AddSheetState extends State<_AddSheet> {
 
   Future<void> _ai() async {
     if (_name.text.trim().isEmpty || _info.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Add a name and paste some info about the creator first')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Add a name and paste some info about the creator first')));
       return;
     }
     setState(() => _busy = true);
@@ -378,7 +438,8 @@ class _AddSheetState extends State<_AddSheet> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (r == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(p.error ?? 'Could not draft')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(p.error ?? 'Could not draft')));
       return;
     }
     setState(() {
@@ -388,8 +449,8 @@ class _AddSheetState extends State<_AddSheet> {
       _draft.text = r.draft;
     });
     if (r.fits == false) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('AI thinks this is not a fit: ${r.fitReason}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('AI thinks this is not a fit: ${r.fitReason}')));
     }
   }
 
@@ -414,23 +475,30 @@ class _AddSheetState extends State<_AddSheet> {
     if (ok) {
       nav.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(p.error ?? 'Could not save')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(p.error ?? 'Could not save')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Add creator', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          TextField(controller: _name, decoration: const InputDecoration(labelText: 'Name')),
+          TextField(
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'Name')),
           DropdownButtonFormField<String>(
             initialValue: _platform,
             decoration: const InputDecoration(labelText: 'Platform'),
-            items: [for (final e in platformLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
+            items: [
+              for (final e in platformLabels.entries)
+                DropdownMenuItem(value: e.key, child: Text(e.value))
+            ],
             onChanged: (v) => setState(() {
               _platform = v ?? 'other';
               _channel = OutreachChannel.forPlatform(_platform);
@@ -440,16 +508,24 @@ class _AddSheetState extends State<_AddSheet> {
             key: ValueKey(_channel),
             initialValue: _channel,
             decoration: const InputDecoration(labelText: 'Send via'),
-            items: [for (final c in OutreachChannel.values) DropdownMenuItem(value: c, child: Text(c.label))],
+            items: [
+              for (final c in OutreachChannel.values)
+                DropdownMenuItem(value: c, child: Text(c.label))
+            ],
             onChanged: (v) => setState(() => _channel = v ?? _channel),
           ),
-          TextField(controller: _handle, decoration: const InputDecoration(labelText: 'Handle')),
-          TextField(controller: _url, decoration: const InputDecoration(labelText: 'Profile link')),
+          TextField(
+              controller: _handle,
+              decoration: const InputDecoration(labelText: 'Handle')),
+          TextField(
+              controller: _url,
+              decoration: const InputDecoration(labelText: 'Profile link')),
           TextField(
             controller: _info,
             maxLines: 3,
             decoration: const InputDecoration(
-                labelText: 'Paste their bio / recent video titles', helperText: 'The AI uses only what you paste'),
+                labelText: 'Paste their bio / recent video titles',
+                helperText: 'The AI uses only what you paste'),
           ),
           const SizedBox(height: 8),
           Align(
@@ -461,7 +537,9 @@ class _AddSheetState extends State<_AddSheet> {
             ),
           ),
           if (_fitReason != null && _fitReason!.isNotEmpty)
-            Padding(padding: const EdgeInsets.only(top: 8), child: Text('Fit: $_fitReason')),
+            Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Fit: $_fitReason')),
           TextField(
             controller: _draft,
             maxLines: 6,
@@ -473,7 +551,10 @@ class _AddSheetState extends State<_AddSheet> {
             child: FilledButton(
               onPressed: _busy ? null : _save,
               child: _busy
-                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Add to queue'),
             ),
           ),
