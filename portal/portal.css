@@ -30,3 +30,7 @@ dl { display:grid; grid-template-columns:140px 1fr; gap:6px 12px; font-size:14px
 footer { text-align:center; color:var(--muted); font-size:13px; padding-top:28px; } a { color:var(--teal); }
 @media (max-width:520px) { .card { padding:20px; } dl { grid-template-columns:1fr; } }
 .list > div.static { cursor:default; } .list > div.static:hover { background:none; }
+.tabs { margin:0 0 18px; } .tabs button { padding:9px 16px; }
+.list > div.block { flex-direction:column; align-items:stretch; gap:8px; }
+.list .grow2 > div { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 0; border-top:1px solid var(--line); }
+.paycol { display:flex; gap:8px; align-items:center; flex-wrap:wrap; } .paycol input { width:220px; }

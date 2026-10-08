@@ -236,6 +236,45 @@
     }
   }
 
+  function adminTabs(user, current) {
+    return el('div', { class: 'row tabs' },
+      el('button', { class: current === 'apps' ? '' : 'secondary', text: 'Applications', onclick: function () { renderAdmin(user); } }),
+      el('button', { class: current === 'pay' ? '' : 'secondary', text: 'Payouts', onclick: function () { renderPayouts(user); } }));
+  }
+
+  function renderPayouts(user) {
+    var box = el('div', { class: 'list' }, el('p', { class: 'muted', text: 'Loading…' }));
+    mount(el('div', { class: 'card' }, adminTabs(user, 'pay'), el('h1', { text: 'Payouts' }),
+      el('p', { class: 'muted', text: 'Pay creators outside this portal (bank, Wise, Payoneer), then record it here. Marking paid cannot be undone from this screen.' }), box));
+    sb.rpc('admin_creator_payouts').then(function (r) {
+      if (r.error) throw r.error;
+      if (!r.data.length) { box.replaceChildren(el('p', { class: 'muted', text: 'No approved creators with a code yet.' })); return; }
+      box.replaceChildren.apply(box, r.data.map(function (c) {
+        var rows = (c.rows || []).map(function (x) {
+          var note = el('input', { type: 'text', maxlength: '300', placeholder: 'Payment reference (optional)' });
+          var line = el('div', { class: 'static' },
+            el('div', { class: 'grow' },
+              el('strong', { text: x.pending_count ? money(x.pending, x.currency) + ' owed' : 'Nothing owed in ' + (x.currency || 'unknown currency') }),
+              el('small', { text: x.pending_count + ' pending purchase' + (x.pending_count === 1 ? '' : 's') + ' · paid so far ' + money(x.paid, x.currency) })));
+          if (x.pending_count) {
+            var btn = el('button', { text: 'Mark paid', onclick: function () {
+              if (!window.confirm('Record ' + money(x.pending, x.currency) + ' as paid to ' + c.name + '? This cannot be undone here.')) return;
+              btn.disabled = true;
+              sb.rpc('admin_mark_paid', { p_application: c.application_id, p_currency: x.currency, p_expected: x.pending, p_note: note.value.trim() || null })
+                .then(function (u) { if (u.error) throw u.error; renderPayouts(user); show('Recorded ' + money(u.data.amount, u.data.currency) + ' as paid to ' + c.name + '.', 'ok'); })
+                .catch(function (e) { btn.disabled = false; show(msgOf(e), 'bad'); });
+            } });
+            line.appendChild(el('div', { class: 'paycol' }, note, btn));
+          }
+          return line;
+        });
+        return el('div', { class: 'static block' },
+          el('div', { class: 'grow' }, el('strong', { text: c.name }), el('small', { text: c.email + ' · code ' + c.code })),
+          el('div', { class: 'grow2' }, rows));
+      }));
+    }).catch(function (e) { box.replaceChildren(); show(msgOf(e), 'bad'); });
+  }
+
   function renderAdmin(user) {
     var filter = 'confirmed';
     var listBox = el('div', { class: 'list' });
@@ -245,7 +284,7 @@
       el('option', { value: 'rejected', text: 'Not accepted' }),
       el('option', { value: 'pending_confirmation', text: 'Not confirmed yet' }),
       el('option', { value: 'all', text: 'All' }));
-    mount(el('div', { class: 'card' }, el('h1', { text: 'Creator applications' }), select, listBox));
+    mount(el('div', { class: 'card' }, adminTabs(user, 'apps'), el('h1', { text: 'Creator applications' }), select, listBox));
     function load() {
       listBox.replaceChildren(el('p', { class: 'muted', text: 'Loading…' }));
       var q = sb.from('creator_applications').select('id,name,email,platform,handle,audience_band,niche,status,created_at').order('created_at', { ascending: false }).limit(200);
