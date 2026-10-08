@@ -17,6 +17,17 @@ class _FakeStore extends InAppPurchasePlatform with MockPlatformInterfaceMixin {
   final bought = <String>[];
   final params = <PurchaseParam>[];
 
+  // Enough of a store for SubscriptionService to start up against it.
+  @override
+  Future<bool> isAvailable() async => true;
+  @override
+  Stream<List<PurchaseDetails>> get purchaseStream => const Stream.empty();
+  @override
+  Future<ProductDetailsResponse> queryProductDetails(Set<String> identifiers) async =>
+      ProductDetailsResponse(productDetails: const [], notFoundIDs: const []);
+  @override
+  Future<void> restorePurchases({String? applicationUserName}) async {}
+
   @override
   Future<bool> buyNonConsumable({required PurchaseParam purchaseParam}) async {
     bought.add(purchaseParam.productDetails.id);
@@ -48,10 +59,10 @@ PurchaseDetails _purchase(String id, {PurchaseStatus status = PurchaseStatus.pur
     );
 
 /// A subscription Google Play reports as active.
-GooglePlayPurchaseDetails _active(String productId, {String token = 'old-token'}) {
+GooglePlayPurchaseDetails _active(String productId, {String token = 'old-token', bool autoRenewing = true}) {
   final wrapper = PurchaseWrapper(
     orderId: 'GPA.1', packageName: 'com.outlay.app', purchaseTime: 1, purchaseToken: token, signature: 's',
-    products: [productId], isAutoRenewing: true, originalJson: '{}', isAcknowledged: true,
+    products: [productId], isAutoRenewing: autoRenewing, originalJson: '{}', isAcknowledged: true,
     purchaseState: PurchaseStateWrapper.purchased,
   );
   return GooglePlayPurchaseDetails.fromPurchase(wrapper).single;
@@ -291,6 +302,140 @@ void main() {
       await svc.buy(prod(SubscriptionService.kMaxAnnualId));
       final change = (store.params.single as GooglePlayPurchaseParam).changeSubscriptionParam!;
       expect(change.oldPurchaseDetails.productID, SubscriptionService.kProMonthlyId);
+    });
+  });
+
+  group('Android startup check against Google Play', () {
+    setUp(() => SubscriptionService.debugIsAndroid = true);
+    tearDown(() => SubscriptionService.debugIsAndroid = null);
+
+    GooglePlayPurchaseDetails pendingPurchase(String id) => GooglePlayPurchaseDetails(
+          productID: id,
+          verificationData: PurchaseVerificationData(localVerificationData: '', serverVerificationData: 'p', source: 's'),
+          transactionDate: null,
+          billingClientPurchase: PurchaseWrapper(
+            orderId: 'x', packageName: 'p', purchaseTime: 1, purchaseToken: 'p', signature: 's',
+            products: [id], isAutoRenewing: true, originalJson: '{}', isAcknowledged: false,
+            purchaseState: PurchaseStateWrapper.pending,
+          ),
+          status: PurchaseStatus.pending,
+        );
+
+    Future<SubscriptionService> check(String? cached, Future<List<GooglePlayPurchaseDetails>> Function() play) async {
+      final svc = await _service(plan: cached);
+      svc.debugActivePurchases = play;
+      await svc.refreshEntitlement();
+      return svc;
+    }
+
+    test('a lapsed subscription (Play lists nothing) drops the stored plan to free', () async {
+      final svc = await check('proAnnual', () async => []);
+      expect(svc.status.plan, SubscriptionPlan.free);
+      expect(svc.status.isPaid, isFalse);
+    });
+
+    test('a lapsed MAX subscription also loses the Family perks', () async {
+      final svc = await check('maxMonthly', () async => []);
+      expect(svc.status.isMax, isFalse);
+      expect(svc.status.canCreateFamily, isFalse);
+    });
+
+    test('an active subscription keeps the plan', () async {
+      final svc = await check('proMonthly', () async => [_active(SubscriptionService.kProMonthlyId)]);
+      expect(svc.status.plan, SubscriptionPlan.proMonthly);
+    });
+
+    test('a plan bought on another device is picked up', () async {
+      final svc = await check(null, () async => [_active(SubscriptionService.kMaxMonthlyId)]);
+      expect(svc.status.plan, SubscriptionPlan.maxMonthly);
+      expect(svc.status.isMax, isTrue);
+    });
+
+    test('if the plan on the phone is wrong, Play wins', () async {
+      final svc = await check('maxAnnual', () async => [_active(SubscriptionService.kProMonthlyId)]);
+      expect(svc.status.plan, SubscriptionPlan.proMonthly);
+    });
+
+    test('with two active subscriptions the highest plan counts', () async {
+      final svc = await check(null, () async => [_active(SubscriptionService.kProAnnualId), _active(SubscriptionService.kMaxMonthlyId)]);
+      expect(svc.status.plan, SubscriptionPlan.maxMonthly);
+    });
+
+    test('a subscription that is switched off (will not renew) is shown as ending, still paid until then', () async {
+      final svc = await check('proMonthly', () async => [_active(SubscriptionService.kProMonthlyId, autoRenewing: false)]);
+      expect(svc.status.isPaid, isTrue);
+      expect(svc.status.willAutoRenew, isFalse);
+    });
+
+    test('a queued downgrade that has now taken effect is cleared', () async {
+      final svc = await _service(plan: 'maxAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxAnnualId)];
+      await svc.buy([..._pro, ..._max].firstWhere((p) => p.id == SubscriptionService.kProMonthlyId));
+      expect(svc.status.pendingPlan, SubscriptionPlan.proMonthly);
+
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kProMonthlyId)];
+      await svc.refreshEntitlement();
+      expect(svc.status.plan, SubscriptionPlan.proMonthly);
+      expect(svc.status.pendingPlan, isNull);
+    });
+
+    test('a queued downgrade is dropped when the subscription has lapsed altogether', () async {
+      final svc = await _service(plan: 'maxAnnual');
+      svc.debugActivePurchases = () async => [_active(SubscriptionService.kMaxAnnualId)];
+      await svc.buy([..._pro, ..._max].firstWhere((p) => p.id == SubscriptionService.kProMonthlyId));
+      svc.debugActivePurchases = () async => [];
+      await svc.refreshEntitlement();
+      expect(svc.status.plan, SubscriptionPlan.free);
+      expect(svc.status.pendingPlan, isNull);
+    });
+
+    test('if Google Play cannot be reached nothing changes', () async {
+      final svc = await check('proAnnual', () async => throw Exception('billing unavailable'));
+      expect(svc.status.plan, SubscriptionPlan.proAnnual);
+    });
+
+    test('an error answer from Play is not mistaken for "no subscription"', () {
+      expect(
+        () => SubscriptionService.purchasesOrThrow(QueryPurchaseDetailsResponse(
+            pastPurchases: const [], error: IAPError(source: 'test', code: 'x', message: 'Service unavailable'))),
+        throwsA(isA<Exception>()),
+      );
+      expect(SubscriptionService.purchasesOrThrow(QueryPurchaseDetailsResponse(pastPurchases: [_active(SubscriptionService.kProMonthlyId)])), hasLength(1));
+    });
+
+    test('a purchase still pending blocks a downgrade', () async {
+      final svc = await check('proAnnual', () async => [pendingPurchase(SubscriptionService.kProAnnualId)]);
+      expect(svc.status.plan, SubscriptionPlan.proAnnual);
+    });
+
+    test('an active product this app does not recognise blocks a downgrade', () async {
+      final svc = await check('proAnnual', () async => [_active('some_older_product')]);
+      expect(svc.status.plan, SubscriptionPlan.proAnnual);
+    });
+
+    test('a free user stays free', () async {
+      final svc = await check(null, () async => []);
+      expect(svc.status.plan, SubscriptionPlan.free);
+    });
+
+    test('the check runs when the app starts, once the store is up', () async {
+      SharedPreferences.setMockInitialValues({'sub_plan': 'proAnnual'});
+      final prefs = await SharedPreferences.getInstance();
+      final svc = SubscriptionService(prefs); // starts up against the fake store
+      svc.debugActivePurchases = () async => [];
+      // Let startup finish: store query, restore, entitlement checks.
+      for (var i = 0; i < 20 && svc.loading; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      expect(svc.loading, isFalse);
+      expect(svc.status.plan, SubscriptionPlan.free);
+      svc.dispose();
+    });
+
+    test('it does nothing at all off Android', () async {
+      SubscriptionService.debugIsAndroid = false;
+      final svc = await check('proAnnual', () async => []);
+      expect(svc.status.plan, SubscriptionPlan.proAnnual);
     });
   });
 

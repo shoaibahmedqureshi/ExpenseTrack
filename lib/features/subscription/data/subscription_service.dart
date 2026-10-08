@@ -208,6 +208,7 @@ class SubscriptionService extends ChangeNotifier {
       debugPrint('[IAP] restorePurchases failed: $e');
     }
     await _syncEntitlementFromStoreKit();
+    await _syncEntitlementFromPlay();
     await _refreshScanCount();
     _loading = false;
     notifyListeners();
@@ -277,9 +278,9 @@ class SubscriptionService extends ChangeNotifier {
   /// device. Silently no-ops when signed out or offline; the cache simply
   /// stays whatever it last was.
   Future<void> _refreshScanCount() async {
-    final uid = Supabase.instance.client.auth.currentUser?.id;
-    if (uid == null) return;
     try {
+      final uid = Supabase.instance.client.auth.currentUser?.id;
+      if (uid == null) return;
       final month = _currentMonth();
       final row = await Supabase.instance.client
           .from('scan_counts')
@@ -315,18 +316,72 @@ class SubscriptionService extends ChangeNotifier {
 
   bool get _isAndroid => debugIsAndroid ?? Platform.isAndroid;
 
-  /// The subscriptions Google Play says this account has right now, newest plan first. Throws if Play cannot be
-  /// reached, so a failed lookup is never mistaken for "no subscription".
-  Future<List<GooglePlayPurchaseDetails>> _activePlayPurchases() async {
+  /// Everything Google Play reports for this account. Throws when Play answers with an error, so a failed lookup is
+  /// never mistaken for "no subscription" (which would drop a paying user's plan, or let a switch double-bill).
+  Future<List<GooglePlayPurchaseDetails>> _queryPlayPurchases() async {
     final hook = debugActivePurchases;
-    final all = hook != null
-        ? await hook()
-        : (await _iap.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>().queryPastPurchases()).pastPurchases;
-    final ours = all
-        .where((p) => p.status == PurchaseStatus.purchased && planFromProductId(p.productID) != null)
-        .toList()
-      ..sort((a, b) => planRank(planFromProductId(b.productID)!).compareTo(planRank(planFromProductId(a.productID)!)));
-    return ours;
+    if (hook != null) return hook();
+    final response = await _iap.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>().queryPastPurchases();
+    return purchasesOrThrow(response);
+  }
+
+  /// The purchases in a Play answer, or an exception if the answer was an error.
+  @visibleForTesting
+  static List<GooglePlayPurchaseDetails> purchasesOrThrow(QueryPurchaseDetailsResponse response) {
+    final error = response.error;
+    if (error != null) throw Exception('Google Play lookup failed: ${error.message}');
+    return response.pastPurchases.whereType<GooglePlayPurchaseDetails>().toList();
+  }
+
+  /// Our subscriptions that are active right now, highest plan first.
+  List<GooglePlayPurchaseDetails> _activeOurs(List<GooglePlayPurchaseDetails> all) => all
+      .where((p) => p.status == PurchaseStatus.purchased && planFromProductId(p.productID) != null)
+      .toList()
+    ..sort((a, b) => planRank(planFromProductId(b.productID)!).compareTo(planRank(planFromProductId(a.productID)!)));
+
+  Future<List<GooglePlayPurchaseDetails>> _activePlayPurchases() async => _activeOurs(await _queryPlayPurchases());
+
+  /// Android counterpart of the StoreKit check: makes the stored plan match what Google Play says the account has,
+  /// so a lapsed subscription stops counting as paid and one bought on another device starts to.
+  ///
+  /// It only acts on a definite answer. If Play cannot be reached or answers with an error, nothing changes. It never
+  /// downgrades while a purchase is still pending, or while Play lists an active product this app does not recognise,
+  /// because either could be a paying user the lookup does not fully describe.
+  Future<void> _syncEntitlementFromPlay() async {
+    if (!_isAndroid) return;
+    try {
+      final all = await _queryPlayPurchases();
+      final active = _activeOurs(all);
+
+      if (active.isNotEmpty) {
+        final best = active.first;
+        final plan = planFromProductId(best.productID)!;
+        await _prefs.setString(_kPlan, plan.name);
+        _willAutoRenew = best.billingClientPurchase.isAutoRenewing;
+        if (_pendingPlan == plan) {
+          _pendingPlan = null;
+          await _prefs.remove(_kPendingPlan);
+        }
+        notifyListeners();
+        return;
+      }
+
+      final pendingOurs = all.any((p) => p.status == PurchaseStatus.pending && planFromProductId(p.productID) != null);
+      final unknownActive = all.any((p) => p.status == PurchaseStatus.purchased && planFromProductId(p.productID) == null);
+      if (pendingOurs || unknownActive) return;
+
+      // Definitely nothing active.
+      _willAutoRenew = null;
+      _expirationDate = null;
+      _pendingPlan = null;
+      await _prefs.remove(_kPendingPlan);
+      if (status.plan != SubscriptionPlan.free) {
+        await _prefs.setString(_kPlan, SubscriptionPlan.free.name);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[SubscriptionService] Play entitlement check failed: $e');
+    }
   }
 
   Future<BuyOutcome> buy(ProductDetails product) async {
@@ -482,7 +537,10 @@ class SubscriptionService extends ChangeNotifier {
   /// StoreKit check on mount — e.g. after returning from the background,
   /// where the subscription could have changed without this session seeing
   /// a purchaseStream event for it.
-  Future<void> refreshEntitlement() => _syncEntitlementFromStoreKit();
+  Future<void> refreshEntitlement() async {
+    await _syncEntitlementFromStoreKit();
+    await _syncEntitlementFromPlay();
+  }
 
   /// Opens the platform's native subscription management screen so the user
   /// can view billing details, change plan, or cancel — the App Store /

@@ -91,6 +91,9 @@ subscription is being replaced, so they never end up paying for two:
   the old plan is credited.
 - **Down** (MAX → Pro, Annual → Monthly): takes effect **when the current paid period ends**. The app remembers the queued
   change and shows "Switching to …".
+- **At startup** (and whenever the paywall opens) the app also checks the stored plan against Google Play. A lapsed subscription
+  stops counting as paid, and a plan bought on another device is picked up. It only acts on a clear answer: if Play cannot
+  be reached or reports an error, a purchase is pending, or Play lists a product the app does not recognise, nothing changes.
 - The app first asks Google Play what the account really has. If Play cannot be reached, nothing is bought (no risk of a
   double subscription). If Play shows nothing active, the plan stored on the phone was out of date and the purchase goes
   ahead as a new one.
@@ -101,6 +104,8 @@ subscription is being replaced, so they never end up paying for two:
 2. Switch **MAX → Pro**. The app should say the plan switches when the billing period ends. Play must still list MAX, now with
    Pro queued. (Test subscriptions renew every few minutes, so wait for the renewal and the plan will flip to Pro.)
 3. Cancel everything, then buy MAX as a fresh user.
+4. Let a test subscription expire (cancel it, wait out the short test period), reopen the app: Profile should say **Free Plan** and the
+   Family tab should stop offering Create Family.
 
 ---
 
