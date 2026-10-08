@@ -232,6 +232,17 @@ void main() {
     expect(t.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right)).onPressed, isNotNull);
   });
 
+  testWidgets('it opens on the current month even if a past month was open last time', (t) async {
+    final repo = _Repo()..members = [_m('me', owner: true, cats: {'Food': 100})];
+    final provider = HouseholdProvider(repository: repo, getCurrentUserId: () => 'me', now: () => DateTime(2026, 10, 20));
+    addTearDown(provider.dispose);
+    await provider.load(7, month: DateTime(2026, 7)); // left on July
+    await t.pumpWidget(ChangeNotifierProvider.value(value: provider, child: const MaterialApp(home: HouseholdScreen(familyId: 7))));
+    await t.pumpAndSettle();
+    expect(find.text('October 2026'), findsOneWidget);
+    expect(repo.months.last, DateTime(2026, 10));
+  });
+
   testWidgets('a failure to load is shown instead of a blank screen', (t) async {
     final repo = _Repo()..failOverview = Exception('You are not a member of this family');
     final provider = HouseholdProvider(repository: repo, getCurrentUserId: () => 'me', now: () => DateTime(2026, 10, 20));

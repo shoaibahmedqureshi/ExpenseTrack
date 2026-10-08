@@ -334,6 +334,47 @@ void main() {
       expect(p.month, DateTime(2026, 10));
     });
 
+    test('the current month is kept for the dashboard while another month is on screen', () async {
+      repo.members = [_member('me', cats: {'Food': 500})];
+      final p = make();
+      await p.syncFor(7);
+      expect(p.current.members.single.totalCents, 500);
+      repo.members = [_member('me', cats: {'Food': 99999})]; // what September looks like
+      await p.previousMonth();
+      expect(p.month, DateTime(2026, 9));
+      expect(p.overview.members.single.totalCents, 99999);
+      expect(p.current.members.single.totalCents, 500); // unchanged
+    });
+
+    test('syncFor always loads the current month, even if a past month was left open', () async {
+      repo.members = [_member('me')];
+      final p = make();
+      await p.load(7);
+      await p.previousMonth();
+      await p.syncFor(7);
+      expect(p.month, DateTime(2026, 10));
+      expect(repo.overviewCalls.last, (7, DateTime(2026, 10)));
+    });
+
+    test('a budget saved for the current month shows up in current straight away', () async {
+      repo.members = [_member('me', owner: true)];
+      final p = make();
+      await p.syncFor(7);
+      repo.budgets = [const HouseholdBudget(category: null, amountCents: 100000)];
+      await p.setBudget(null, 100000);
+      expect(p.current.budgets.single.amountCents, 100000);
+    });
+
+    test('a budget saved while looking at a past month does not replace the current figures', () async {
+      repo.members = [_member('me', owner: true, cats: {'Food': 100})];
+      final p = make();
+      await p.syncFor(7);
+      await p.previousMonth();
+      repo.members = [_member('me', owner: true, cats: {'Food': 7777})];
+      await p.setBudget(null, 100000);
+      expect(p.current.members.single.totalCents, 100);
+    });
+
     test('clear (sign-out) forgets the family and the figures', () async {
       repo.members = [_member('me', cats: {'Food': 100})];
       final p = make();
@@ -341,6 +382,7 @@ void main() {
       p.clear();
       expect(p.familyId, isNull);
       expect(p.overview.members, isEmpty);
+      expect(p.current.members, isEmpty);
       expect(p.hasLoaded, isFalse);
     });
   });

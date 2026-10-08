@@ -17,6 +17,7 @@ import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../sync/sync_service.dart';
+import '../widgets/household_summary_card.dart';
 import '../widgets/splits_summary_card.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
@@ -29,7 +30,7 @@ import '../../../inbox/presentation/widgets/inbox_bell.dart';
 const _recentTransactionCount = 4;
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.onSeeAllTransactions, this.onOpenSplits, this.onOpenFamily});
+  const DashboardScreen({super.key, this.onSeeAllTransactions, this.onOpenSplits, this.onOpenFamily, this.onOpenHousehold});
 
   /// Switches MainShell to the Transactions tab. Falls back to pushing
   /// ExpenseListScreen directly if not provided (e.g. if this screen is
@@ -41,6 +42,9 @@ class DashboardScreen extends StatefulWidget {
 
   /// Switches MainShell to the Family tab.
   final VoidCallback? onOpenFamily;
+
+  /// Opens the household budget (null = the card is hidden).
+  final VoidCallback? onOpenHousehold;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -211,6 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onNext: _nextPeriod,
                 onSeeAllTransactions: widget.onSeeAllTransactions,
                 onOpenSplits: widget.onOpenSplits,
+                onOpenHousehold: widget.onOpenHousehold,
               ),
             ),
           );
@@ -234,6 +239,7 @@ class _DashboardBody extends StatelessWidget {
     required this.onNext,
     required this.onSeeAllTransactions,
     this.onOpenSplits,
+    this.onOpenHousehold,
   });
 
   final ExpenseProvider expenseProvider;
@@ -244,6 +250,7 @@ class _DashboardBody extends StatelessWidget {
   final ({double budgeted, double spent})? yearSummary;
   final VoidCallback? onSeeAllTransactions;
   final VoidCallback? onOpenSplits;
+  final VoidCallback? onOpenHousehold;
   final bool loadingYear;
   final void Function(bool isYear) onSetPeriod;
   final VoidCallback onPrevious;
@@ -332,6 +339,7 @@ class _DashboardBody extends StatelessWidget {
         _IncomeExpenseRow(income: income, expense: expense),
         const SizedBox(height: 18),
         if (onOpenSplits != null) SplitsSummaryCard(onTap: onOpenSplits!),
+        if (onOpenHousehold != null) HouseholdSummaryCard(onTap: onOpenHousehold!),
         if (isYearView && loadingYear)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),

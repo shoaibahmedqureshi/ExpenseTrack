@@ -18,6 +18,7 @@ class HouseholdProvider extends ChangeNotifier {
     final n = _now();
     _month = DateTime(n.year, n.month);
     _overview = HouseholdOverview.empty(_month);
+    _current = _overview;
   }
 
   final HouseholdRepository repository;
@@ -28,6 +29,7 @@ class HouseholdProvider extends ChangeNotifier {
   int? _familyId;
   late DateTime _month;
   late HouseholdOverview _overview;
+  late HouseholdOverview _current;
   bool _loading = false;
   bool _loadedOnce = false;
   bool _busy = false;
@@ -38,6 +40,10 @@ class HouseholdProvider extends ChangeNotifier {
   int? get familyId => _familyId;
   DateTime get month => _month;
   HouseholdOverview get overview => _overview;
+
+  /// How the household stands this month, whichever month the screen is looking at. The dashboard card uses this.
+  HouseholdOverview get current => _current;
+  DateTime get currentMonth => DateTime(_now().year, _now().month);
   bool get isLoading => _loading;
   bool get hasLoaded => _loadedOnce;
   bool get isBusy => _busy;
@@ -54,6 +60,7 @@ class HouseholdProvider extends ChangeNotifier {
   Future<void> load(int familyId, {DateTime? month}) async {
     if (_familyId != familyId) {
       _overview = HouseholdOverview.empty(_month);
+      _current = _overview;
       _loadedOnce = false;
     }
     _familyId = familyId;
@@ -63,6 +70,7 @@ class HouseholdProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _overview = await repository.overview(familyId, _month);
+      if (_month == currentMonth) _current = _overview;
       _loadedOnce = true;
     } catch (e) {
       _error = _msg(e);
@@ -90,7 +98,7 @@ class HouseholdProvider extends ChangeNotifier {
       clear();
       return;
     }
-    await load(familyId);
+    await load(familyId, month: currentMonth);
     if (isSharing) await publishNow();
   }
 
@@ -131,7 +139,10 @@ class HouseholdProvider extends ChangeNotifier {
     try {
       await action();
       final id = _familyId;
-      if (id != null) _overview = await repository.overview(id, _month);
+      if (id != null) {
+        _overview = await repository.overview(id, _month);
+        if (_month == currentMonth) _current = _overview;
+      }
       return true;
     } catch (e) {
       _error = _msg(e);
@@ -175,6 +186,7 @@ class HouseholdProvider extends ChangeNotifier {
     final n = _now();
     _month = DateTime(n.year, n.month);
     _overview = HouseholdOverview.empty(_month);
+    _current = _overview;
     _loading = false;
     _loadedOnce = false;
     _busy = false;

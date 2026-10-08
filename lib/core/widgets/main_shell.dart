@@ -9,6 +9,8 @@ import '../../features/splits/presentation/screens/splits_screen.dart';
 import '../../features/expense_split/presentation/providers/expense_split_provider.dart';
 import '../../features/family_accounts/presentation/providers/family_provider.dart';
 import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
+import '../../features/household/presentation/providers/household_provider.dart';
+import '../../features/household/presentation/screens/household_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
 enum _Tab {
@@ -55,6 +57,11 @@ class _MainShellState extends State<MainShell> {
           _Tab.dashboard => DashboardScreen(
               onOpenSplits: () => _select(_Tab.splits),
               onOpenFamily: () => _select(_Tab.family),
+              onOpenHousehold: () {
+                final id = context.read<HouseholdProvider>().familyId;
+                if (id == null) return;
+                Navigator.push(context, MaterialPageRoute(builder: (_) => HouseholdScreen(familyId: id)));
+              },
               onSeeAllTransactions: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ExpenseListScreen()),

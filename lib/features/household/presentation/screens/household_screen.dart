@@ -24,7 +24,8 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final p = context.read<HouseholdProvider>();
-      p.load(widget.familyId).then((_) => p.publishNow());
+      // Always open on the current month, not wherever it was left last time.
+      p.load(widget.familyId, month: p.currentMonth).then((_) => p.publishNow());
     });
   }
 
@@ -61,7 +62,7 @@ class _HouseholdScreenState extends State<HouseholdScreen> {
       body: !p.hasLoaded && p.isLoading
           ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor)))
           : RefreshIndicator(
-              onRefresh: () => p.load(widget.familyId).then((_) => p.publishNow()),
+              onRefresh: () => p.load(widget.familyId, month: p.month).then((_) => p.publishNow()),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
