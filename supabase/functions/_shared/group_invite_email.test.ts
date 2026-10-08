@@ -33,3 +33,9 @@ test('very long names are cut short', () => {
 test('a missing inviter name falls back to a friendly default', () => {
   assert.match(buildInviteEmail('', 'Trip', 'bob@x.com', expires).subject, /^A friend invited you/);
 });
+
+test('an opt-out link is included when given, and only then', () => {
+  const url = 'https://example.test/functions/v1/email_optout?t=abc.def';
+  assert.match(buildInviteEmail('Ann', 'Flat', 'bob@x.com', expires, url).text, /Stop them here: https:\/\/example\.test\/functions\/v1\/email_optout\?t=abc\.def/);
+  assert.ok(!/Stop them here/.test(buildInviteEmail('Ann', 'Flat', 'bob@x.com', expires).text));
+});

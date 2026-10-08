@@ -99,11 +99,12 @@ void main() {
       expect(parseInviteEmailOutcome({'sent': false, 'reason': 'already_sent'}), InviteEmailOutcome.alreadySent);
       expect(parseInviteEmailOutcome({'sent': false, 'reason': 'recipient_limited'}), InviteEmailOutcome.recipientLimited);
       expect(parseInviteEmailOutcome({'sent': false, 'reason': 'sender_limited'}), InviteEmailOutcome.senderLimited);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'opted_out'}), InviteEmailOutcome.optedOut);
       expect(parseInviteEmailOutcome({'sent': false, 'reason': 'send_failed'}), InviteEmailOutcome.failed);
       expect(parseInviteEmailOutcome(null), InviteEmailOutcome.failed);
     });
     test('every outcome has a message that mentions the address when they must sign up themselves', () {
-      for (final o in [InviteEmailOutcome.notDelivered, InviteEmailOutcome.recipientLimited, InviteEmailOutcome.senderLimited, InviteEmailOutcome.failed]) {
+      for (final o in [InviteEmailOutcome.notDelivered, InviteEmailOutcome.optedOut, InviteEmailOutcome.recipientLimited, InviteEmailOutcome.senderLimited, InviteEmailOutcome.failed]) {
         expect(describeInvite(o, 'a@b.com'), contains('a@b.com'));
       }
     });

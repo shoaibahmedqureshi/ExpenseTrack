@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { getEmailConfig, sendEmail } from "../_shared/email_service.ts";
 import { corsHeaders, json } from "../_shared/http.ts";
 import { buildInviteEmail } from "../_shared/group_invite_email.ts";
+import { makeUnsubscribeToken } from "../_shared/unsubscribe.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
@@ -33,13 +34,24 @@ Deno.serve(async (req) => {
   }
   if (!claim?.ok) return json(req, { sent: false, reason: claim?.reason ?? "error" });
 
-  const mail = buildInviteEmail(claim.inviter_name, claim.group_name, claim.email, new Date(claim.expires_at));
+  // Every message carries a working opt-out. Without one (secret missing) nothing is sent.
+  let unsubscribeUrl: string;
+  try {
+    unsubscribeUrl = `${url}/functions/v1/email_optout?t=${await makeUnsubscribeToken(Deno.env.get("UNSUBSCRIBE_SECRET") || "", claim.email)}`;
+  } catch (e) {
+    console.error("cannot build opt-out link:", e instanceof Error ? e.message : e);
+    await admin.rpc("release_group_invite_email", { p_invitation_id: invitationId });
+    return json(req, { sent: false, reason: "error" }, 500);
+  }
+
+  const mail = buildInviteEmail(claim.inviter_name, claim.group_name, claim.email, new Date(claim.expires_at), unsubscribeUrl);
   const result = await sendEmail({
     to: claim.email,
     subject: mail.subject,
     text: mail.text,
     categories: ["group-invite"],
     transactional: true,
+    unsubscribeUrl,
   });
   if (!result.success) {
     console.error("group invite email failed:", result.error);

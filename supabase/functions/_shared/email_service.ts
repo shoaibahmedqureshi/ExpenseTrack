@@ -27,6 +27,8 @@ export interface SendArgs {
   /** A message the recipient asked for (e.g. a confirmation link). Skips the cold-outreach
    *  lock and test redirect, and carries no unsubscribe footer. Sandbox mode still applies. */
   transactional?: boolean;
+  /** Adds the List-Unsubscribe headers (including one-click) so mail apps can offer an "unsubscribe" button. */
+  unsubscribeUrl?: string;
 }
 
 export function getEmailConfig() {
@@ -92,7 +94,11 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
     subject,
     content: [{ type: "text/plain", value: body }],
     categories: (args.categories ?? ["agent"]).slice(0, 10),
-    ...(args.transactional ? {} : { headers: { "List-Unsubscribe": `<mailto:${cfg.replyTo}?subject=unsubscribe>` } }),
+    ...(args.unsubscribeUrl
+      ? { headers: { "List-Unsubscribe": `<${args.unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }
+      : args.transactional
+      ? {}
+      : { headers: { "List-Unsubscribe": `<mailto:${cfg.replyTo}?subject=unsubscribe>` } }),
     mail_settings: { sandbox_mode: { enable: cfg.sandbox } },
   };
 

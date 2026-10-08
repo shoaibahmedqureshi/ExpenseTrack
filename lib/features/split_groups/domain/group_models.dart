@@ -45,7 +45,7 @@ Ledger? chooseLedger(List<Ledger> available, Ledger? current) {
 }
 
 /// What happened when we tried to email an invitation to someone without an account.
-enum InviteEmailOutcome { delivered, notDelivered, hasAccount, alreadySent, recipientLimited, senderLimited, failed }
+enum InviteEmailOutcome { delivered, notDelivered, hasAccount, alreadySent, recipientLimited, senderLimited, optedOut, failed }
 
 InviteEmailOutcome parseInviteEmailOutcome(Map<String, dynamic>? res) {
   if (res == null) return InviteEmailOutcome.failed;
@@ -55,6 +55,7 @@ InviteEmailOutcome parseInviteEmailOutcome(Map<String, dynamic>? res) {
     'already_sent' => InviteEmailOutcome.alreadySent,
     'recipient_limited' => InviteEmailOutcome.recipientLimited,
     'sender_limited' => InviteEmailOutcome.senderLimited,
+    'opted_out' => InviteEmailOutcome.optedOut,
     _ => InviteEmailOutcome.failed,
   };
 }
@@ -70,5 +71,7 @@ String describeInvite(InviteEmailOutcome outcome, String email) => switch (outco
         'Invitation created. We emailed that address recently, so ask them to sign up with $email.',
       InviteEmailOutcome.senderLimited =>
         'Invitation created. You have reached today\'s email limit, so ask them to sign up with $email.',
+      InviteEmailOutcome.optedOut =>
+        'Invitation created. That person asked not to get Outlay emails, so ask them to sign up with $email.',
       InviteEmailOutcome.failed => 'Invitation created, but we could not email them. Ask them to sign up with $email.',
     };
