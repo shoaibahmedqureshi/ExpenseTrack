@@ -1,3 +1,4 @@
+import '../../../subscription/data/subscription_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -33,6 +34,13 @@ class _CreateFamilyScreenState extends State<CreateFamilyScreen> {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Family name is required')),
+      );
+      return;
+    }
+
+    if (!context.read<SubscriptionService>().status.canCreateFamily) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Creating a family needs the MAX plan')),
       );
       return;
     }

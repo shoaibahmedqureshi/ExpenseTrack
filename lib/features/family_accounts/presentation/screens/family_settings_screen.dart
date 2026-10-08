@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../subscription/data/subscription_service.dart';
+import '../../../subscription/presentation/screens/paywall_screen.dart';
+import '../../domain/family_access.dart';
 import '../providers/family_provider.dart';
 import 'create_family_screen.dart';
 import 'invite_members_screen.dart';
@@ -66,7 +69,22 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                       ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
-                if (provider.isFamilyAdmin) ...[
+                if (provider.isFamilyAdmin &&
+                    !canManageFamilyMembers(
+                        isMax: context.watch<SubscriptionService>().status.isMax,
+                        isAdmin: true)) ...[
+                  _buildActionButton(
+                    context: context,
+                    icon: Icons.workspace_premium_outlined,
+                    title: 'Renew MAX to invite more people',
+                    subtitle: 'Your family and its members stay as they are',
+                    onTap: () => PaywallScreen.show(context),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (canManageFamilyMembers(
+                    isMax: context.watch<SubscriptionService>().status.isMax,
+                    isAdmin: provider.isFamilyAdmin)) ...[
                   _buildActionButton(
                     context: context,
                     icon: Icons.person_add,
@@ -171,24 +189,33 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
-              'Create a family to share expenses and budgets with up to 10 members.',
+              context.watch<SubscriptionService>().status.canCreateFamily
+                  ? 'Create a family to share expenses and budgets with up to 10 members.'
+                  : 'Family sharing is part of the MAX plan. Share expenses and budgets with up to 10 people. If someone invited you to their family, you will find the invite under Settings.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateFamilyScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('Create Family'),
-          ),
+          if (context.watch<SubscriptionService>().status.canCreateFamily)
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CreateFamilyScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Create Family'),
+            )
+          else
+            FilledButton.icon(
+              onPressed: () => PaywallScreen.show(context),
+              icon: const Icon(Icons.workspace_premium_outlined),
+              label: const Text('Upgrade to MAX to create a family'),
+            ),
         ],
       ),
     );

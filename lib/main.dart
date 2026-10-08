@@ -270,6 +270,8 @@ class _RootRouterState extends State<_RootRouter> {
     if (status == AuthStatus.authenticated) {
       context.read<InboxProvider>().start();
       context.read<GrowthProvider>().checkAdmin();
+      // The Family tab's visibility depends on whether the user is already in a family.
+      context.read<FamilyProvider>().loadUserFamilies();
     }
     if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
       _hasSyncedThisSession = true;

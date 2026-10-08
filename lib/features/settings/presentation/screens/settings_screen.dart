@@ -9,7 +9,10 @@ import '../../../accounts/presentation/screens/accounts_screen.dart';
 import '../../../budgets/presentation/screens/budgets_screen.dart';
 import '../../../expenses/presentation/screens/expense_list_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
+import '../../../family_accounts/presentation/providers/family_provider.dart';
 import '../../../family_accounts/presentation/screens/family_settings_screen.dart';
+import '../../../subscription/data/subscription_service.dart';
+import '../../../subscription/presentation/screens/paywall_screen.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 import '../../../influencer_dashboard/presentation/screens/influencer_dashboard_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -156,40 +159,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-          // Family Section (MAX Tier)
-          _SettingSection(
-            title: 'Family (MAX)',
-            children: [
-              _SettingTile(
-                icon: Icons.group,
-                title: 'Family Settings',
-                subtitle: 'Manage family & members',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const FamilySettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-              _SettingTile(
-                icon: Icons.mail,
-                title: 'Pending Invitations',
-                subtitle: 'View family invites',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PendingInvitationsScreen(
-                        userEmail: userEmail,
+          // Family: a MAX benefit. Members of a family on another plan can still reach it.
+          Builder(builder: (context) {
+            final isMax = context.watch<SubscriptionService>().status.isMax;
+            final inFamily = context.watch<FamilyProvider>().hasFamily;
+            final canOpen = isMax || inFamily;
+            return _SettingSection(
+              title: 'Family',
+              children: [
+                if (canOpen)
+                  _SettingTile(
+                    icon: Icons.group,
+                    title: 'Family Settings',
+                    subtitle: 'Manage family & members',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FamilySettingsScreen(),
+                        ),
+                      );
+                    },
+                  )
+                else
+                  _SettingTile(
+                    icon: Icons.workspace_premium_outlined,
+                    title: 'Family sharing (MAX)',
+                    subtitle: 'Share budgets with up to 10 people',
+                    onTap: () => PaywallScreen.show(context),
+                  ),
+                _SettingTile(
+                  icon: Icons.mail,
+                  title: 'Pending Invitations',
+                  subtitle: 'View family invites',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PendingInvitationsScreen(
+                          userEmail: userEmail,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+                    );
+                  },
+                ),
+              ],
+            );
+          }),
           if (context.watch<GrowthProvider>().isAdmin)
             _SettingSection(
               title: 'Growth (admin)',

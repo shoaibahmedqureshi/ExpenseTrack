@@ -11,19 +11,17 @@ import '../../features/family_accounts/presentation/providers/family_provider.da
 import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
-const _tabLabels = ['Dashboard', 'Splits', 'Family', 'Settings'];
-const _tabIcons = [
-  Icons.home_outlined,
-  Icons.people_outline,
-  Icons.group_outlined,
-  Icons.settings_outlined,
-];
-const _tabActiveIcons = [
-  Icons.home,
-  Icons.people,
-  Icons.group,
-  Icons.settings,
-];
+enum _Tab {
+  dashboard('Dashboard', Icons.home_outlined, Icons.home),
+  splits('Splits', Icons.people_outline, Icons.people),
+  family('Family', Icons.group_outlined, Icons.group),
+  settings('Settings', Icons.settings_outlined, Icons.settings);
+
+  const _Tab(this.label, this.icon, this.activeIcon);
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+}
 
 /// Bottom-tab shell for the 4 main screens with the scan button docked in
 /// the centre notch. Accounts lives under Settings.
@@ -37,63 +35,72 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _index = 0;
+  _Tab _current = _Tab.dashboard;
+
+  void _select(_Tab tab) {
+    setState(() => _current = tab);
+    // IndexedStack keeps tabs alive, so refresh the ones that show server data when opened.
+    if (tab == _Tab.splits) context.read<ExpenseSplitProvider>().refresh();
+    if (tab == _Tab.family) context.read<FamilyProvider>().loadUserFamilies();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Each screen's state is preserved across tab switches via IndexedStack
-    final screens = [
-      DashboardScreen(
-        onOpenSplits: () {
-          setState(() => _index = 1);
-          context.read<ExpenseSplitProvider>().refresh();
-        },
-        onOpenFamily: () {
-          setState(() => _index = 2);
-          context.read<FamilyProvider>().loadUserFamilies();
-        },
-        onSeeAllTransactions: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
-        ),
-      ),
-      const SplitsScreen(),
-      const FamilySettingsScreen(),
-      const SettingsScreen(),
-    ];
+    // The Family tab is always shown so the bar stays balanced. Without MAX it explains the benefit and
+    // offers the upgrade; creating a family and inviting people are what need MAX.
+    const tabs = _Tab.values;
+    final current = _current;
+
+    Widget screenFor(_Tab t) => switch (t) {
+          _Tab.dashboard => DashboardScreen(
+              onOpenSplits: () => _select(_Tab.splits),
+              onOpenFamily: () => _select(_Tab.family),
+              onSeeAllTransactions: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
+              ),
+            ),
+          _Tab.splits => const SplitsScreen(),
+          _Tab.family => const FamilySettingsScreen(),
+          _Tab.settings => const SettingsScreen(),
+        };
+
+    // Each screen's state is preserved across tab switches via IndexedStack; keys keep a tab's state
+    // when another tab appears or disappears around it.
     return Scaffold(
-      body: IndexedStack(index: _index, children: screens),
+      body: IndexedStack(
+        index: tabs.indexOf(current),
+        children: [
+          for (final t in tabs)
+            KeyedSubtree(key: ValueKey(t), child: screenFor(t))
+        ],
+      ),
       // The FAB and the bar must belong to the same Scaffold for the notch to
       // cut around the docked button.
       floatingActionButton: const ScanFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _NavBar(
-        index: _index,
-        onTap: (i) {
-          setState(() => _index = i);
-          // IndexedStack keeps the Family tab alive, so refresh it on open.
-          if (i == 1) context.read<ExpenseSplitProvider>().refresh();
-          if (i == 2) context.read<FamilyProvider>().loadUserFamilies();
-        },
-      ),
+      bottomNavigationBar:
+          _NavBar(tabs: tabs, current: current, onTap: _select),
     );
   }
 }
 
-// BottomAppBar with 4 equal-width tabs and a notch for the centred scan FAB:
+// BottomAppBar with equal-width tabs and a notch for the centred scan FAB:
 // Dashboard, Splits | scan | Family, Settings.
 class _NavBar extends StatelessWidget {
-  const _NavBar({required this.index, required this.onTap});
+  const _NavBar(
+      {required this.tabs, required this.current, required this.onTap});
 
-  final int index;
-  final void Function(int) onTap;
+  final List<_Tab> tabs;
+  final _Tab current;
+  final void Function(_Tab) onTap;
 
-  Widget _item(int i) {
-    final active = i == index;
+  Widget _item(_Tab tab) {
+    final active = tab == current;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => onTap(i),
+        onTap: () => onTap(tab),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -111,13 +118,14 @@ class _NavBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    active ? _tabActiveIcons[i] : _tabIcons[i],
+                    active ? tab.activeIcon : tab.icon,
                     size: 20,
-                    color: active ? AppTheme.primaryColor : AppTheme.textSecondary,
+                    color:
+                        active ? AppTheme.primaryColor : AppTheme.textSecondary,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _tabLabels[i],
+                    tab.label,
                     maxLines: 1,
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
@@ -125,7 +133,9 @@ class _NavBar extends StatelessWidget {
                       fontSize: 10,
                       height: 1.0,
                       fontWeight: FontWeight.w600,
-                      color: active ? AppTheme.primaryColor : AppTheme.textSecondary,
+                      color: active
+                          ? AppTheme.primaryColor
+                          : AppTheme.textSecondary,
                     ),
                   ),
                 ],
@@ -150,10 +160,9 @@ class _NavBar extends StatelessWidget {
         height: 66,
         child: Row(
           children: [
-            _item(0),
-            _item(1),
-            _item(2),
-            _item(3),
+            _item(tabs[0]),
+            _item(tabs[1]),
+            for (final t in tabs.skip(2)) _item(t),
           ],
         ),
       ),
