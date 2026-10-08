@@ -189,7 +189,7 @@ class _ScanFabState extends State<ScanFab> {
                 children: [
                   Text('Scan Receipt',
                       style: Theme.of(sheetCtx).textTheme.titleMedium),
-                  if (!status.isPro) ...[
+                  if (!status.isPaid) ...[
                     const SizedBox(width: 8),
                     _ScanBadge(remaining: status.scansRemaining),
                   ],
@@ -197,7 +197,7 @@ class _ScanFabState extends State<ScanFab> {
               ),
               const SizedBox(height: 4),
               Text(
-                status.isPro ? 'Unlimited scans — Pro plan' : 'Choose image source',
+                status.isPaid ? 'Unlimited scans — ${status.isMax ? 'MAX' : 'Pro'} plan' : 'Choose image source',
                 style: Theme.of(sheetCtx)
                     .textTheme
                     .bodySmall

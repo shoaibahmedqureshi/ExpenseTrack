@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../settings/presentation/screens/privacy_policy_screen.dart';
@@ -6,12 +7,18 @@ import '../../../settings/presentation/screens/terms_of_service_screen.dart';
 import '../../data/subscription_service.dart';
 import '../../domain/subscription_status.dart';
 
-class PaywallScreen extends StatefulWidget {
-  const PaywallScreen({super.key});
+/// Which plan family the paywall is showing. Both are bought the same way, through the store.
+enum PaywallTier { pro, max }
 
-  static Future<void> show(BuildContext context) => Navigator.push(
+class PaywallScreen extends StatefulWidget {
+  const PaywallScreen({super.key, this.initialTier});
+
+  /// Opens on this tier. Left empty, it opens on the tier the user already has (MAX users on MAX, everyone else on Pro).
+  final PaywallTier? initialTier;
+
+  static Future<void> show(BuildContext context, {PaywallTier? tier}) => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const PaywallScreen()),
+        MaterialPageRoute(builder: (_) => PaywallScreen(initialTier: tier)),
       );
 
   @override
@@ -22,12 +29,28 @@ class _PaywallScreenState extends State<PaywallScreen> {
   String? _selectedId;
   bool _buying = false;
   AppliedOffer? _appliedOffer;
+  late PaywallTier _tier;
+
+  ProductDetails? _annualOf(SubscriptionService svc, PaywallTier t) =>
+      t == PaywallTier.max ? svc.maxAnnualProduct : svc.annualProduct;
+  ProductDetails? _monthlyOf(SubscriptionService svc, PaywallTier t) =>
+      t == PaywallTier.max ? svc.maxMonthlyProduct : svc.monthlyProduct;
+
+  void _selectTier(PaywallTier t) {
+    final svc = context.read<SubscriptionService>();
+    setState(() {
+      _tier = t;
+      _appliedOffer = null;
+      _selectedId = _annualOf(svc, t)?.id ?? _monthlyOf(svc, t)?.id;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     final svc = context.read<SubscriptionService>();
-    _selectedId = svc.annualProduct?.id ?? svc.monthlyProduct?.id;
+    _tier = widget.initialTier ?? (svc.status.isMax ? PaywallTier.max : PaywallTier.pro);
+    _selectedId = _annualOf(svc, _tier)?.id ?? _monthlyOf(svc, _tier)?.id;
     // This is the one screen a user comes to check "what plan am I on" —
     // re-verify against StoreKit rather than trusting whatever was last
     // cached, since a plan change (or a switch that silently failed) can
@@ -82,7 +105,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void _onPlanTap(dynamic product, bool isCurrentPlan) {
     if (_buying) return;
     final status = context.read<SubscriptionService>().status;
-    if (status.isPro) {
+    if (status.isPaid) {
       if (isCurrentPlan) {
         _showCurrentPlanDialog(context, product.title);
       } else {
@@ -105,12 +128,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
   @override
   Widget build(BuildContext context) {
     final svc = context.watch<SubscriptionService>();
-    final monthly = svc.monthlyProduct;
-    final annual = svc.annualProduct;
+    final isMaxTier = _tier == PaywallTier.max;
+    final monthly = _monthlyOf(svc, _tier);
+    final annual = _annualOf(svc, _tier);
     final status = svc.status;
-    final isPro = status.isPro;
-    final isMonthlyCurrent = isPro && status.plan == SubscriptionPlan.proMonthly;
-    final isAnnualCurrent = isPro && status.plan == SubscriptionPlan.proAnnual;
+    // "Pro" below means "has a paid plan" (Pro or MAX): that is what decides between the free-user
+    // flow (pick a plan, then Continue) and the subscriber flow (tap a card to switch).
+    final isPro = status.isPaid;
+    final monthlyPlan = isMaxTier ? SubscriptionPlan.maxMonthly : SubscriptionPlan.proMonthly;
+    final annualPlan = isMaxTier ? SubscriptionPlan.maxAnnual : SubscriptionPlan.proAnnual;
+    final isMonthlyCurrent = isPro && status.plan == monthlyPlan;
+    final isAnnualCurrent = isPro && status.plan == annualPlan;
+    // MAX tab only appears once the store actually returns the MAX products; until then nobody is shown a
+    // plan they cannot buy.
+    final maxAvailable = svc.maxAnnualProduct != null || svc.maxMonthlyProduct != null;
+    final maxRequestedButMissing = isMaxTier && !maxAvailable && !svc.loading;
     // Apple/Google both defer a downgrade/crossgrade (e.g. Annual→Monthly)
     // to the next renewal rather than applying it mid-cycle — so `plan`
     // above correctly keeps reporting Annual as current, and this is what
@@ -118,9 +150,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
     // nothing (see SubscriptionStatus.pendingPlan).
     final hasPendingChange = status.hasPendingPlanChange;
     final isAnnualPendingTarget =
-        hasPendingChange && status.pendingPlan == SubscriptionPlan.proAnnual;
+        hasPendingChange && status.pendingPlan == annualPlan;
     final isMonthlyPendingTarget =
-        hasPendingChange && status.pendingPlan == SubscriptionPlan.proMonthly;
+        hasPendingChange && status.pendingPlan == monthlyPlan;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F1A),
@@ -150,16 +182,23 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
                   children: [
                     // Crown header
-                    const _ProHeader(),
-                    const SizedBox(height: 32),
+                    _ProHeader(max: isMaxTier),
+                    const SizedBox(height: 24),
+
+                    if (maxAvailable) ...[
+                      _TierSwitch(tier: _tier, onChanged: _selectTier),
+                      const SizedBox(height: 24),
+                    ],
 
                     // Feature list
-                    ..._features.map((f) => _FeatureRow(
+                    ...(isMaxTier ? _maxFeatures : _features).map((f) => _FeatureRow(
                           icon: f.$1,
                           title: f.$2,
                           subtitle: f.$3,
                         )),
                     const SizedBox(height: 32),
+
+                    if (maxRequestedButMissing) const _MaxUnavailable(),
 
                     // Plan cards — always shown, even when already Pro, so
                     // switching plans is just tapping the other card (see
@@ -276,7 +315,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: (_buying || svc.products.isEmpty)
+                          onPressed: (_buying || svc.products.isEmpty || _selectedId == null)
                               ? null
                               : _subscribe,
                           style: ElevatedButton.styleFrom(
@@ -310,8 +349,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     // functional link to the Privacy Policy and Terms of
                     // Service/EULA must appear on the subscription purchase
                     // screen itself, not just somewhere else in the app.
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    // A Wrap, not a Row: with a large accessibility text size the two links no longer fit side by
+                    // side, and a Row would overflow instead of moving the second link to its own line.
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         GestureDetector(
                           onTap: () => Navigator.push(
@@ -371,10 +413,94 @@ const _features = [
       'Your data is encrypted end-to-end'),
 ];
 
+/// What MAX adds. Everything in Pro is included, so that is stated first.
+const _maxFeatures = [
+  (Icons.family_restroom, 'Family sharing',
+      'Share budgets and expenses with up to 10 people'),
+  (Icons.workspace_premium_outlined, 'Everything in Pro',
+      'Unlimited scans, advanced reports and priority sync'),
+  (Icons.account_balance_wallet_outlined, 'Unlimited accounts',
+      'Track every bank account and wallet'),
+  (Icons.lock_outline, 'Secure & Private',
+      'Your data is encrypted end-to-end'),
+];
+
 // ─── Widgets ──────────────────────────────────────────────────────────────────
 
+/// Pro | MAX selector at the top of the paywall.
+class _TierSwitch extends StatelessWidget {
+  const _TierSwitch({required this.tier, required this.onChanged});
+  final PaywallTier tier;
+  final ValueChanged<PaywallTier> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget seg(PaywallTier t, String label) {
+      final on = tier == t;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => onChanged(t),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: on ? AppTheme.primaryColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(label,
+                style: TextStyle(
+                    color: on ? Colors.white : Colors.white54,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14)),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF2A2A3E)),
+      ),
+      child: Row(children: [seg(PaywallTier.pro, 'Pro'), seg(PaywallTier.max, 'MAX')]),
+    );
+  }
+}
+
+/// Shown instead of plans when MAX was asked for (for example from the Family tab) but the store does not
+/// offer it, so nobody is sold Pro in its place.
+class _MaxUnavailable extends StatelessWidget {
+  const _MaxUnavailable();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF2A2A3E)),
+      ),
+      child: const Row(children: [
+        Icon(Icons.info_outline, color: Colors.white54),
+        SizedBox(width: 12),
+        Expanded(
+          child: Text('MAX is not available to buy yet. Check back soon.',
+              style: TextStyle(color: Colors.white70, fontSize: 13)),
+        ),
+      ]),
+    );
+  }
+}
+
 class _ProHeader extends StatelessWidget {
-  const _ProHeader();
+  const _ProHeader({this.max = false});
+  final bool max;
 
   @override
   Widget build(BuildContext context) {
@@ -402,15 +528,15 @@ class _ProHeader extends StatelessWidget {
               color: Colors.white, size: 40),
         ),
         const SizedBox(height: 20),
-        const Text('Upgrade to Pro',
-            style: TextStyle(
+        Text(max ? 'Upgrade to MAX' : 'Upgrade to Pro',
+            style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
                 fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
-        const Text('Unlock the full expense tracking experience',
+        Text(max ? 'Everything in Pro, plus sharing with your family' : 'Unlock the full expense tracking experience',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white54, fontSize: 14)),
+            style: const TextStyle(color: Colors.white54, fontSize: 14)),
       ],
     );
   }
@@ -868,7 +994,9 @@ Future<void> _showCurrentPlanDialog(BuildContext context, String title) async {
   // dialog can be showing the still-active plan while a switch away from it
   // is already queued (see SubscriptionStatus.pendingPlan).
   final pendingPlanName = status.hasPendingPlanChange
-      ? (status.pendingPlan == SubscriptionPlan.proAnnual ? 'Annual' : 'Monthly')
+      ? ((status.pendingPlan == SubscriptionPlan.proAnnual || status.pendingPlan == SubscriptionPlan.maxAnnual)
+          ? 'Annual'
+          : 'Monthly')
       : null;
 
   return showDialog<void>(

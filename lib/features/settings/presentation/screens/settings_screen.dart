@@ -186,7 +186,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.workspace_premium_outlined,
                     title: 'Family sharing (MAX)',
                     subtitle: 'Share budgets with up to 10 people',
-                    onTap: () => PaywallScreen.show(context),
+                    onTap: () => PaywallScreen.show(context, tier: PaywallTier.max),
                   ),
                 _SettingTile(
                   icon: Icons.mail,

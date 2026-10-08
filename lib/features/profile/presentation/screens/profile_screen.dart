@@ -161,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Subscription card
           Consumer<SubscriptionService>(
             builder: (context, svc, _) {
-              final isPro = svc.status.isPro;
+              final isPro = svc.status.isPaid;
+              final isMax = svc.status.isMax;
               final scansLeft = svc.status.scansRemaining;
               return Card(
                 child: Column(
@@ -178,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         isPro ? Icons.workspace_premium : Icons.lock_open_outlined,
                         color: isPro ? const Color(0xFFFFD700) : AppTheme.primaryColor,
                       ),
-                      title: Text(isPro ? 'Pro Plan' : 'Free Plan'),
+                      title: Text(isMax ? 'MAX Plan' : (isPro ? 'Pro Plan' : 'Free Plan')),
                       subtitle: Text(isPro
                           ? 'Unlimited scans & reports — tap to manage'
                           : '$scansLeft receipt scans remaining this month'),
@@ -194,8 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Text('PRO',
-                                      style: TextStyle(
+                                  child: Text(isMax ? 'MAX' : 'PRO',
+                                      style: const TextStyle(
                                           color: Color(0xFFB8860B),
                                           fontWeight: FontWeight.w800,
                                           fontSize: 12)),

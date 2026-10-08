@@ -71,6 +71,9 @@ class SubscriptionService extends ChangeNotifier {
   static const String kProAnnualId = 'expense_tracker_pro_annual';
   static const String kMaxMonthlyId = 'expense_tracker_max_monthly';
   static const String kMaxAnnualId = 'expense_tracker_max_annual';
+  /// Every product StoreKit is asked about when checking what the user currently has. MAX must be included:
+  /// a MAX subscriber looks like "nothing active" to a Pro-only query, which would downgrade them to free.
+  static const List<String> entitlementProductIds = [kProMonthlyId, kProAnnualId, kMaxMonthlyId, kMaxAnnualId];
   static const Set<String> _kProductIds = {
     kProMonthlyId,
     kProAnnualId,
@@ -151,7 +154,8 @@ class SubscriptionService extends ChangeNotifier {
     return matches.firstOrNull;
   }
 
-  SubscriptionPlan? _planFromProductId(String? productId) {
+  /// The plan a store product id stands for, or null for a product we do not sell.
+  static SubscriptionPlan? planFromProductId(String? productId) {
     return productId == kMaxAnnualId
         ? SubscriptionPlan.maxAnnual
         : productId == kMaxMonthlyId
@@ -208,7 +212,7 @@ class SubscriptionService extends ChangeNotifier {
       final result = await _subscriptionsChannel.invokeMethod<Map>(
         'getSubscriptionStatus',
         {
-          'productIds': [kProMonthlyId, kProAnnualId],
+          'productIds': entitlementProductIds,
         },
       );
       if (result == null) {
@@ -222,7 +226,7 @@ class SubscriptionService extends ChangeNotifier {
         return;
       }
       final productId = result['productId'] as String?;
-      final plan = _planFromProductId(productId);
+      final plan = planFromProductId(productId);
       if (plan != null) {
         await _prefs.setString(_kPlan, plan.name);
       }
@@ -234,7 +238,7 @@ class SubscriptionService extends ChangeNotifier {
       // the currently-active `plan` exactly when a downgrade/crossgrade
       // (e.g. Annual → Monthly) is pending but hasn't taken effect yet.
       final autoRenewProductId = result['autoRenewProductId'] as String?;
-      _pendingPlan = _planFromProductId(autoRenewProductId);
+      _pendingPlan = planFromProductId(autoRenewProductId);
       notifyListeners();
     } catch (e) {
       debugPrint('[SubscriptionService] getSubscriptionStatus failed: $e');
@@ -321,14 +325,20 @@ class SubscriptionService extends ChangeNotifier {
     }
   }
 
-  void _handlePurchase(PurchaseDetails purchase) async {
+  /// Test hook: feeds a store event through the same path the purchase stream uses.
+  @visibleForTesting
+  Future<void> handlePurchaseForTest(PurchaseDetails purchase) => _handlePurchase(purchase);
+
+  Future<void> _handlePurchase(PurchaseDetails purchase) async {
     if (purchase.status == PurchaseStatus.purchased ||
         purchase.status == PurchaseStatus.restored) {
-      final plan = purchase.productID == kProAnnualId
-          ? SubscriptionPlan.proAnnual
-          : SubscriptionPlan.proMonthly;
-      await _prefs.setString(_kPlan, plan.name);
-      notifyListeners();
+      // Every product maps to its own plan. (This used to treat anything that was not Pro Annual as Pro
+      // Monthly, which would have recorded a MAX purchase as Pro.)
+      final plan = planFromProductId(purchase.productID);
+      if (plan != null) {
+        await _prefs.setString(_kPlan, plan.name);
+        notifyListeners();
+      }
     } else if (purchase.status == PurchaseStatus.error) {
       _error = purchase.error?.message ?? 'Purchase failed';
       notifyListeners();
@@ -366,7 +376,7 @@ class SubscriptionService extends ChangeNotifier {
   /// offline (both the increment and the plain read fail) falls all the
   /// way back to local-only behavior.
   Future<bool> tryIncrementScan() async {
-    if (status.isPro) return true;
+    if (status.isPaid) return true;
     try {
       final result = await Supabase.instance.client.rpc(
         'increment_scan_count',

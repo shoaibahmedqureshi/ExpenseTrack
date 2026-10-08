@@ -78,7 +78,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                     icon: Icons.workspace_premium_outlined,
                     title: 'Renew MAX to invite more people',
                     subtitle: 'Your family and its members stay as they are',
-                    onTap: () => PaywallScreen.show(context),
+                    onTap: () => PaywallScreen.show(context, tier: PaywallTier.max),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -212,7 +212,7 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
             )
           else
             FilledButton.icon(
-              onPressed: () => PaywallScreen.show(context),
+              onPressed: () => PaywallScreen.show(context, tier: PaywallTier.max),
               icon: const Icon(Icons.workspace_premium_outlined),
               label: const Text('Upgrade to MAX to create a family'),
             ),
