@@ -281,6 +281,7 @@ class _RootRouterState extends State<_RootRouter> {
       // The Family tab's visibility depends on whether the user is already in a family.
       context.read<FamilyProvider>().loadUserFamilies();
       context.read<SplitGroupProvider>().load();
+      context.read<ExpenseSplitProvider>().loadOverview();
     }
     if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
       _hasSyncedThisSession = true;

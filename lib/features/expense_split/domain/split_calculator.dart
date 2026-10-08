@@ -154,4 +154,15 @@ class SplitCalculator {
     }
     return (owe: owe, owed: owed);
   }
+
+  /// What the person owes and is owed across several ledgers. Each ledger's net is one signed figure, and
+  /// ledgers are never netted against each other: money owed in one group does not pay a debt in another.
+  static ({int owe, int owed}) overviewTotals(Iterable<int> nets) {
+    var owe = 0, owed = 0;
+    for (final n in nets) {
+      if (n < 0) owe += -n;
+      if (n > 0) owed += n;
+    }
+    return (owe: owe, owed: owed);
+  }
 }

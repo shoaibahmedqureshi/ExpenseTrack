@@ -29,6 +29,12 @@ class ExpenseSplitRepository {
         .toList();
   }
 
+  /// Where the signed-in person stands in every family and group they belong to.
+  Future<List<LedgerBalance>> overview() async {
+    final res = await _db.rpc('my_split_overview');
+    return (res as List).map((r) => LedgerBalance.fromJson(Map<String, dynamic>.from(r as Map))).toList();
+  }
+
   /// [sharesCents] is userId -> cents (zero shares are omitted by the caller);
   /// [percents] is only sent for percentage splits.
   Future<void> createSplit({

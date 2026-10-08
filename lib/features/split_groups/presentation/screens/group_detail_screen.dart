@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../expense_split/presentation/providers/expense_split_provider.dart';
 import '../../domain/group_models.dart';
 import '../providers/split_group_provider.dart';
 
@@ -163,10 +164,12 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                   if (!await _confirm('Leave ${g.name}?', 'You can only leave when you have no unsettled balance.', 'Leave')) return;
                   if (!mounted) return;
                   final p2 = context.read<SplitGroupProvider>();
+                  final splits = context.read<ExpenseSplitProvider>();
                   final nav = Navigator.of(context);
                   final ok = await p2.leave(g.id);
                   if (!mounted) return;
                   if (ok) {
+                    splits.loadOverview();
                     nav.pop();
                   } else {
                     _snack(p2.error ?? 'Could not leave the group');
@@ -185,10 +188,12 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                     if (!await _confirm('Delete ${g.name}?', 'Its splits and payments are deleted for everyone. Everyone must be settled up first.', 'Delete')) return;
                     if (!mounted) return;
                     final p2 = context.read<SplitGroupProvider>();
+                    final splits = context.read<ExpenseSplitProvider>();
                     final nav = Navigator.of(context);
                     final ok = await p2.delete(g.id);
                     if (!mounted) return;
                     if (ok) {
+                      splits.loadOverview();
                       nav.pop();
                     } else {
                       _snack(p2.error ?? 'Could not delete the group');

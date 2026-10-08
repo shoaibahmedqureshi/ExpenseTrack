@@ -32,6 +32,24 @@ class Ledger {
   int get hashCode => Object.hash(kind, id);
 }
 
+/// Where the viewer stands in one ledger: positive = owed money, negative = owes.
+class LedgerBalance {
+  const LedgerBalance({required this.ledger, required this.netCents, required this.hasActivity});
+  final Ledger ledger;
+  final int netCents;
+  final bool hasActivity;
+
+  factory LedgerBalance.fromJson(Map<String, dynamic> j) => LedgerBalance(
+        ledger: Ledger(
+          j['kind'] == 'group' ? LedgerKind.group : LedgerKind.family,
+          j['id'] as int,
+          (j['name'] as String?) ?? '',
+        ),
+        netCents: _cents(j['net']),
+        hasActivity: j['has_activity'] == true,
+      );
+}
+
 /// Someone in a ledger, as needed to show names and pick people for a split.
 class LedgerMember {
   const LedgerMember({required this.userId, required this.email, this.name, this.isOwner = false});

@@ -88,6 +88,7 @@ class SplitsScreen extends StatelessWidget {
                   if (ok) {
                     final g = groups.groups.where((x) => x.id == i.groupId).firstOrNull;
                     if (g != null) context.read<ExpenseSplitProvider>().load(g.ledger);
+                    context.read<ExpenseSplitProvider>().loadOverview();
                   }
                   _snack(context, ok ? 'You joined ${i.groupName}' : (groups.error ?? 'Could not join'));
                 },

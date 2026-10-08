@@ -13,6 +13,7 @@ class ExpenseSplitProvider extends ChangeNotifier {
   Ledger? _ledger;
   List<ExpenseSplit> _splits = [];
   List<SplitSettlement> _settlements = [];
+  List<LedgerBalance> _overview = [];
   bool _loading = false;
   String? _error;
 
@@ -20,6 +21,20 @@ class ExpenseSplitProvider extends ChangeNotifier {
   List<ExpenseSplit> get splits => _splits;
   List<SplitSettlement> get settlements => _settlements;
   bool get isLoading => _loading;
+
+  /// Standing in every ledger, for the dashboard.
+  List<LedgerBalance> get overview => _overview;
+  ({int owe, int owed}) get overviewTotals => SplitCalculator.overviewTotals(_overview.map((b) => b.netCents));
+  bool get hasOverviewActivity => _overview.any((b) => b.hasActivity);
+
+  Future<void> loadOverview() async {
+    try {
+      _overview = await repository.overview();
+    } catch (_) {
+      // The dashboard card simply stays as it was; the Splits tab reports its own errors.
+    }
+    notifyListeners();
+  }
   String? get error => _error;
 
   Map<String, int> get net => SplitCalculator.netBalances(
@@ -71,7 +86,7 @@ class ExpenseSplitProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     final l = _ledger;
-    if (l != null) await load(l, silent: true);
+    await Future.wait([loadOverview(), if (l != null) load(l, silent: true)]);
   }
 
   Future<bool> _mutate(Future<void> Function() action) async {
@@ -115,6 +130,7 @@ class ExpenseSplitProvider extends ChangeNotifier {
 
   void clear() {
     _ledger = null;
+    _overview = [];
     _splits = [];
     _settlements = [];
     _loading = false;

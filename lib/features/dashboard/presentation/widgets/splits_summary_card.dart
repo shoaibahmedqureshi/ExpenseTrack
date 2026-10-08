@@ -2,36 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
-import '../../../expense_split/domain/split_calculator.dart';
-import '../../../expense_split/presentation/member_names.dart';
+import '../../../expense_split/domain/split_models.dart';
 import '../../../expense_split/presentation/providers/expense_split_provider.dart';
-import '../../../family_accounts/presentation/providers/family_provider.dart';
-import '../../../split_groups/presentation/ledger_view.dart';
 
-/// Shared-expense balances at a glance: what you owe and what you're owed.
-/// Hidden until the family has at least one split or payment.
+/// Shared-expense balances at a glance, across the family and every group: what you owe and what you're owed,
+/// with the biggest balances listed underneath. Hidden until something has been split or paid.
 class SplitsSummaryCard extends StatelessWidget {
   const SplitsSummaryCard({super.key, required this.onTap});
 
+  /// Opens the Splits tab.
   final VoidCallback onTap;
+
+  static const _maxRows = 3;
 
   @override
   Widget build(BuildContext context) {
-    final view = watchLedgerView(context);
-    final ledger = view.ledger;
-    if (ledger == null) return const SizedBox.shrink();
-    ensureLedgerLoaded(context, view);
-
     return Consumer<ExpenseSplitProvider>(builder: (context, sp, _) {
-      if (sp.ledger != ledger) return const SizedBox.shrink();
-      if (sp.splits.isEmpty && sp.settlements.isEmpty) return const SizedBox.shrink();
+      if (!sp.hasOverviewActivity) return const SizedBox.shrink();
 
-      final me = context.read<FamilyProvider>().getCurrentUserId();
-      final names = MemberNames(view.members, me);
-      final debts = sp.debts;
-      final totals = SplitCalculator.myTotals(debts, me);
-      final mine = debts.where((d) => d.from == me || d.to == me).take(2).toList();
-      final settled = totals.owe == 0 && totals.owed == 0;
+      final totals = sp.overviewTotals;
+      final open = sp.overview.where((b) => b.netCents != 0).toList()
+        ..sort((a, b) => b.netCents.abs().compareTo(a.netCents.abs()));
+      final settled = open.isEmpty;
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 18),
@@ -43,38 +35,32 @@ class SplitsSummaryCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  const Icon(Icons.groups_2_outlined, size: 18, color: AppTheme.textSecondary),
-                  const SizedBox(width: 8),
+                const Row(children: [
+                  Icon(Icons.groups_2_outlined, size: 18, color: AppTheme.textSecondary),
+                  SizedBox(width: 8),
                   Expanded(
-                    child: Text(view.isGroup ? 'Shared expenses · ${ledger.name}' : 'Shared expenses',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                    child: Text('Shared expenses',
+                        style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                   ),
-                  const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                  Icon(Icons.chevron_right, color: AppTheme.textSecondary),
                 ]),
                 const SizedBox(height: 12),
                 if (settled)
-                  const Text('You\'re all settled up',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))
+                  const Text('You\'re all settled up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))
                 else
                   Row(children: [
                     Expanded(child: _figure('You owe', totals.owe, Colors.red.shade700)),
                     const SizedBox(width: 12),
                     Expanded(child: _figure('You\'re owed', totals.owed, Colors.green.shade700)),
                   ]),
-                if (!settled && mine.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  for (final d in mine)
+                if (!settled) ...[
+                  const SizedBox(height: 8),
+                  for (final b in open.take(_maxRows)) _row(context, sp, b),
+                  if (open.length > _maxRows)
                     Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        d.from == me
-                            ? 'You owe ${names.of(d.to)} ${CurrencyFormatter.format(d.cents / 100)}'
-                            : '${names.of(d.from)} owes you ${CurrencyFormatter.format(d.cents / 100)}',
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                      ),
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text('+ ${open.length - _maxRows} more',
+                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                     ),
                 ],
               ]),
@@ -83,6 +69,37 @@ class SplitsSummaryCard extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Widget _row(BuildContext context, ExpenseSplitProvider sp, LedgerBalance b) {
+    final owed = b.netCents > 0;
+    final label = b.ledger.kind == LedgerKind.family ? 'Family' : b.ledger.name;
+    return InkWell(
+      onTap: () {
+        // Land on the ledger that was tapped, not whichever one was open last.
+        sp.load(b.ledger);
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(children: [
+          Expanded(
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            owed
+                ? 'owed ${CurrencyFormatter.format(b.netCents / 100)}'
+                : 'you owe ${CurrencyFormatter.format(-b.netCents / 100)}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: owed ? Colors.green.shade700 : Colors.red.shade700,
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 
   Widget _figure(String label, int cents, Color color) {
