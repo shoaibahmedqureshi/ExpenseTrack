@@ -5,11 +5,11 @@ class ExpenseSplitRepository {
   ExpenseSplitRepository(this._db);
   final SupabaseClient _db;
 
-  Future<List<ExpenseSplit>> splits(int familyId) async {
+  Future<List<ExpenseSplit>> splits(Ledger ledger) async {
     final rows = await _db
         .from('expense_splits')
         .select('*, expense_split_shares(*)')
-        .eq('family_id', familyId)
+        .eq(ledger.kind.column, ledger.id)
         .order('created_at', ascending: false)
         .limit(200);
     return (rows as List)
@@ -17,11 +17,11 @@ class ExpenseSplitRepository {
         .toList();
   }
 
-  Future<List<SplitSettlement>> settlements(int familyId) async {
+  Future<List<SplitSettlement>> settlements(Ledger ledger) async {
     final rows = await _db
         .from('expense_settlements')
         .select()
-        .eq('family_id', familyId)
+        .eq(ledger.kind.column, ledger.id)
         .order('created_at', ascending: false)
         .limit(200);
     return (rows as List)
@@ -32,7 +32,7 @@ class ExpenseSplitRepository {
   /// [sharesCents] is userId -> cents (zero shares are omitted by the caller);
   /// [percents] is only sent for percentage splits.
   Future<void> createSplit({
-    required int familyId,
+    required Ledger ledger,
     required String paidBy,
     required String description,
     required int totalCents,
@@ -40,8 +40,9 @@ class ExpenseSplitRepository {
     required Map<String, int> sharesCents,
     Map<String, double>? percents,
   }) async {
-    await _db.rpc('create_expense_split', params: {
-      'p_family_id': familyId,
+    await _db.rpc('create_ledger_split', params: {
+      'p_kind': ledger.kind.key,
+      'p_id': ledger.id,
       'p_paid_by': paidBy,
       'p_description': description,
       'p_total': totalCents / 100,
@@ -58,13 +59,14 @@ class ExpenseSplitRepository {
   }
 
   Future<void> recordSettlement({
-    required int familyId,
+    required Ledger ledger,
     required String from,
     required String to,
     required int cents,
   }) async {
-    await _db.rpc('record_settlement', params: {
-      'p_family_id': familyId,
+    await _db.rpc('record_ledger_settlement', params: {
+      'p_kind': ledger.kind.key,
+      'p_id': ledger.id,
       'p_from': from,
       'p_to': to,
       'p_amount': cents / 100,
@@ -74,14 +76,14 @@ class ExpenseSplitRepository {
   Future<void> deleteSplit(int id) async {
     final gone = await _db.from('expense_splits').delete().eq('id', id).select('id');
     if ((gone as List).isEmpty) {
-      throw Exception('Only the person who added this split, or the family admin, can delete it');
+      throw Exception('Only the person who added this split, or the family or group owner, can delete it');
     }
   }
 
   Future<void> deleteSettlement(int id) async {
     final gone = await _db.from('expense_settlements').delete().eq('id', id).select('id');
     if ((gone as List).isEmpty) {
-      throw Exception('Only the person who recorded this payment, or the family admin, can delete it');
+      throw Exception('Only the person who recorded this payment, or the family or group owner, can delete it');
     }
   }
 }

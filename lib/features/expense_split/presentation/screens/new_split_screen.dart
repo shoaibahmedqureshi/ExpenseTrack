@@ -9,7 +9,10 @@ import '../member_names.dart';
 import '../providers/expense_split_provider.dart';
 
 class NewSplitScreen extends StatefulWidget {
-  const NewSplitScreen({super.key});
+  const NewSplitScreen({super.key, required this.members});
+
+  /// The people in the family or group the split belongs to.
+  final List<LedgerMember> members;
 
   @override
   State<NewSplitScreen> createState() => _NewSplitScreenState();
@@ -29,9 +32,8 @@ class _NewSplitScreenState extends State<NewSplitScreen> {
   @override
   void initState() {
     super.initState();
-    final family = context.read<FamilyProvider>();
-    final me = family.getCurrentUserId();
-    final ids = family.familyMembers.map((m) => m.userId).toList();
+    final me = context.read<FamilyProvider>().getCurrentUserId();
+    final ids = widget.members.map((m) => m.userId).toList();
     _included = {...ids};
     _payer = ids.contains(me) ? me : (ids.isNotEmpty ? ids.first : me);
     for (final id in ids) {
@@ -177,8 +179,7 @@ class _NewSplitScreenState extends State<NewSplitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final family = context.watch<FamilyProvider>();
-    final names = MemberNames(family.familyMembers, family.getCurrentUserId());
+    final names = MemberNames(widget.members, context.read<FamilyProvider>().getCurrentUserId());
     final r = _compute();
 
     return Scaffold(

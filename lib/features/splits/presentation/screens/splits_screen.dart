@@ -9,80 +9,167 @@ import '../../../expense_split/presentation/member_names.dart';
 import '../../../expense_split/presentation/providers/expense_split_provider.dart';
 import '../../../expense_split/presentation/screens/new_split_screen.dart';
 import '../../../family_accounts/presentation/providers/family_provider.dart';
+import '../../../split_groups/presentation/ledger_view.dart';
+import '../../../split_groups/presentation/providers/split_group_provider.dart';
+import '../../../split_groups/presentation/screens/group_detail_screen.dart';
 
-class SplitsScreen extends StatefulWidget {
+class SplitsScreen extends StatelessWidget {
   const SplitsScreen({super.key});
 
   @override
-  State<SplitsScreen> createState() => _SplitsScreenState();
-}
-
-class _SplitsScreenState extends State<SplitsScreen> {
-  int? _requestedFor;
-
-  void _ensureLoaded(FamilyProvider family) {
-    final id = family.currentFamily == null ? null : int.tryParse(family.currentFamily!.id);
-    if (id == null) {
-      if (_requestedFor != null) {
-        _requestedFor = null;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) context.read<ExpenseSplitProvider>().clear();
-        });
-      }
-      return;
-    }
-    if (_requestedFor == id) return;
-    _requestedFor = id;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<ExpenseSplitProvider>().ensureLoaded(id);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final family = context.watch<FamilyProvider>();
-    _ensureLoaded(family);
+    final view = watchLedgerView(context);
+    ensureLedgerLoaded(context, view);
+    final groups = context.watch<SplitGroupProvider>();
+    final me = context.read<FamilyProvider>().getCurrentUserId();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Splits', style: TextStyle(fontWeight: FontWeight.w800))),
-      body: !family.hasFamily ? _noFamily() : _content(family),
+      appBar: AppBar(
+        title: const Text('Splits', style: TextStyle(fontWeight: FontWeight.w800)),
+        actions: [
+          if (view.isGroup)
+            IconButton(
+              icon: const Icon(Icons.group_outlined),
+              tooltip: 'Group members',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: view.ledger!.id, myUserId: me)),
+              ),
+            ),
+        ],
+      ),
+      body: view.ledger == null ? _noLedger(context, groups) : _content(context, view, groups, me),
     );
   }
 
-  Widget _noFamily() => Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.groups_2_outlined, size: 64, color: AppTheme.primaryColor.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            Text('Splits live inside a family', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text('Create or join a family from the Family tab, then you can share costs and settle up with its members.',
-                textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
-          ]),
+  Future<void> _newGroup(BuildContext context) async {
+    final name = await showDialog<String>(context: context, builder: (_) => const NameDialog());
+    if (name == null || !context.mounted) return;
+    final groups = context.read<SplitGroupProvider>();
+    final sp = context.read<ExpenseSplitProvider>();
+    final id = await groups.create(name);
+    if (!context.mounted) return;
+    if (id == null) {
+      _snack(context, groups.error ?? 'Could not create the group');
+      return;
+    }
+    final g = groups.byId(id);
+    if (g != null) sp.load(g.ledger);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: id, myUserId: context.read<FamilyProvider>().getCurrentUserId())),
+    );
+  }
+
+  Widget _invitations(BuildContext context, SplitGroupProvider groups) {
+    if (groups.invitations.isEmpty) return const SizedBox.shrink();
+    return Column(children: [
+      for (final i in groups.invitations)
+        Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          color: AppTheme.primaryColor.withOpacity(0.06),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(children: [
+              const Icon(Icons.mail_outline, color: AppTheme.primaryColor),
+              const SizedBox(width: 12),
+              Expanded(child: Text('You are invited to "${i.groupName}"', style: const TextStyle(fontWeight: FontWeight.w600))),
+              TextButton(
+                onPressed: () async {
+                  final ok = await groups.respond(i, false);
+                  if (context.mounted && !ok) _snack(context, groups.error ?? 'Could not decline');
+                },
+                child: const Text('Decline'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  final ok = await groups.respond(i, true);
+                  if (!context.mounted) return;
+                  if (ok) {
+                    final g = groups.groups.where((x) => x.id == i.groupId).firstOrNull;
+                    if (g != null) context.read<ExpenseSplitProvider>().load(g.ledger);
+                  }
+                  _snack(context, ok ? 'You joined ${i.groupName}' : (groups.error ?? 'Could not join'));
+                },
+                child: const Text('Join'),
+              ),
+            ]),
+          ),
         ),
+    ]);
+  }
+
+  Widget _noLedger(BuildContext context, SplitGroupProvider groups) => ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+        children: [
+          _invitations(context, groups),
+          const SizedBox(height: 40),
+          Icon(Icons.groups_2_outlined, size: 64, color: AppTheme.primaryColor.withOpacity(0.5)),
+          const SizedBox(height: 16),
+          Text('Split costs with anyone', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text('Make a group for a trip, a flat or a night out. Add what each person paid and settle up later.',
+              textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => _newGroup(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Create a group'),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+          ),
+        ],
       );
 
-  Widget _content(FamilyProvider family) {
-    return Consumer<ExpenseSplitProvider>(builder: (context, sp, _) {
-      final me = family.getCurrentUserId();
-      final names = MemberNames(family.familyMembers, me);
+  Widget _ledgerChips(BuildContext context, LedgerView view) {
+    final sp = context.read<ExpenseSplitProvider>();
+    return SizedBox(
+      height: 44,
+      child: ListView(scrollDirection: Axis.horizontal, children: [
+        for (final l in view.available)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              avatar: Icon(l.kind == LedgerKind.family ? Icons.home_outlined : Icons.groups_outlined, size: 18),
+              label: Text(l.kind == LedgerKind.family ? 'Family' : l.name),
+              selected: l == view.ledger,
+              onSelected: (_) => sp.load(l),
+            ),
+          ),
+        ActionChip(avatar: const Icon(Icons.add, size: 18), label: const Text('New group'), onPressed: () => _newGroup(context)),
+      ]),
+    );
+  }
 
-      if (sp.isLoading && sp.splits.isEmpty && sp.settlements.isEmpty) {
+  Widget _content(BuildContext context, LedgerView view, SplitGroupProvider groups, String me) {
+    return Consumer<ExpenseSplitProvider>(builder: (context, sp, _) {
+      final names = MemberNames(view.members, me);
+
+      if (sp.ledger != view.ledger || (sp.isLoading && sp.splits.isEmpty && sp.settlements.isEmpty)) {
         return const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor)));
       }
 
       final debts = sp.debts;
       final mine = debts.where((d) => d.from == me || d.to == me).toList();
       final others = debts.where((d) => d.from != me && d.to != me).toList();
-      final alone = family.familyMembers.length < 2;
+      final alone = view.members.length < 2;
+      final family = context.read<FamilyProvider>();
+      final isAdmin = view.isOwner;
+      // Referenced so the family provider stays a dependency of this tab (membership changes refresh it).
+      family.hasFamily;
 
       return RefreshIndicator(
-        onRefresh: () => sp.refresh(),
+        onRefresh: () async {
+          await groups.load(silent: true);
+          await sp.refresh();
+          if (view.isGroup) await groups.loadGroup(view.ledger!.id);
+        },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
           children: [
+            _invitations(context, groups),
+            _ledgerChips(context, view),
+            const SizedBox(height: 12),
             if (sp.error != null) _banner(sp.error!),
             _balanceCard(sp.myNet),
             const SizedBox(height: 12),
@@ -93,10 +180,19 @@ class _SplitsScreenState extends State<SplitsScreen> {
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
             if (alone)
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text('Invite someone to your family to start splitting costs.',
-                    style: TextStyle(color: AppTheme.textSecondary), textAlign: TextAlign.center),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: view.isGroup
+                    ? TextButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: view.ledger!.id, myUserId: me)),
+                        ),
+                        icon: const Icon(Icons.person_add_alt),
+                        label: const Text('Invite someone to start splitting costs'),
+                      )
+                    : const Text('Invite someone to your family to start splitting costs.',
+                        style: TextStyle(color: AppTheme.textSecondary), textAlign: TextAlign.center),
               ),
             if (debts.isNotEmpty) ...[
               _sectionTitle('Settle up'),
@@ -110,10 +206,10 @@ class _SplitsScreenState extends State<SplitsScreen> {
             if (sp.splits.isEmpty)
               const _Empty('No splits yet. Add one when you share a cost.')
             else
-              for (final s in sp.splits) _splitTile(context, sp, names, s, me, family.isFamilyAdmin),
+              for (final s in sp.splits) _splitTile(context, sp, names, s, me, isAdmin),
             if (sp.settlements.isNotEmpty) ...[
               _sectionTitle('Payments'),
-              for (final p in sp.settlements) _paymentTile(context, sp, names, p, me, family.isFamilyAdmin),
+              for (final p in sp.settlements) _paymentTile(context, sp, names, p, me, isAdmin),
             ],
           ],
         ),
@@ -302,7 +398,8 @@ class _SplitsScreenState extends State<SplitsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   Future<void> _newSplit(BuildContext context) async {
-    final saved = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => const NewSplitScreen()));
+    final members = watchLedgerViewOnce(context).members;
+    final saved = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => NewSplitScreen(members: members)));
     if (saved == true && context.mounted) _snack(context, 'Split added');
   }
 }

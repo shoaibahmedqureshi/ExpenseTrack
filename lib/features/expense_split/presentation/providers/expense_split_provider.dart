@@ -10,13 +10,13 @@ class ExpenseSplitProvider extends ChangeNotifier {
   final ExpenseSplitRepository repository;
   final String Function() getCurrentUserId;
 
-  int? _familyId;
+  Ledger? _ledger;
   List<ExpenseSplit> _splits = [];
   List<SplitSettlement> _settlements = [];
   bool _loading = false;
   String? _error;
 
-  int? get familyId => _familyId;
+  Ledger? get ledger => _ledger;
   List<ExpenseSplit> get splits => _splits;
   List<SplitSettlement> get settlements => _settlements;
   bool get isLoading => _loading;
@@ -36,12 +36,12 @@ class ExpenseSplitProvider extends ChangeNotifier {
   String _msg(Object e) =>
       e is PostgrestException ? e.message : e.toString().replaceFirst('Exception: ', '');
 
-  Future<void> load(int familyId, {bool silent = false}) async {
-    if (_familyId != familyId) {
+  Future<void> load(Ledger ledger, {bool silent = false}) async {
+    if (_ledger != ledger) {
       _splits = [];
       _settlements = [];
     }
-    _familyId = familyId;
+    _ledger = ledger;
     if (!silent) {
       _loading = true;
       _error = null;
@@ -49,8 +49,8 @@ class ExpenseSplitProvider extends ChangeNotifier {
     }
     try {
       final results = await Future.wait([
-        repository.splits(familyId),
-        repository.settlements(familyId),
+        repository.splits(ledger),
+        repository.settlements(ledger),
       ]);
       _splits = results[0] as List<ExpenseSplit>;
       _settlements = results[1] as List<SplitSettlement>;
@@ -63,15 +63,15 @@ class ExpenseSplitProvider extends ChangeNotifier {
     }
   }
 
-  /// Loads once per family; the Dashboard card and the Splits tab can both ask.
-  Future<void> ensureLoaded(int familyId) async {
-    if (_familyId == familyId) return;
-    await load(familyId);
+  /// Loads once per ledger; the Dashboard card and the Splits tab can both ask.
+  Future<void> ensureLoaded(Ledger ledger) async {
+    if (_ledger == ledger) return;
+    await load(ledger);
   }
 
   Future<void> refresh() async {
-    final id = _familyId;
-    if (id != null) await load(id, silent: true);
+    final l = _ledger;
+    if (l != null) await load(l, silent: true);
   }
 
   Future<bool> _mutate(Future<void> Function() action) async {
@@ -96,7 +96,7 @@ class ExpenseSplitProvider extends ChangeNotifier {
     Map<String, double>? percents,
   }) =>
       _mutate(() => repository.createSplit(
-            familyId: _familyId!,
+            ledger: _ledger!,
             paidBy: paidBy,
             description: description,
             totalCents: totalCents,
@@ -107,14 +107,14 @@ class ExpenseSplitProvider extends ChangeNotifier {
 
   Future<bool> settle({required String from, required String to, required int cents}) =>
       _mutate(() => repository.recordSettlement(
-          familyId: _familyId!, from: from, to: to, cents: cents));
+          ledger: _ledger!, from: from, to: to, cents: cents));
 
   Future<bool> deleteSplit(ExpenseSplit s) => _mutate(() => repository.deleteSplit(s.id));
   Future<bool> deleteSettlement(SplitSettlement s) =>
       _mutate(() => repository.deleteSettlement(s.id));
 
   void clear() {
-    _familyId = null;
+    _ledger = null;
     _splits = [];
     _settlements = [];
     _loading = false;

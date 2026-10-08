@@ -10,6 +10,44 @@ enum SplitType {
       SplitType.values.firstWhere((t) => t.name == s, orElse: () => SplitType.equal);
 }
 
+/// A place where costs are shared: a family or a split group.
+enum LedgerKind {
+  family('family', 'family_id'),
+  group('group', 'group_id');
+
+  const LedgerKind(this.key, this.column);
+  final String key;
+  final String column;
+}
+
+class Ledger {
+  const Ledger(this.kind, this.id, this.name);
+  final LedgerKind kind;
+  final int id;
+  final String name;
+
+  @override
+  bool operator ==(Object other) => other is Ledger && other.kind == kind && other.id == id;
+  @override
+  int get hashCode => Object.hash(kind, id);
+}
+
+/// Someone in a ledger, as needed to show names and pick people for a split.
+class LedgerMember {
+  const LedgerMember({required this.userId, required this.email, this.name, this.isOwner = false});
+  final String userId;
+  final String email;
+  final String? name;
+  final bool isOwner;
+
+  factory LedgerMember.fromJson(Map<String, dynamic> j) => LedgerMember(
+        userId: j['user_id'] as String,
+        email: (j['email'] as String?) ?? '',
+        name: j['name'] as String?,
+        isOwner: j['role'] == 'owner',
+      );
+}
+
 int _cents(Object? numeric) => (((numeric as num?) ?? 0) * 100).round();
 
 class SplitShare {
@@ -29,6 +67,7 @@ class ExpenseSplit {
   const ExpenseSplit({
     required this.id,
     required this.familyId,
+    required this.groupId,
     required this.paidBy,
     required this.createdBy,
     required this.description,
@@ -39,7 +78,8 @@ class ExpenseSplit {
   });
 
   final int id;
-  final int familyId;
+  final int? familyId;
+  final int? groupId;
   final String paidBy;
   final String createdBy;
   final String description;
@@ -50,7 +90,8 @@ class ExpenseSplit {
 
   factory ExpenseSplit.fromJson(Map<String, dynamic> j) => ExpenseSplit(
         id: j['id'] as int,
-        familyId: j['family_id'] as int,
+        familyId: j['family_id'] as int?,
+        groupId: j['group_id'] as int?,
         paidBy: j['paid_by'] as String,
         createdBy: j['created_by'] as String,
         description: j['description'] as String,
@@ -67,6 +108,7 @@ class SplitSettlement {
   const SplitSettlement({
     required this.id,
     required this.familyId,
+    required this.groupId,
     required this.fromUser,
     required this.toUser,
     required this.cents,
@@ -75,7 +117,8 @@ class SplitSettlement {
   });
 
   final int id;
-  final int familyId;
+  final int? familyId;
+  final int? groupId;
   final String fromUser;
   final String toUser;
   final int cents;
@@ -84,7 +127,8 @@ class SplitSettlement {
 
   factory SplitSettlement.fromJson(Map<String, dynamic> j) => SplitSettlement(
         id: j['id'] as int,
-        familyId: j['family_id'] as int,
+        familyId: j['family_id'] as int?,
+        groupId: j['group_id'] as int?,
         fromUser: j['from_user'] as String,
         toUser: j['to_user'] as String,
         cents: _cents(j['amount']),

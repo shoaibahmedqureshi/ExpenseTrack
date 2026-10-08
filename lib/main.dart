@@ -33,6 +33,8 @@ import 'features/expense_split/data/expense_split_repository.dart';
 import 'features/inbox/data/inbox_repository.dart';
 import 'features/inbox/presentation/providers/inbox_provider.dart';
 import 'features/growth/data/growth_repository.dart';
+import 'features/split_groups/data/split_group_repository.dart';
+import 'features/split_groups/presentation/providers/split_group_provider.dart';
 import 'features/growth/presentation/providers/growth_provider.dart';
 import 'features/expense_split/presentation/providers/expense_split_provider.dart';
 
@@ -112,10 +114,16 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
+          create: (_) => SplitGroupProvider(repository: SplitGroupRepository(Supabase.instance.client)),
+        ),
+        ChangeNotifierProvider(
           create: (ctx) => InboxProvider(
             repository: InboxRepository(Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
-            onSplitActivity: () => ctx.read<ExpenseSplitProvider>().refresh(),
+            onSplitActivity: () {
+              ctx.read<ExpenseSplitProvider>().refresh();
+              ctx.read<SplitGroupProvider>().load(silent: true);
+            },
           ),
         ),
         ChangeNotifierProvider(
@@ -272,6 +280,7 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<GrowthProvider>().checkAdmin();
       // The Family tab's visibility depends on whether the user is already in a family.
       context.read<FamilyProvider>().loadUserFamilies();
+      context.read<SplitGroupProvider>().load();
     }
     if (status == AuthStatus.authenticated && !_hasSyncedThisSession) {
       _hasSyncedThisSession = true;
@@ -288,6 +297,7 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<BudgetProvider>().clear();
       context.read<FamilyProvider>().clear();
       context.read<ExpenseSplitProvider>().clear();
+      context.read<SplitGroupProvider>().clear();
       context.read<GrowthProvider>().clear();
       context.read<InboxProvider>().stop();
     }

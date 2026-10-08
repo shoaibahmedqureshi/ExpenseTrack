@@ -6,6 +6,7 @@ import '../../../expense_split/domain/split_calculator.dart';
 import '../../../expense_split/presentation/member_names.dart';
 import '../../../expense_split/presentation/providers/expense_split_provider.dart';
 import '../../../family_accounts/presentation/providers/family_provider.dart';
+import '../../../split_groups/presentation/ledger_view.dart';
 
 /// Shared-expense balances at a glance: what you owe and what you're owed.
 /// Hidden until the family has at least one split or payment.
@@ -16,21 +17,17 @@ class SplitsSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final family = context.watch<FamilyProvider>();
-    final familyId = family.currentFamily == null ? null : int.tryParse(family.currentFamily!.id);
-    if (familyId == null) return const SizedBox.shrink();
+    final view = watchLedgerView(context);
+    final ledger = view.ledger;
+    if (ledger == null) return const SizedBox.shrink();
+    ensureLedgerLoaded(context, view);
 
     return Consumer<ExpenseSplitProvider>(builder: (context, sp, _) {
-      if (sp.familyId != familyId) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) context.read<ExpenseSplitProvider>().ensureLoaded(familyId);
-        });
-        return const SizedBox.shrink();
-      }
+      if (sp.ledger != ledger) return const SizedBox.shrink();
       if (sp.splits.isEmpty && sp.settlements.isEmpty) return const SizedBox.shrink();
 
-      final me = family.getCurrentUserId();
-      final names = MemberNames(family.familyMembers, me);
+      final me = context.read<FamilyProvider>().getCurrentUserId();
+      final names = MemberNames(view.members, me);
       final debts = sp.debts;
       final totals = SplitCalculator.myTotals(debts, me);
       final mine = debts.where((d) => d.from == me || d.to == me).take(2).toList();
@@ -46,14 +43,16 @@ class SplitsSummaryCard extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: const [
-                  Icon(Icons.groups_2_outlined, size: 18, color: AppTheme.textSecondary),
-                  SizedBox(width: 8),
+                Row(children: [
+                  const Icon(Icons.groups_2_outlined, size: 18, color: AppTheme.textSecondary),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text('Shared expenses',
-                        style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                    child: Text(view.isGroup ? 'Shared expenses · ${ledger.name}' : 'Shared expenses',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                   ),
-                  Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                  const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
                 ]),
                 const SizedBox(height: 12),
                 if (settled)

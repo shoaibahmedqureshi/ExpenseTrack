@@ -107,7 +107,8 @@ class _InboxScreenState extends State<InboxScreen> {
         'split_added' => Icons.call_split,
         'payment_recorded' => Icons.payments_outlined,
         'family_invite' => Icons.mail_outline,
-        'member_joined' => Icons.person_add_alt,
+        'member_joined' || 'group_member_joined' => Icons.person_add_alt,
+        'group_invite' => Icons.group_add_outlined,
         'creator_application' => Icons.campaign_outlined,
         _ => Icons.notifications_none,
       };

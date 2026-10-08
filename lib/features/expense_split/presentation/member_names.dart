@@ -1,12 +1,11 @@
-import '../../family_accounts/domain/entities/family_member.dart';
+import '../domain/split_models.dart';
 
 /// Resolves a user id to something readable for the current viewer.
 class MemberNames {
-  MemberNames(List<FamilyMember> members, this.me)
-      : _byId = {for (final m in members) m.userId: m};
+  MemberNames(List<LedgerMember> members, this.me) : _byId = {for (final m in members) m.userId: m};
 
   final String me;
-  final Map<String, FamilyMember> _byId;
+  final Map<String, LedgerMember> _byId;
 
   String of(String userId) {
     if (userId == me) return 'You';

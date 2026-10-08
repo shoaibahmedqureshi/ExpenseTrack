@@ -67,7 +67,7 @@ class InboxProvider extends ChangeNotifier {
       final fresh = await repository.list();
       final known = _knownIds;
       if (known != null &&
-          fresh.any((i) => !known.contains(i.id) && (i.type == 'split_added' || i.type == 'payment_recorded'))) {
+          fresh.any((i) => !known.contains(i.id) && (i.type == 'split_added' || i.type == 'payment_recorded' || i.type == 'group_invite' || i.type == 'group_member_joined'))) {
         onSplitActivity?.call();
       }
       _knownIds = fresh.map((i) => i.id).toSet();

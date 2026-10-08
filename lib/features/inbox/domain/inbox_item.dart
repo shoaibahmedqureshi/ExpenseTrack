@@ -31,7 +31,7 @@ class InboxItem {
 
   /// Where tapping this notification should take the user.
   String get target => switch (type) {
-        'split_added' || 'payment_recorded' => 'splits',
+        'split_added' || 'payment_recorded' || 'group_invite' || 'group_member_joined' => 'splits',
         'family_invite' => 'invites',
         'member_joined' => 'family',
         'creator_application' => 'growth',
