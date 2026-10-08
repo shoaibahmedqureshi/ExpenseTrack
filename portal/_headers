@@ -1,0 +1,15 @@
+# Cloudflare Pages response headers. The CSP meta tag in index.html is kept too; both apply.
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src https://xgavxbuezmivnseyhkye.supabase.co; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+
+# Never cache the page or script, so a fix reaches creators immediately.
+/index.html
+  Cache-Control: no-cache
+/portal.js
+  Cache-Control: no-cache
+/config.js
+  Cache-Control: no-cache

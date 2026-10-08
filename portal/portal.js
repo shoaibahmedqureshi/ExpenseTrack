@@ -136,7 +136,7 @@
       field('Link to your profile (optional)', f.profile_url), field('Audience size', f.audience_band),
       field('What do you create content about?', f.niche), field('Country (optional)', f.country),
       field('Anything else we should know (optional)', f.about),
-      el('label', { class: 'check' }, consent, el('span', { text: 'I agree that Outlay may email me about the Creator Program.' })),
+      el('label', { class: 'check' }, consent, el('span', {}, 'I agree that Outlay may email me about the Creator Program. See the ', el('a', { href: 'https://outlayapp.net/privacy.html', target: '_blank', rel: 'noopener noreferrer', text: 'privacy policy' }), '.')),
       el('div', { class: 'row' }, btn));
     mount(el('div', { class: 'card' }, el('h1', { text: existing ? 'Edit your application' : 'Apply to the Creator Program' }),
       el('p', { class: 'muted', text: 'Signed in as ' + user.email + '. You will get a personal discount code once approved.' }), form));

@@ -14,7 +14,7 @@ Backend: `supabase/migrations/20261012000000_creator_portal.sql` (RPCs `submit_c
    cannot use it up, and include the code:
    `<a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Sign in</a>` and `Code: {{ .Token }}`
 3. **Sending email:** Supabase's built-in sender is heavily rate-limited; add SendGrid SMTP under Auth > SMTP.
-4. **Hosting:** deploy this folder to its own subdomain (e.g. Cloudflare Pages, `creators.outlayapp.net`). Keep it out of `docs/`.
+4. **Hosting:** upload this folder to Cloudflare Pages (direct upload, no merge to `main` needed) on its own subdomain, `creators.outlayapp.net`. Keep it out of `docs/`. `_headers` in this folder sets the security headers (frame blocking, referrer policy, CSP) and is picked up automatically.
 5. Optional: enable the Google provider, then set `googleEnabled: true` in `config.js`.
 
 ## Notes
@@ -22,3 +22,8 @@ Backend: `supabase/migrations/20261012000000_creator_portal.sql` (RPCs `submit_c
 - The MFA requirement for admins is enforced by the portal. The database still treats any admin account as an admin
   at aal1 so the in-app Growth screen keeps working. To enforce it server side, add an `aal2` check to `is_app_admin()`
   once the app supports MFA.
+
+## Marketing page
+`docs/creators.html` is now a short landing page that links to `https://creators.outlayapp.net`. It also still shows the
+banner for confirmation links sent by the older form (`?confirmed=1|0`). The older `creator_apply` / `creator_confirm`
+edge functions are still deployed but nothing links to them any more.
