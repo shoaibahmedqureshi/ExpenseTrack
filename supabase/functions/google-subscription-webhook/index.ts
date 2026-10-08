@@ -9,6 +9,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createRemoteJWKSet, jwtVerify } from 'npm:jose@5';
 import { GoogleAuth } from 'npm:google-auth-library@9';
+import { computeOrderPayout, type PlayOrder } from '../_shared/play_order.ts';
 
 // Pub/Sub push subscriptions configured with "Enable authentication"
 // send a Google-signed OIDC token in the Authorization header. Verifying
@@ -59,6 +60,18 @@ async function fetchSubscriptionPurchase(packageName: string, purchaseToken: str
     `${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`;
   const res = await client.request({ url });
   return res.data as Record<string, unknown>;
+}
+
+// The subscription resource carries no amount paid; the Orders API does (needs the service
+// account's "View financial data" permission, which it already has).
+async function fetchOrder(packageName: string, orderId: string): Promise<PlayOrder> {
+  const auth = getGoogleAuth();
+  const client = await auth.getClient();
+  const url =
+    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/` +
+    `${packageName}/orders/${encodeURIComponent(orderId)}`;
+  const res = await client.request({ url });
+  return res.data as PlayOrder;
 }
 
 Deno.serve(async (req) => {
@@ -121,11 +134,44 @@ Deno.serve(async (req) => {
       return new Response('OK (untracked offer)', { status: 200 });
     }
 
-    // Play's subscriptionsv2 resource doesn't carry a simple "amount
-    // paid" field the way Apple's transaction info does — record the
-    // purchase with the raw response attached so the actual price can
-    // be filled in from Play Console's own financial reports at payout
-    // time, rather than guessing a field path here.
+    // Once a purchase has its amount it is never rewritten: Play re-sends notifications for the same
+    // purchase token (renewals, state changes) and a later, full-price order must not replace the
+    // discounted first one that the creator is paid on.
+    const { data: existing } = await supabase
+      .from('subscription_referrals')
+      .select('id, payout_amount')
+      .eq('platform', 'android')
+      .eq('transaction_id', purchaseToken)
+      .maybeSingle();
+    if (existing && existing.payout_amount !== null) {
+      return new Response('OK (already recorded)', { status: 200 });
+    }
+
+    // The subscription resource has no amount; read it from the order. A failure here must not lose the
+    // attribution, so the row is still written without an amount (the admin portal flags those) and a
+    // later notification for the same token will try again.
+    let amounts: { purchase_amount?: number; payout_amount?: number; currency?: string } = {};
+    const orderId = purchase.latestOrderId as string | undefined;
+    if (orderId) {
+      try {
+        const order = await fetchOrder(packageName, orderId);
+        const result = computeOrderPayout(order, offerId, Number(influencerCode.revenue_share_percent));
+        if (result.ok) {
+          amounts = {
+            purchase_amount: result.purchaseAmount,
+            payout_amount: result.payoutAmount,
+            currency: result.currency,
+          };
+        } else {
+          console.warn('[google-subscription-webhook] no payout for order:', orderId, result.reason);
+        }
+      } catch (orderErr) {
+        console.error('[google-subscription-webhook] order lookup failed:', orderErr);
+      }
+    } else {
+      console.warn('[google-subscription-webhook] purchase has no latestOrderId');
+    }
+
     await supabase.from('subscription_referrals').upsert(
       {
         influencer_code_id: influencerCode.id,
@@ -134,6 +180,7 @@ Deno.serve(async (req) => {
         transaction_id: purchaseToken,
         event_type: notificationType,
         raw_notification: purchase,
+        ...amounts,
       },
       { onConflict: 'platform,transaction_id' },
     );
