@@ -58,3 +58,19 @@ export function computeOrderPayout(order: PlayOrder, offerId: string, sharePerce
   const payout = Math.round(net * (sharePercent / 100) * 100) / 100;
   return { ok: true, purchaseAmount: net, payoutAmount: payout, currency };
 }
+
+export interface VoidedPurchase {
+  purchaseToken: string;
+  orderId?: string;
+}
+
+/**
+ * Play sends refunds and chargebacks as a `voidedPurchaseNotification` on the same topic.
+ * Only subscription purchases (productType 1) matter here.
+ */
+export function parseVoidedPurchase(decoded: Record<string, unknown> | undefined | null): VoidedPurchase | null {
+  const v = decoded?.voidedPurchaseNotification as Record<string, unknown> | undefined;
+  if (!v || typeof v.purchaseToken !== 'string' || !v.purchaseToken) return null;
+  if (Number(v.productType) !== 1) return null;
+  return { purchaseToken: v.purchaseToken, orderId: typeof v.orderId === 'string' && v.orderId ? v.orderId : undefined };
+}

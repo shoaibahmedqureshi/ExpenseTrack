@@ -71,6 +71,24 @@ Deno.serve(async (req) => {
       return new Response('OK (no transaction)', { status: 200 });
     }
 
+    // A refunded (or revoked) transaction drops out of what the creator is owed; a reversed refund
+    // puts it back. This runs before the offer check because the refund must find the original row.
+    if (['REFUND', 'REVOKE', 'REFUND_REVERSED'].includes(notificationType)) {
+      const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const transactionId = String(transactionInfo.transactionId);
+      const { data: outcome, error: refundError } =
+        notificationType === 'REFUND_REVERSED'
+          ? await admin.rpc('system_restore_referral', { p_platform: 'ios', p_transaction_id: transactionId })
+          : await admin.rpc('system_void_referral', {
+              p_platform: 'ios',
+              p_transaction_id: transactionId,
+              p_reason: 'Refunded in the App Store',
+            });
+      if (refundError) throw refundError;
+      console.log(`[apple-subscription-webhook] ${notificationType}:`, outcome);
+      return new Response(`OK (${notificationType}: ${outcome})`, { status: 200 });
+    }
+
     const offerIdentifier = transactionInfo.offerIdentifier as string | undefined;
     if (!offerIdentifier) {
       // A normal subscription with no offer code attached — not an

@@ -245,6 +245,7 @@
         var label = x.payout_amount === null ? 'Amount not recorded' : money(x.payout_amount, x.currency);
         var info = new Date(x.created_at).toLocaleDateString() + ' · ' + (x.platform === 'ios' ? 'App Store' : 'Google Play') + ' · ' + x.event_type;
         if (x.payout_status === 'void' && x.void_reason) info += ' · voided: ' + x.void_reason;
+        if (x.payout_status === 'void' && x.voided_from === 'paid') info += ' · was already paid, recover or offset it';
         var line = el('div', { class: 'refrow' },
           el('div', { class: 'grow' }, el('strong', { text: label }), el('small', { text: info })),
           el('span', { class: 'pill ' + (x.payout_status === 'paid' ? 'approved' : x.payout_status === 'void' ? 'rejected' : 'confirmed'), text: x.payout_status === 'paid' ? 'Paid' : x.payout_status === 'void' ? 'Void' : 'Pending' }));

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeOrderPayout, moneyToNumber } from './play_order.ts';
+import { computeOrderPayout, moneyToNumber, parseVoidedPurchase } from './play_order.ts';
 
 const intro = (total: any, tax: any, state = 'PROCESSED', phase: any = { introductoryPriceDetails: {} }, offerId = 'sara20') => ({
   state, total, tax, lineItems: [{ subscriptionDetails: { offerId, offerPhaseDetails: phase } }],
@@ -47,4 +47,15 @@ test('bad inputs are rejected', () => {
 test('tax larger than total never goes negative', () => {
   const r = computeOrderPayout(intro({ currencyCode: 'USD', units: '1' }, { currencyCode: 'USD', units: '2' }), 'sara20', 20);
   assert.deepEqual(r, { ok: true, purchaseAmount: 0, payoutAmount: 0, currency: 'USD' });
+});
+
+test('voided subscription purchase is parsed', () => {
+  assert.deepEqual(parseVoidedPurchase({ voidedPurchaseNotification: { purchaseToken: 'tok', orderId: 'GPA.1', productType: 1, refundType: 1 } }), { purchaseToken: 'tok', orderId: 'GPA.1' });
+  assert.deepEqual(parseVoidedPurchase({ voidedPurchaseNotification: { purchaseToken: 'tok', productType: 1 } }), { purchaseToken: 'tok', orderId: undefined });
+});
+test('one-time products and malformed messages are ignored', () => {
+  assert.equal(parseVoidedPurchase({ voidedPurchaseNotification: { purchaseToken: 'tok', productType: 2 } }), null);
+  assert.equal(parseVoidedPurchase({ voidedPurchaseNotification: { productType: 1 } }), null);
+  assert.equal(parseVoidedPurchase({ subscriptionNotification: {} }), null);
+  assert.equal(parseVoidedPurchase(null), null);
 });

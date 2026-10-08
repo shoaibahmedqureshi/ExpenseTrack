@@ -9,7 +9,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createRemoteJWKSet, jwtVerify } from 'npm:jose@5';
 import { GoogleAuth } from 'npm:google-auth-library@9';
-import { computeOrderPayout, type PlayOrder } from '../_shared/play_order.ts';
+import { computeOrderPayout, parseVoidedPurchase, type PlayOrder } from '../_shared/play_order.ts';
 
 // Pub/Sub push subscriptions configured with "Enable authentication"
 // send a Google-signed OIDC token in the Authorization header. Verifying
@@ -89,6 +89,23 @@ Deno.serve(async (req) => {
       return new Response('OK (no message data)', { status: 200 });
     }
     const decoded = JSON.parse(atob(dataB64));
+
+    // Refunds and chargebacks arrive as their own message type. Void the creator's purchase so it
+    // drops out of what they are owed (or raises an alert if it was already paid).
+    const voided = parseVoidedPurchase(decoded);
+    if (voided) {
+      const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const { data: outcome, error: voidError } = await admin.rpc('system_void_referral', {
+        p_platform: 'android',
+        p_transaction_id: voided.purchaseToken,
+        p_reason: 'Refunded in Google Play',
+        p_order_id: voided.orderId ?? null,
+      });
+      if (voidError) throw voidError;
+      console.log('[google-subscription-webhook] voided purchase:', outcome);
+      return new Response(`OK (void: ${outcome})`, { status: 200 });
+    }
+
     const subNotification = decoded.subscriptionNotification;
     if (!subNotification) {
       // Test notifications and other message types carry no subscription
