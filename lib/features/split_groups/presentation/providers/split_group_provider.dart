@@ -14,11 +14,15 @@ class SplitGroupProvider extends ChangeNotifier {
   final Map<int, List<GroupInvitation>> _sent = {};
   bool _loading = false;
   String? _error;
+  String? _inviteNote;
 
   List<SplitGroup> get groups => _groups;
   List<GroupInvitation> get invitations => _invitations;
   bool get isLoading => _loading;
   String? get error => _error;
+
+  /// What to tell the user after the last successful [invite].
+  String? get inviteNote => _inviteNote;
   List<LedgerMember> membersOf(int groupId) => _members[groupId] ?? const [];
   List<GroupInvitation> sentInvitationsOf(int groupId) => _sent[groupId] ?? const [];
   SplitGroup? byId(int id) => _groups.where((g) => g.id == id).firstOrNull;
@@ -87,8 +91,17 @@ class SplitGroupProvider extends ChangeNotifier {
   }
 
   Future<bool> rename(int groupId, String name) => _do(() => repository.rename(groupId, name.trim()));
-  Future<bool> invite(int groupId, String email) =>
-      _do(() => repository.invite(groupId, email.trim()), reloadGroup: groupId);
+  Future<bool> invite(int groupId, String email) async {
+    final address = email.trim();
+    _inviteNote = null;
+    int? invitationId;
+    final ok = await _do(() async => invitationId = await repository.invite(groupId, address), reloadGroup: groupId);
+    if (!ok || invitationId == null) return false;
+    final outcome = await repository.sendInviteEmail(invitationId!);
+    _inviteNote = describeInvite(outcome, address.toLowerCase());
+    notifyListeners();
+    return true;
+  }
   Future<bool> respond(GroupInvitation i, bool accept) => _do(() => repository.respond(i.id, accept));
   Future<bool> cancelInvitation(int groupId, GroupInvitation i) =>
       _do(() => repository.cancelInvitation(i.id), reloadGroup: groupId);

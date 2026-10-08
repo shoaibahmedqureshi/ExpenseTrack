@@ -55,8 +55,20 @@ class SplitGroupRepository {
   Future<int> create(String name) async => (await _db.rpc('create_split_group', params: {'p_name': name})) as int;
   Future<void> rename(int groupId, String name) =>
       _db.rpc('rename_split_group', params: {'p_group_id': groupId, 'p_name': name});
-  Future<void> invite(int groupId, String email) =>
-      _db.rpc('invite_to_split_group', params: {'p_group_id': groupId, 'p_email': email});
+  /// Returns the new invitation's id.
+  Future<int> invite(int groupId, String email) async =>
+      (await _db.rpc('invite_to_split_group', params: {'p_group_id': groupId, 'p_email': email})) as int;
+
+  /// Asks the server to email the invitation if the person has no account. Never throws: the
+  /// invitation already exists, so a failure here only changes what we tell the user.
+  Future<InviteEmailOutcome> sendInviteEmail(int invitationId) async {
+    try {
+      final res = await _db.functions.invoke('send_group_invite_email', body: {'invitation_id': invitationId});
+      return parseInviteEmailOutcome(res.data is Map ? Map<String, dynamic>.from(res.data as Map) : null);
+    } catch (_) {
+      return InviteEmailOutcome.failed;
+    }
+  }
   Future<void> respond(int invitationId, bool accept) =>
       _db.rpc('respond_to_group_invitation', params: {'p_invitation_id': invitationId, 'p_accept': accept});
   Future<void> cancelInvitation(int invitationId) =>

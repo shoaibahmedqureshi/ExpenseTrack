@@ -43,3 +43,32 @@ Ledger? chooseLedger(List<Ledger> available, Ledger? current) {
   if (current != null && available.contains(current)) return current;
   return available.isEmpty ? null : available.first;
 }
+
+/// What happened when we tried to email an invitation to someone without an account.
+enum InviteEmailOutcome { delivered, notDelivered, hasAccount, alreadySent, recipientLimited, senderLimited, failed }
+
+InviteEmailOutcome parseInviteEmailOutcome(Map<String, dynamic>? res) {
+  if (res == null) return InviteEmailOutcome.failed;
+  if (res['sent'] == true) return res['delivered'] == false ? InviteEmailOutcome.notDelivered : InviteEmailOutcome.delivered;
+  return switch (res['reason']) {
+    'has_account' => InviteEmailOutcome.hasAccount,
+    'already_sent' => InviteEmailOutcome.alreadySent,
+    'recipient_limited' => InviteEmailOutcome.recipientLimited,
+    'sender_limited' => InviteEmailOutcome.senderLimited,
+    _ => InviteEmailOutcome.failed,
+  };
+}
+
+/// The line shown after inviting someone. The invitation itself exists in every case.
+String describeInvite(InviteEmailOutcome outcome, String email) => switch (outcome) {
+      InviteEmailOutcome.delivered => 'Invitation sent. We emailed $email with how to join.',
+      InviteEmailOutcome.hasAccount => 'Invitation sent. They will see it in the app.',
+      InviteEmailOutcome.alreadySent => 'Invitation sent. They were already emailed about it.',
+      InviteEmailOutcome.notDelivered =>
+        'Invitation created, but email sending is switched off right now. Ask them to sign up with $email.',
+      InviteEmailOutcome.recipientLimited =>
+        'Invitation created. We emailed that address recently, so ask them to sign up with $email.',
+      InviteEmailOutcome.senderLimited =>
+        'Invitation created. You have reached today\'s email limit, so ask them to sign up with $email.',
+      InviteEmailOutcome.failed => 'Invitation created, but we could not email them. Ask them to sign up with $email.',
+    };

@@ -74,7 +74,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) _email.clear();
-    _snack(ok ? 'Invitation sent. They will see it when they sign in with $text' : (p.error ?? 'Could not send the invitation'));
+    _snack(ok ? (p.inviteNote ?? 'Invitation sent') : (p.error ?? 'Could not send the invitation'));
   }
 
   @override
@@ -116,7 +116,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         ]),
         const Padding(
           padding: EdgeInsets.only(top: 6),
-          child: Text('They need an Outlay account with that email. The invite waits for them until it expires after 14 days.',
+          child: Text('If they do not have Outlay yet, we email them how to join. The invitation stays open for 14 days.',
               style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
         ),
         const SizedBox(height: 20),

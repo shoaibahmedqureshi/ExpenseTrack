@@ -33,10 +33,19 @@ class _FakeRepo implements SplitGroupRepository {
     return 7;
   }
 
+  InviteEmailOutcome emailOutcome = InviteEmailOutcome.delivered;
+
   @override
-  Future<void> invite(int groupId, String email) async {
+  Future<int> invite(int groupId, String email) async {
     _maybeFail();
     calls.add('invite:$groupId:$email');
+    return 42;
+  }
+
+  @override
+  Future<InviteEmailOutcome> sendInviteEmail(int invitationId) async {
+    calls.add('email:$invitationId');
+    return emailOutcome;
   }
 
   @override
@@ -79,6 +88,24 @@ void main() {
     });
     test('no ledgers means no choice', () {
       expect(chooseLedger(const [], const Ledger(LedgerKind.group, 1, 'x')), isNull);
+    });
+  });
+
+  group('invite email outcome', () {
+    test('parses the server answer', () {
+      expect(parseInviteEmailOutcome({'sent': true, 'delivered': true}), InviteEmailOutcome.delivered);
+      expect(parseInviteEmailOutcome({'sent': true, 'delivered': false}), InviteEmailOutcome.notDelivered);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'has_account'}), InviteEmailOutcome.hasAccount);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'already_sent'}), InviteEmailOutcome.alreadySent);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'recipient_limited'}), InviteEmailOutcome.recipientLimited);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'sender_limited'}), InviteEmailOutcome.senderLimited);
+      expect(parseInviteEmailOutcome({'sent': false, 'reason': 'send_failed'}), InviteEmailOutcome.failed);
+      expect(parseInviteEmailOutcome(null), InviteEmailOutcome.failed);
+    });
+    test('every outcome has a message that mentions the address when they must sign up themselves', () {
+      for (final o in [InviteEmailOutcome.notDelivered, InviteEmailOutcome.recipientLimited, InviteEmailOutcome.senderLimited, InviteEmailOutcome.failed]) {
+        expect(describeInvite(o, 'a@b.com'), contains('a@b.com'));
+      }
     });
   });
 
@@ -157,10 +184,34 @@ void main() {
       final p = SplitGroupProvider(repository: repo);
       await p.load();
       expect(await p.invite(7, ' a@b.com '), isTrue);
-      expect(repo.calls.last, 'invite:7:a@b.com');
+      expect(repo.calls, contains('invite:7:a@b.com'));
       repo.failWith = Exception('That person already has a pending invitation');
       expect(await p.invite(7, 'a@b.com'), isFalse);
       expect(p.error, 'That person already has a pending invitation');
+    });
+
+    test('inviting emails the invitation and says so', () async {
+      final repo = _FakeRepo()..groups = [const SplitGroup(id: 7, name: 'G', isOwner: true)];
+      final p = SplitGroupProvider(repository: repo);
+      await p.load();
+      expect(await p.invite(7, ' New@Person.com '), isTrue);
+      expect(repo.calls, containsAllInOrder(['invite:7:New@Person.com', 'email:42']));
+      expect(p.inviteNote, 'Invitation sent. We emailed new@person.com with how to join.');
+    });
+
+    test('a person who already has an account is told they will see it in the app', () async {
+      final repo = _FakeRepo()..emailOutcome = InviteEmailOutcome.hasAccount;
+      final p = SplitGroupProvider(repository: repo);
+      await p.invite(7, 'a@b.com');
+      expect(p.inviteNote, 'Invitation sent. They will see it in the app.');
+    });
+
+    test('a failed invite does not try to email anyone', () async {
+      final repo = _FakeRepo()..failWith = Exception('That person already has a pending invitation');
+      final p = SplitGroupProvider(repository: repo);
+      expect(await p.invite(7, 'a@b.com'), isFalse);
+      expect(repo.calls.where((c) => c.startsWith('email')), isEmpty);
+      expect(p.inviteNote, isNull);
     });
 
     test('clear empties everything (sign-out)', () async {

@@ -7,7 +7,7 @@
  *    (subject prefixed with the intended recipient) so the pipeline can be proven
  *    end to end without contacting anyone else.
  *  - SENDGRID_SANDBOX="true" makes SendGrid validate the request without delivering.
- *  - AGENT_BCC, when set, receives a hidden copy of every message (a stand-in for a Sent folder).
+ *  - AGENT_BCC, when set, receives a hidden copy of every non-transactional message (a stand-in for a Sent folder).
  *  - Addresses that are obviously fabricated (handle@tiktok.com etc.) are refused.
  */
 
@@ -81,7 +81,8 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
   }
 
   // SendGrid rejects a personalization where the same address appears twice.
-  const bcc = cfg.bcc && EMAIL_RE.test(cfg.bcc) && cfg.bcc.toLowerCase() !== to.toLowerCase() ? cfg.bcc : "";
+  // The hidden copy is for agent outreach. Mail a person asked for (confirmation links, invitations) is never copied.
+  const bcc = !args.transactional && cfg.bcc && EMAIL_RE.test(cfg.bcc) && cfg.bcc.toLowerCase() !== to.toLowerCase() ? cfg.bcc : "";
 
   const body = cfg.footer && !args.transactional ? `${args.text}\n\n--\n${cfg.footer}` : args.text;
   const payload = {
