@@ -236,6 +236,43 @@
     }
   }
 
+  function loadReferrals(user, c, box) {
+    box.replaceChildren(el('p', { class: 'muted', text: 'Loading…' }));
+    sb.rpc('admin_creator_referrals', { p_application: c.application_id }).then(function (r) {
+      if (r.error) throw r.error;
+      if (!r.data.length) { box.replaceChildren(el('p', { class: 'muted', text: 'No purchases yet.' })); return; }
+      box.replaceChildren.apply(box, r.data.map(function (x) {
+        var label = x.payout_amount === null ? 'Amount not recorded' : money(x.payout_amount, x.currency);
+        var info = new Date(x.created_at).toLocaleDateString() + ' · ' + (x.platform === 'ios' ? 'App Store' : 'Google Play') + ' · ' + x.event_type;
+        if (x.payout_status === 'void' && x.void_reason) info += ' · voided: ' + x.void_reason;
+        var line = el('div', { class: 'refrow' },
+          el('div', { class: 'grow' }, el('strong', { text: label }), el('small', { text: info })),
+          el('span', { class: 'pill ' + (x.payout_status === 'paid' ? 'approved' : x.payout_status === 'void' ? 'rejected' : 'confirmed'), text: x.payout_status === 'paid' ? 'Paid' : x.payout_status === 'void' ? 'Void' : 'Pending' }));
+        function done(msg) { renderPayouts(user); show(msg, 'ok'); }
+        if (x.payout_status === 'void') {
+          if (x.voided_from) line.appendChild(el('button', { class: 'secondary', text: 'Restore', onclick: function (ev) {
+            ev.target.disabled = true;
+            sb.rpc('admin_restore_referral', { p_id: x.id }).then(function (u) { if (u.error) throw u.error; done('Restored as ' + u.data.status + '.'); })
+              .catch(function (e) { ev.target.disabled = false; show(msgOf(e), 'bad'); });
+          } }));
+        } else {
+          line.appendChild(el('button', { class: 'danger', text: 'Void', onclick: function (ev) {
+            var warn = x.payout_status === 'paid' ? 'This purchase was already paid. Voiding it means you may need to recover or offset that payment.\n\n' : '';
+            var reason = window.prompt(warn + 'Reason for voiding (for example "refunded"):');
+            if (reason === null) return;
+            if (reason.trim().length < 3) { show('Please give a reason of at least 3 characters.', 'bad'); return; }
+            ev.target.disabled = true;
+            sb.rpc('admin_void_referral', { p_id: x.id, p_reason: reason.trim() }).then(function (u) {
+              if (u.error) throw u.error;
+              done(u.data.was_paid ? 'Voided a purchase that was already paid. Recover or offset that payment.' : 'Voided.');
+            }).catch(function (e) { ev.target.disabled = false; show(msgOf(e), 'bad'); });
+          } }));
+        }
+        return line;
+      }));
+    }).catch(function (e) { box.replaceChildren(el('p', { class: 'err', text: msgOf(e) })); });
+  }
+
   function adminTabs(user, current) {
     return el('div', { class: 'row tabs' },
       el('button', { class: current === 'apps' ? '' : 'secondary', text: 'Applications', onclick: function () { renderAdmin(user); } }),
@@ -268,9 +305,15 @@
           }
           return line;
         });
+        var detail = el('div', { class: 'detail hidden' });
+        var toggle = el('button', { class: 'link', text: 'View purchases', onclick: function () {
+          if (!detail.classList.contains('hidden')) { detail.classList.add('hidden'); toggle.textContent = 'View purchases'; return; }
+          detail.classList.remove('hidden'); toggle.textContent = 'Hide purchases';
+          loadReferrals(user, c, detail);
+        } });
         return el('div', { class: 'static block' },
           el('div', { class: 'grow' }, el('strong', { text: c.name }), el('small', { text: c.email + ' · code ' + c.code })),
-          el('div', { class: 'grow2' }, rows));
+          el('div', { class: 'grow2' }, rows), toggle, detail);
       }));
     }).catch(function (e) { box.replaceChildren(); show(msgOf(e), 'bad'); });
   }
