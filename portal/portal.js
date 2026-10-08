@@ -164,6 +164,41 @@
       card.appendChild(el('div', { class: 'row' }, el('button', { class: 'secondary', text: 'Edit application', onclick: function () { renderApply(user, app); } })));
     }
     mount(card);
+    if ((s === 'approved' || s === 'onboarded') && app.assigned_code) loadEarnings(card);
+  }
+
+  function money(n, cur) {
+    var v = Number(n) || 0;
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: cur || 'USD' }).format(v); }
+    catch (e) { return v.toFixed(2) + (cur ? ' ' + cur : ''); }
+  }
+
+  function loadEarnings(card) {
+    var box = el('div', {}, el('h2', { text: 'Your earnings' }), el('p', { class: 'muted', text: 'Loading…' }));
+    card.appendChild(box);
+    sb.rpc('my_creator_earnings').then(function (r) {
+      if (r.error) throw r.error;
+      var e = r.data;
+      var out = [el('h2', { text: 'Your earnings' })];
+      if (!e || !e.conversions) {
+        out.push(el('p', { text: 'No subscribers have used your code yet. They appear here once the store confirms a purchase, usually within a day.' }));
+      } else {
+        out.push(el('p', { class: 'muted', text: e.conversions + ' subscriber' + (e.conversions === 1 ? '' : 's') + ' so far, at ' + e.share_percent + '% each.' }));
+        (e.totals || []).forEach(function (t) {
+          out.push(dl([['Pending (' + t.currency + ')', money(t.pending, t.currency)], ['Paid (' + t.currency + ')', money(t.paid, t.currency)]]));
+        });
+        var table = el('div', { class: 'list' });
+        (e.recent || []).forEach(function (x) {
+          table.appendChild(el('div', { class: 'static' },
+            el('div', { class: 'grow' }, el('strong', { text: money(x.payout_amount, x.currency) }),
+              el('small', { text: new Date(x.created_at).toLocaleDateString() + ' · ' + (x.platform === 'ios' ? 'App Store' : 'Google Play') })),
+            el('span', { class: 'pill ' + (x.payout_status === 'paid' ? 'approved' : 'confirmed'), text: x.payout_status === 'paid' ? 'Paid' : 'Pending' })));
+        });
+        out.push(el('h2', { text: 'Recent' }), table);
+        out.push(el('p', { class: 'muted', text: 'Amounts come from the App Store and Google Play. Payouts are made once per subscriber.' }));
+      }
+      box.replaceChildren.apply(box, out);
+    }).catch(function (e) { box.replaceChildren(el('h2', { text: 'Your earnings' }), el('p', { class: 'muted', text: 'Could not load earnings: ' + msgOf(e) })); });
   }
 
   // ── Admin view ──────────────────────────────────────────────────────

@@ -29,3 +29,4 @@ button:disabled { opacity:.55; cursor:default; }
 dl { display:grid; grid-template-columns:140px 1fr; gap:6px 12px; font-size:14px; } dt { color:var(--muted); } dd { margin:0; word-break:break-word; }
 footer { text-align:center; color:var(--muted); font-size:13px; padding-top:28px; } a { color:var(--teal); }
 @media (max-width:520px) { .card { padding:20px; } dl { grid-template-columns:1fr; } }
+.list > div.static { cursor:default; } .list > div.static:hover { background:none; }
