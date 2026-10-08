@@ -33,6 +33,8 @@ import 'features/expense_split/data/expense_split_repository.dart';
 import 'features/inbox/data/inbox_repository.dart';
 import 'features/inbox/presentation/providers/inbox_provider.dart';
 import 'features/growth/data/growth_repository.dart';
+import 'features/household/data/household_repository.dart';
+import 'features/household/presentation/providers/household_provider.dart';
 import 'features/split_groups/data/split_group_repository.dart';
 import 'features/split_groups/presentation/providers/split_group_provider.dart';
 import 'features/growth/presentation/providers/growth_provider.dart';
@@ -115,6 +117,12 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => SplitGroupProvider(repository: SplitGroupRepository(Supabase.instance.client)),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HouseholdProvider(
+            repository: HouseholdRepository(Supabase.instance.client),
+            getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+          ),
         ),
         ChangeNotifierProvider(
           create: (ctx) => InboxProvider(
@@ -279,7 +287,7 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<InboxProvider>().start();
       context.read<GrowthProvider>().checkAdmin();
       // The Family tab's visibility depends on whether the user is already in a family.
-      context.read<FamilyProvider>().loadUserFamilies();
+      context.read<FamilyProvider>().loadUserFamilies().then((_) => _syncHousehold());
       context.read<SplitGroupProvider>().load();
       context.read<ExpenseSplitProvider>().loadOverview();
     }
@@ -299,15 +307,27 @@ class _RootRouterState extends State<_RootRouter> {
       context.read<FamilyProvider>().clear();
       context.read<ExpenseSplitProvider>().clear();
       context.read<SplitGroupProvider>().clear();
+      context.read<HouseholdProvider>().clear();
       context.read<GrowthProvider>().clear();
       context.read<InboxProvider>().stop();
     }
+  }
+
+  /// Learns whether the user shares their monthly totals with their family and, if so, refreshes them.
+  void _syncHousehold() {
+    if (!mounted) return;
+    final family = context.read<FamilyProvider>().currentFamily;
+    // The expense list lives further down the provider tree than the household provider, so it is hooked up here.
+    context.read<HouseholdProvider>()
+      ..attachExpenses(context.read<ExpenseProvider>())
+      ..syncFor(family == null ? null : int.tryParse(family.id));
   }
 
   Future<void> _reloadAfterSync() async {
     if (!mounted) return;
     await context.read<CategoryProvider>().loadAll();
     await context.read<ExpenseProvider>().loadAll();
+    _syncHousehold();
     await context.read<BudgetProvider>().load();
   }
 

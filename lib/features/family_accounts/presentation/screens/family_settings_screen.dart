@@ -5,6 +5,7 @@ import '../../../subscription/data/subscription_service.dart';
 import '../../../subscription/presentation/screens/paywall_screen.dart';
 import '../../domain/family_access.dart';
 import '../providers/family_provider.dart';
+import '../../../household/presentation/screens/household_screen.dart';
 import 'create_family_screen.dart';
 import 'invite_members_screen.dart';
 import 'family_members_list_screen.dart';
@@ -101,6 +102,21 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
                   ),
                   const SizedBox(height: 12),
                 ],
+                _buildActionButton(
+                  context: context,
+                  icon: Icons.pie_chart_outline,
+                  title: 'Household budget',
+                  subtitle: 'One monthly budget for the family',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HouseholdScreen(familyId: int.tryParse(family.id) ?? 0),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
                 _buildActionButton(
                   context: context,
                   icon: Icons.group,
