@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/app_constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../growth/presentation/providers/growth_provider.dart';
@@ -274,7 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingTile(
                 icon: Icons.info,
                 title: 'Version',
-                subtitle: '1.0.0',
+                subtitle: AppConstants.versionLabel,
                 onTap: () {},
               ),
             ],

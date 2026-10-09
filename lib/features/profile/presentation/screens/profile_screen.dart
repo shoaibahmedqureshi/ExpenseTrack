@@ -270,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 24),
           Center(
             child: Text(
-              AppConstants.buildLabel,
+              'Version ${AppConstants.versionLabel}',
               style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
             ),
           ),

@@ -9,12 +9,12 @@ class AppConstants {
   // until Shoaib provides it.
   static const String appleAppStoreId = '6790199113';
 
-  // Bumped by hand on every release build made for device testing, so a
-  // tester can confirm — via the Profile screen — which exact build is
-  // actually installed, instead of assuming a fresh APK replaced an old
-  // one. The Android versionCode in pubspec.yaml is bumped alongside this
-  // for the same reason at the OS level.
-  static const String buildLabel = 'build-2026-08-13-PRODUCTION-real-purchase-test';
+  // Shown on the Profile and Settings screens so a tester can confirm which build is installed. Bump it with
+  // `version:` in pubspec.yaml on every release build.
+  /// Must match `version:` in pubspec.yaml (a test checks that they do).
+  static const String appVersion = '1.2.0';
+  static const int appBuild = 52;
+  static const String versionLabel = '$appVersion ($appBuild)';
 
   static const String dbName = 'expense_tracker.db';
   static const int dbVersion = 7; // v3 adds budgets table, v4 adds soft-delete, v5 updates default category colors, v6 adds expenses.tax, v7 adds user_id to every table (cross-account data isolation)
