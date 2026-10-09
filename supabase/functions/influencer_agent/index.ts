@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.24.3";
 import { sendEmail, isPlausibleRecipient } from "../_shared/email_service.ts";
+import { requireServiceRole } from "../_shared/service_auth.ts";
 
 interface InfluencerProspect {
   platform: "instagram" | "tiktok" | "youtube";
@@ -413,7 +414,9 @@ async function main() {
   }
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const denied = requireServiceRole(req);
+  if (denied) return denied;
   const result = await main();
   return new Response(JSON.stringify(result), {
     headers: { "Content-Type": "application/json" },

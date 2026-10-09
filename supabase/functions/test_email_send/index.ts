@@ -1,8 +1,11 @@
 import { getEmailConfig, sendEmail } from "../_shared/email_service.ts";
+import { requireServiceRole } from "../_shared/service_auth.ts";
 
 // Sends ONE test message, only to AGENT_TEST_RECIPIENT, never to anyone else.
 // Use it to prove SendGrid is wired up before the agents are allowed to send.
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const denied = requireServiceRole(req);
+  if (denied) return denied;
   const cfg = getEmailConfig();
   if (!cfg.testRecipient) {
     return Response.json(

@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
+import { makeUnsubscribeToken } from "../_shared/unsubscribe.ts";
 
 async function sendEmailViaSMTP(
   to: string,
@@ -77,21 +79,48 @@ async function handleFamilyInvitation(req: Request): Promise<Response> {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
+  const jsonRes = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
   try {
-    const {
-      familyId,
-      invitedEmail,
-      invitedByName,
-      invitationToken,
-      familyName,
-    } = await req.json();
+    // Who is asking: the signed-in person, checked with their own token (the public anon key is not a person).
+    const url = Deno.env.get("SUPABASE_URL") || "";
+    const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY") || "", {
+      global: { headers: { Authorization: req.headers.get("Authorization") || "" } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) return jsonRes({ error: "Please sign in" }, 401);
 
-    if (!familyId || !invitedEmail || !invitationToken) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400 }
-      );
+    const { familyId, invitationToken } = await req.json();
+    if (!familyId || !invitationToken || typeof invitationToken !== "string") {
+      return jsonRes({ error: "Missing required fields" }, 400);
+    }
+
+    // Only for a real pending invitation this person created. The address and names come from the database,
+    // never from the request, so this cannot be used to mail someone arbitrary text.
+    const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+    const { data: claim, error: claimErr } = await admin.rpc("claim_family_invite_email", {
+      p_family_id: Number(familyId),
+      p_token: invitationToken,
+      p_user: userData.user.id,
+    });
+    if (claimErr) {
+      console.error("claim_family_invite_email failed:", claimErr.message);
+      return jsonRes({ success: false, error: "Could not send" }, 500);
+    }
+    if (!claim?.ok) return jsonRes({ success: false, reason: claim?.reason ?? "refused" });
+
+    const invitedEmail: string = claim.email;
+    const invitedByName: string = claim.inviter_name;
+    const familyName: string = claim.family_name;
+
+    let optOutLine = "";
+    try {
+      const token = await makeUnsubscribeToken(Deno.env.get("UNSUBSCRIBE_SECRET") || "", invitedEmail);
+      optOutLine = `<p style="font-size:12px;color:#666">Do not want emails like this? <a href="${url}/functions/v1/email_optout?t=${token}">Stop them here</a>.</p>`;
+    } catch (_) {
+      await admin.rpc("release_family_invite_email", { p_invitation_id: claim.invitation_id, p_previous: claim.previous_sent_at ?? null });
+      return jsonRes({ success: false, error: "Could not send" }, 500);
     }
 
     const htmlBody = `
@@ -123,6 +152,7 @@ async function handleFamilyInvitation(req: Request): Promise<Response> {
             </div>
             <div class="footer">
               <p>Outlay - Smart Expense Tracking | ${new Date().getFullYear()}</p>
+              ${optOutLine}
             </div>
           </div>
         </body>
@@ -143,10 +173,9 @@ async function handleFamilyInvitation(req: Request): Promise<Response> {
         headers: { "Content-Type": "application/json" },
       });
     } else {
-      return new Response(
-        JSON.stringify({ success: false, error: result.error }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      await admin.rpc("release_family_invite_email", { p_invitation_id: claim.invitation_id, p_previous: claim.previous_sent_at ?? null });
+      console.error("family invitation email failed:", result.error);
+      return jsonRes({ success: false, error: "Could not send" }, 500);
     }
   } catch (error) {
     console.error("❌ Error handling invitation:", error);

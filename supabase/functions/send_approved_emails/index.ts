@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { sendEmail } from "../_shared/email_service.ts";
+import { requireServiceRole } from "../_shared/service_auth.ts";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") || "",
@@ -88,7 +89,9 @@ async function main() {
   }
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const denied = requireServiceRole(req);
+  if (denied) return denied;
   const result = await main();
   return new Response(JSON.stringify(result), {
     headers: { "Content-Type": "application/json" },

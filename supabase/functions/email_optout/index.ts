@@ -24,10 +24,10 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
   const { error } = await admin
     .from("email_suppressions")
-    .upsert({ email, scope: "group_invite" }, { onConflict: "email,scope", ignoreDuplicates: true });
+    .upsert([{ email, scope: "group_invite" }, { email, scope: "family_invite" }], { onConflict: "email,scope", ignoreDuplicates: true });
   if (error) {
     console.error("email_optout failed:", error.message);
     return text("Something went wrong. Please try the link again in a minute.", 500);
   }
-  return text(`Done. Outlay will not email ${email} about group invitations again.`);
+  return text(`Done. Outlay will not email ${email} about invitations again.`);
 });
