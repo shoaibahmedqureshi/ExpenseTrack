@@ -72,8 +72,8 @@ heroku create outlay-profile-agent
 # Add environment variables
 heroku config:set SUPABASE_URL=https://xgavxbuezmivnseyhkye.supabase.co
 heroku config:set SUPABASE_SERVICE_ROLE_KEY=<your_key>
-heroku config:set GMAIL_USER=outlay.noreply@gmail.com
-heroku config:set GMAIL_PASSWORD=Bhola@9585
+heroku config:set GMAIL_USER=<your-gmail-address>
+heroku config:set GMAIL_PASSWORD=<your-gmail-app-password>
 
 # Deploy
 git push heroku main

@@ -49,3 +49,7 @@ app.*.map.json
 # Claude Code local-only config
 .claude/settings.local.json
 .claude/launch.json
+.env
+.env.*
+!.env.example
+**/.env
