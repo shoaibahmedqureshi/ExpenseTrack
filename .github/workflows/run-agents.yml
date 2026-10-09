@@ -14,10 +14,10 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          curl -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent \
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/seo_aso_agent \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
-            -d '{}' || echo "SEO Agent completed"
+            -d '{}'
 
   influencer-agent:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          curl -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent \
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST https://xgavxbuezmivnseyhkye.supabase.co/functions/v1/influencer_agent \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
-            -d '{}' || echo "Influencer Agent completed"
+            -d '{}'

@@ -1,6 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.24.3";
 import { requireServiceRole } from "../_shared/service_auth.ts";
+import { checked, newStats, parseModelJson } from "../_shared/agent_run.ts";
+
+const stats = newStats();
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") || "",
@@ -35,12 +38,11 @@ Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
   const content = response.content[0];
   if (content.type === "text") {
     try {
-      const posts = JSON.parse(content.text);
+      const posts = parseModelJson<any[]>(content.text);
 
       for (const post of posts) {
         const postUrl = post.url || post.post_url || `https://${post.forum}.example.com/posts`;
-        try {
-          await supabase.from("forum_opportunities").insert({
+        if (await checked(stats, "forum_opportunities insert", supabase.from("forum_opportunities").insert({
             forum_name: post.forum || post.platform,
             forum_url: postUrl,
             category: "finance",
@@ -49,24 +51,14 @@ Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
             post_url: postUrl,
             link_anchor_text: post.title || post.question,
             notes: post.title || post.question,
-          });
-          console.log(`✅ Forum post logged: ${postUrl}`);
-        } catch (e) {
-          console.error("Forum insert error:", e);
-        }
+          }))) console.log(`✅ Forum post logged: ${postUrl}`);
 
-        try {
-          await supabase.from("seo_activity_log").insert({
-            activity_type: "forum_post",
-            platform: post.forum || "forum",
-            target_url: postUrl,
-            status: "completed",
-            content_posted: post.content,
-            keywords: post.keywords || [],
-          });
-        } catch (e) {
-          console.error("Activity log insert error:", e);
-        }
+        await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
+          activity_type: "forum_post",
+          target_url: postUrl,
+          status: "completed",
+          keywords_used: post.keywords || [],
+        }));
       }
 
       return { posted: posts.length, status: "completed" };
@@ -100,34 +92,22 @@ async function createProfiles() {
   ];
 
   for (const profile of profiles) {
-    try {
-      const { data } = await supabase.from("profile_links").insert({
-        platform: profile.platform,
-        platform_url: profile.platform_url,
-        profile_username: profile.platform.toLowerCase(),
-        profile_url: profile.platform_url,
-        bio: profile.bio,
-        status: "created",
-        keywords_used: ["expense tracking", "finance", "budgeting"],
-      }).select();
+    if (await checked(stats, "profile_links insert", supabase.from("profile_links").insert({
+      platform: profile.platform,
+      platform_url: profile.platform_url,
+      profile_username: profile.platform.toLowerCase(),
+      profile_url: profile.platform_url,
+      bio: profile.bio,
+      status: "created",
+      keywords_used: ["expense tracking", "finance", "budgeting"],
+    }))) console.log(`✅ Profile created: ${profile.platform_url}`);
 
-      console.log(`✅ Profile created: ${profile.platform_url}`);
-    } catch (e) {
-      console.error("Profile insert error:", e);
-    }
-
-    try {
-      await supabase.from("seo_activity_log").insert({
-        activity_type: "profile_created",
-        platform: profile.platform,
-        target_url: profile.platform_url,
-        status: "completed",
-        content_posted: profile.bio,
-        keywords: ["expense tracking", "finance", "budgeting"],
-      });
-    } catch (e) {
-      console.error("Activity log error:", e);
-    }
+    await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
+          activity_type: "profile_created",
+          target_url: profile.platform_url,
+          status: "completed",
+          keywords_used: ["expense tracking", "finance", "budgeting"],
+        }));
   }
 
   return { created: profiles.length, status: "completed", profiles };
@@ -158,36 +138,25 @@ Keep each 2-3 sentences, genuine, naturally mention Outlay.`,
   const content = response.content[0];
   if (content.type === "text") {
     try {
-      const comments = JSON.parse(content.text);
+      const comments = parseModelJson<any[]>(content.text);
 
       for (const comment of comments) {
         const sourceUrl = comment.url || `https://${comment.platform}.com/discussions`;
-        try {
-          await supabase.from("comment_activities").insert({
+        if (await checked(stats, "comment_activities insert", supabase.from("comment_activities").insert({
             source_url: sourceUrl,
             source_type: comment.source_type || "forum",
             comment_text: comment.comment || comment.text,
             comment_url: sourceUrl,
             status: "posted",
             keywords_mentioned: comment.keywords || [],
-          });
-          console.log(`✅ Comment logged: ${sourceUrl}`);
-        } catch (e) {
-          console.error("Comment insert error:", e);
-        }
+          }))) console.log(`✅ Comment logged: ${sourceUrl}`);
 
-        try {
-          await supabase.from("seo_activity_log").insert({
-            activity_type: "comment_posted",
-            platform: comment.platform,
-            target_url: sourceUrl,
-            status: "completed",
-            content_posted: comment.comment || comment.text,
-            keywords: comment.keywords || [],
-          });
-        } catch (e) {
-          console.error("Activity log error:", e);
-        }
+        await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
+          activity_type: "comment_posted",
+          target_url: sourceUrl,
+          status: "completed",
+          keywords_used: comment.keywords || [],
+        }));
       }
 
       return { posted: comments.length, status: "completed" };
@@ -206,7 +175,7 @@ async function generateDailyReport() {
 
   const { data: activities } = await supabase
     .from("seo_activity_log")
-    .select("activity_type, status, platform, keywords")
+    .select("activity_type, status")
     .gte("created_at", today);
 
   const summary = `
@@ -219,24 +188,18 @@ async function generateDailyReport() {
 
 📊 Total Actions: ${activities?.length || 0}
 
-Top Platforms: ${[...new Set(activities?.map((a: any) => a.platform) || [])].join(", ") || "N/A"}
-
 Next Run: Tomorrow 6 AM UTC
   `;
 
-  try {
-    await supabase.from("seo_daily_reports").insert({
-      report_date: today,
-      activities_completed: {
-        forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
-        comments: activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0,
-        profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
-      },
-      summary: summary.trim(),
-    });
-  } catch (e) {
-    console.error("Daily report insert error:", e);
-  }
+  await checked(stats, "seo_daily_reports insert", supabase.from("seo_daily_reports").insert({
+    report_date: today,
+    activities_completed: {
+      forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
+      comments: activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0,
+      profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
+    },
+    summary: summary.trim(),
+  }));
 
   return summary;
 }
@@ -259,8 +222,18 @@ async function main() {
     const report = await generateDailyReport();
     console.log(report);
 
+    const failed = stats.failures.length > 0 || forumResults.status === "error" || commentResults.status === "error";
+    await checked(stats, "agent_logs insert", supabase.from("agent_logs").insert({
+      agent_type: "seo_aso",
+      action: "daily_run",
+      status: failed ? "error" : "success",
+      details: { forum_posts: forumResults.posted, comments: commentResults.posted, profiles: profileResults.created, writes_ok: stats.ok },
+      error_message: failed ? [forumResults.status === "error" ? "forum posts: model reply unusable" : "", commentResults.status === "error" ? "comments: model reply unusable" : "", ...stats.failures].filter(Boolean).join(" | ").slice(0, 2000) : null,
+    }));
+
     return {
-      status: "success",
+      status: failed ? "error" : "success",
+      failures: stats.failures,
       mode: "autonomous_execution",
       forum_posts: forumResults.posted,
       profiles: profileResults.created,
@@ -270,6 +243,9 @@ async function main() {
     };
   } catch (error) {
     console.error("❌ Error:", error);
+    await checked(stats, "agent_logs insert", supabase.from("agent_logs").insert({
+      agent_type: "seo_aso", action: "daily_run", status: "error", error_message: String(error).slice(0, 2000),
+    }));
     return {
       status: "error",
       error: String(error),
