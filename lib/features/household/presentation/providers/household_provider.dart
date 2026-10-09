@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException, RealtimeChannel;
 import '../../../expenses/presentation/providers/expense_provider.dart';
 import '../../data/household_repository.dart';
 import '../../domain/household_calculator.dart';
@@ -14,6 +14,7 @@ class HouseholdProvider extends ChangeNotifier {
     required this.getCurrentUserId,
     DateTime Function()? now,
     this.publishDelay = const Duration(seconds: 3),
+    this.liveDelay = const Duration(seconds: 1),
   }) : _now = now ?? DateTime.now {
     final n = _now();
     _month = DateTime(n.year, n.month);
@@ -26,6 +27,9 @@ class HouseholdProvider extends ChangeNotifier {
   final DateTime Function() _now;
   final Duration publishDelay;
 
+  /// How long to wait after a "something changed" message before reloading, so a burst becomes one reload.
+  final Duration liveDelay;
+
   int? _familyId;
   late DateTime _month;
   late HouseholdOverview _overview;
@@ -36,6 +40,9 @@ class HouseholdProvider extends ChangeNotifier {
   String? _error;
   ExpenseProvider? _expenses;
   Timer? _timer;
+  Timer? _liveTimer;
+  RealtimeChannel? _channel;
+  int? _watchedFamily;
 
   int? get familyId => _familyId;
   DateTime get month => _month;
@@ -64,6 +71,7 @@ class HouseholdProvider extends ChangeNotifier {
       _loadedOnce = false;
     }
     _familyId = familyId;
+    _watch(familyId);
     if (month != null) _month = DateTime(month.year, month.month);
     _loading = true;
     _error = null;
@@ -106,6 +114,50 @@ class HouseholdProvider extends ChangeNotifier {
   void attachExpenses(ExpenseProvider expenses) {
     _expenses?.removeListener(_onExpensesChanged);
     _expenses = expenses..addListener(_onExpensesChanged);
+  }
+
+  /// Listens for changes made by anyone in the family so the dashboard and household screen stay current without a refresh.
+  void _watch(int familyId) {
+    if (_watchedFamily == familyId) return;
+    _stopWatching();
+    _watchedFamily = familyId;
+    try {
+      _channel = repository.subscribe(familyId, _onLiveChange);
+    } catch (e) {
+      debugPrint('[HouseholdProvider] live updates unavailable: $e');
+    }
+  }
+
+  void _stopWatching() {
+    _liveTimer?.cancel();
+    final c = _channel;
+    _channel = null;
+    _watchedFamily = null;
+    if (c != null) {
+      try {
+        repository.unsubscribe(c);
+      } catch (_) {}
+    }
+  }
+
+  void _onLiveChange() {
+    _liveTimer?.cancel();
+    _liveTimer = Timer(liveDelay, _refreshQuietly);
+  }
+
+  /// Reloads this month (and the month on screen, if different) without showing a spinner.
+  Future<void> _refreshQuietly() async {
+    final id = _familyId;
+    if (id == null || id != _watchedFamily) return;
+    try {
+      final cur = await repository.overview(id, currentMonth);
+      if (_familyId != id) return; // signed out or changed family meanwhile
+      _current = cur;
+      _overview = _month == currentMonth ? cur : await repository.overview(id, _month);
+      notifyListeners();
+    } catch (_) {
+      // Keep what is on screen; the next change or refresh will correct it.
+    }
   }
 
   void _onExpensesChanged() {
@@ -182,6 +234,7 @@ class HouseholdProvider extends ChangeNotifier {
 
   void clear() {
     _timer?.cancel();
+    _stopWatching();
     _familyId = null;
     final n = _now();
     _month = DateTime(n.year, n.month);
@@ -197,6 +250,7 @@ class HouseholdProvider extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _stopWatching();
     _expenses?.removeListener(_onExpensesChanged);
     super.dispose();
   }

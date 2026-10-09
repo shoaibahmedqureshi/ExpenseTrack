@@ -5,8 +5,15 @@ import 'package:outlay/features/household/data/household_repository.dart';
 import 'package:outlay/features/household/domain/household_models.dart';
 import 'package:outlay/features/household/presentation/providers/household_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel, RealtimeClient;
 
 class _Repo implements HouseholdRepository {
+  final _client = RealtimeClient('ws://localhost:1/realtime/v1');
+  @override
+  RealtimeChannel subscribe(int familyId, void Function() onChange) => _client.channel('household:$familyId');
+  @override
+  Future<void> unsubscribe(RealtimeChannel channel) async {}
+
   List<HouseholdMember> members = [];
   List<HouseholdBudget> budgets = [];
   @override

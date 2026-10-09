@@ -7,6 +7,7 @@ import 'package:outlay/features/expenses/domain/usecases/get_expenses_usecase.da
 import 'package:outlay/features/expenses/domain/usecases/manage_expense_usecase.dart';
 import 'package:outlay/features/expenses/presentation/providers/expense_provider.dart';
 import 'package:outlay/features/household/data/household_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show RealtimeChannel, RealtimeClient;
 import 'package:outlay/features/household/domain/household_calculator.dart';
 import 'package:outlay/features/household/domain/household_models.dart';
 import 'package:outlay/features/household/presentation/providers/household_provider.dart';
@@ -203,6 +204,7 @@ void main() {
         getCurrentUserId: () => 'me',
         now: () => now,
         publishDelay: const Duration(milliseconds: 20),
+        liveDelay: const Duration(milliseconds: 20),
       )..attachExpenses(expenses);
       addTearDown(p.dispose);
       return p;
@@ -375,6 +377,107 @@ void main() {
       expect(p.current.members.single.totalCents, 100);
     });
 
+    group('live updates', () {
+      test('watching starts once per family, on the family\'s own channel', () async {
+        repo.members = [_member('me')];
+        final p = make();
+        await p.load(7);
+        await p.load(7);
+        await p.syncFor(7);
+        expect(repo.subscribed, [7]);
+      });
+
+      test('a change by someone else reloads this month and updates the card', () async {
+        repo.members = [_member('me', cats: {'Food': 100}), _member('ann', sharing: false)];
+        final p = make();
+        await p.syncFor(7);
+        expect(p.current.members.last.sharing, isFalse);
+
+        repo.members = [_member('me', cats: {'Food': 100}), _member('ann', cats: {'Food': 5000})]; // Ann starts sharing
+        repo.fire();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(p.current.members.last.sharing, isTrue);
+        expect(p.current.members.last.totalCents, 5000);
+        expect(p.overview.members.last.totalCents, 5000); // the screen is on this month too
+      });
+
+      test('a burst of changes causes one reload', () async {
+        repo.members = [_member('me')];
+        final p = make();
+        await p.syncFor(7);
+        final before = repo.overviewCalls.length;
+        for (var i = 0; i < 6; i++) {
+          repo.fire();
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 90));
+        expect(repo.overviewCalls.length - before, 1);
+      });
+
+      test('while an earlier month is on screen, both it and the current month are refreshed', () async {
+        repo.members = [_member('me', cats: {'Food': 100})];
+        final p = make();
+        await p.syncFor(7);
+        await p.previousMonth();
+        final before = repo.overviewCalls.length;
+        repo.members = [_member('me', cats: {'Food': 777})];
+        repo.fire();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(repo.overviewCalls.skip(before).map((c) => c.$2), [DateTime(2026, 10), DateTime(2026, 9)]);
+        expect(p.month, DateTime(2026, 9)); // still looking at September
+        expect(p.current.members.single.totalCents, 777);
+      });
+
+      test('a reload that fails leaves what was on screen alone', () async {
+        repo.members = [_member('me', cats: {'Food': 100})];
+        final p = make();
+        await p.syncFor(7);
+        repo.failOverview = Exception('offline');
+        repo.fire();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(p.current.members.single.totalCents, 100);
+        expect(p.error, isNull);
+      });
+
+      test('moving to another family stops watching the old one', () async {
+        repo.members = [_member('me')];
+        final p = make();
+        await p.load(7);
+        await p.load(8);
+        expect(repo.subscribed, [7, 8]);
+        expect(repo.unsubscribed, 1);
+      });
+
+      test('signing out stops watching, and a late message does nothing', () async {
+        repo.members = [_member('me')];
+        final p = make();
+        await p.syncFor(7);
+        final before = repo.overviewCalls.length;
+        p.clear();
+        expect(repo.unsubscribed, 1);
+        repo.fire();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(repo.overviewCalls.length, before);
+      });
+
+      test('a change in flight when the person signs out is dropped', () async {
+        repo.members = [_member('me', cats: {'Food': 100})];
+        final p = make();
+        await p.syncFor(7);
+        repo.fire();
+        p.clear();
+        await Future<void>.delayed(const Duration(milliseconds: 80));
+        expect(p.current.members, isEmpty);
+      });
+
+      test('if live updates cannot start the household still loads', () async {
+        repo.members = [_member('me', cats: {'Food': 100})];
+        repo.subscribeFails = true;
+        final p = make();
+        await p.syncFor(7);
+        expect(p.current.members.single.totalCents, 100);
+      });
+    });
+
     test('clear (sign-out) forgets the family and the figures', () async {
       repo.members = [_member('me', cats: {'Food': 100})];
       final p = make();
@@ -401,9 +504,29 @@ class _FakeHouseholdRepo implements HouseholdRepository {
   List<HouseholdMember> members = [];
   List<HouseholdBudget> budgets = [];
   Object? failWith;
+  Object? failOverview;
   void Function(bool)? onSetSharing;
   final calls = <String>[];
   final overviewCalls = <(int, DateTime)>[];
+  final subscribed = <int>[];
+  int unsubscribed = 0;
+  bool subscribeFails = false;
+  void Function()? _onChange;
+  final _client = RealtimeClient('ws://localhost:1/realtime/v1');
+
+  /// Pretends the server announced a change.
+  void fire() => _onChange?.call();
+
+  @override
+  RealtimeChannel subscribe(int familyId, void Function() onChange) {
+    if (subscribeFails) throw Exception('realtime unavailable');
+    subscribed.add(familyId);
+    _onChange = onChange;
+    return _client.channel('household:$familyId');
+  }
+
+  @override
+  Future<void> unsubscribe(RealtimeChannel channel) async => unsubscribed++;
 
   void _fail() {
     if (failWith != null) throw failWith!;
@@ -412,6 +535,7 @@ class _FakeHouseholdRepo implements HouseholdRepository {
   @override
   Future<HouseholdOverview> overview(int familyId, DateTime month) async {
     overviewCalls.add((familyId, month));
+    if (failOverview != null) throw failOverview!;
     return HouseholdOverview(month: DateTime(month.year, month.month), members: members, budgets: budgets);
   }
 

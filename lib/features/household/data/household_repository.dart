@@ -25,6 +25,15 @@ class HouseholdRepository {
   Future<void> setBudget(int familyId, String? category, int cents) =>
       _db.rpc('set_family_budget', params: {'p_family_id': familyId, 'p_category': category, 'p_amount': cents / 100});
 
+  /// Calls [onChange] whenever anyone in the family shares, stops sharing, or the budget changes. The channel is private:
+  /// the server only lets members of that family listen, and the message carries no figures.
+  RealtimeChannel subscribe(int familyId, void Function() onChange) => _db
+      .channel('household:$familyId', opts: const RealtimeChannelConfig(private: true))
+      .onBroadcast(event: 'changed', callback: (_) => onChange())
+      .subscribe();
+
+  Future<void> unsubscribe(RealtimeChannel channel) => _db.removeChannel(channel);
+
   Future<void> clearBudget(int familyId, String? category) =>
       _db.rpc('clear_family_budget', params: {'p_family_id': familyId, 'p_category': category});
 }
