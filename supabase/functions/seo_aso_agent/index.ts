@@ -42,7 +42,7 @@ Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
 
       for (const post of posts) {
         const postUrl = post.url || post.post_url || `https://${post.forum}.example.com/posts`;
-        if (await checked(stats, "forum_opportunities insert", supabase.from("forum_opportunities").insert({
+        if (await checked(stats, "forum_opportunities insert", supabase.from("forum_opportunities").upsert({
             forum_name: post.forum || post.platform,
             forum_url: postUrl,
             category: "finance",
@@ -51,7 +51,7 @@ Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
             post_url: postUrl,
             link_anchor_text: post.title || post.question,
             notes: post.title || post.question,
-          }))) console.log(`✅ Forum post logged: ${postUrl}`);
+          }, { onConflict: "forum_url,forum_name", ignoreDuplicates: true }))) console.log(`✅ Forum post logged: ${postUrl}`);
 
         await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
           activity_type: "forum_post",
@@ -92,7 +92,7 @@ async function createProfiles() {
   ];
 
   for (const profile of profiles) {
-    if (await checked(stats, "profile_links insert", supabase.from("profile_links").insert({
+    if (await checked(stats, "profile_links insert", supabase.from("profile_links").upsert({
       platform: profile.platform,
       platform_url: profile.platform_url,
       profile_username: profile.platform.toLowerCase(),
@@ -100,7 +100,7 @@ async function createProfiles() {
       bio: profile.bio,
       status: "created",
       keywords_used: ["expense tracking", "finance", "budgeting"],
-    }))) console.log(`✅ Profile created: ${profile.platform_url}`);
+    }, { onConflict: "platform,profile_username", ignoreDuplicates: true }))) console.log(`✅ Profile recorded: ${profile.platform_url}`);
 
     await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
           activity_type: "profile_created",
@@ -191,7 +191,7 @@ async function generateDailyReport() {
 Next Run: Tomorrow 6 AM UTC
   `;
 
-  await checked(stats, "seo_daily_reports insert", supabase.from("seo_daily_reports").insert({
+  await checked(stats, "seo_daily_reports insert", supabase.from("seo_daily_reports").upsert({
     report_date: today,
     activities_completed: {
       forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
@@ -199,7 +199,7 @@ Next Run: Tomorrow 6 AM UTC
       profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
     },
     summary: summary.trim(),
-  }));
+  }, { onConflict: "report_date" }));
 
   return summary;
 }
