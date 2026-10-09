@@ -1,5 +1,29 @@
 # Release review of `feature/outlay-pro-v2` (2026-10-10)
 
+## UPDATE (same day): corrections and what has been fixed
+
+**Correction, more serious than first reported:** the live Supabase `service_role` key is ALSO public on `main` (in
+`agents/profile-automation/.env`, `.env.example` and `.claude/settings.local.json`; identical to the current live key). The Gmail
+password belongs to `outlay.noreply@gmail.com` (the same mailbox used for the agent BCC). On this local branch there is also a Supabase
+secret key (`sb_secret_...`) in `.claude/settings.local.json` and `stitchify-approval-dashboard.html`, and the service-role key in
+`setup-deployment.sh`. Deleting files does not remove them from git history. **These credentials must be rotated.**
+
+Fixed in this branch and in production (items below refer to the numbers in section A/B):
+- A3 done: RLS on and anon privileges revoked for `agent_logs`, `email_drafts`, `profile_links`, `seo_activity_log` (verified with the anon key).
+- A4 done: the six back-office functions now require the service-role identity (no key: 401, anon key: 403, service key: allowed).
+  `verify_jwt` is pinned in `supabase/config.toml`. NOTE: the scheduled GitHub workflows still work only if their secret holds the legacy
+  service-role JWT.
+- A5 done: `send_family_invitation` now mails only for a real, pending invitation the signed-in caller created, once an hour at most, with
+  per-sender and per-address limits and an opt-out link; address and names come from the database.
+- B7/B8/B9 done: version `1.2.0+52`; the debug build label is gone; Settings and Profile show the real version (a test keeps it in sync with pubspec).
+- B11 done: the seven missing migrations and the `growth_agent` function are committed.
+- Secrets removed from the working tree (not from history); `.env` files ignored; `.claude/settings.local.json` untracked.
+
+Still open: rotate the credentials, decide about the daily workflows, privacy policy, MAX products, real-device tests, history clean-up
+before the branch is pushed.
+
+---
+
 Branch: 63 commits ahead of `main`, 0 behind (a clean fast-forward). 387 files, about 74k lines added.
 Checked on a clean checkout of the branch (real ML Kit): 376 tests pass; iOS release build (no code signing) succeeds, 84.6 MB.
 
