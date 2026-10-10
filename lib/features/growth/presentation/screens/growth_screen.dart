@@ -202,7 +202,12 @@ class _TaskSheetState extends State<_TaskSheet> {
     final finished = t.bucket(DateTime.now()) == TaskBucket.finished;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+          16,
+          0,
+          16,
+          MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom +
+              16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(t.creatorName, style: Theme.of(context).textTheme.titleLarge),
@@ -340,7 +345,12 @@ class _ApplicationSheetState extends State<_ApplicationSheet> {
     final a = widget.app;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+          16,
+          0,
+          16,
+          MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom +
+              16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(a.name, style: Theme.of(context).textTheme.titleLarge),
@@ -354,6 +364,7 @@ class _ApplicationSheetState extends State<_ApplicationSheet> {
           if (a.about != null)
             Padding(
                 padding: const EdgeInsets.only(top: 8), child: Text(a.about!)),
+          const SizedBox(height: 8),
           Text('Status: ${a.status.label}',
               style: const TextStyle(fontWeight: FontWeight.w600)),
           if (a.profileUrl != null)
@@ -485,7 +496,12 @@ class _AddSheetState extends State<_AddSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+          16,
+          0,
+          16,
+          MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom +
+              16),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Add creator', style: Theme.of(context).textTheme.titleLarge),
