@@ -66,7 +66,7 @@ export function pageSummary(html: string): string {
 }
 
 export function offerLine(): string {
-  return `a free 1-year subscription to each of our products: ${PRODUCTS.map((p) => p.pitch).join(" and ")}`;
+  return `a free 1-year subscription to each of our products: ${PRODUCTS.map((p) => p.pitch).join(", and ")}`;
 }
 
 export const TRAFFIC_MIN = 1_000;

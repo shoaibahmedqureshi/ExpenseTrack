@@ -48,3 +48,9 @@ jobs:
         run: |
           curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/blog_outreach" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{"action":"draft"}'
+
+      - name: Draft creator outreach (drafts only)
+        if: always()
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/draft_creator_outreach" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{}'

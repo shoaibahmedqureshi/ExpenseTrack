@@ -462,3 +462,6 @@ verify_jwt = true
 
 [functions.blog_outreach]
 verify_jwt = true
+
+[functions.draft_creator_outreach]
+verify_jwt = true
