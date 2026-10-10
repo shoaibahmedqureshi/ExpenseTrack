@@ -459,3 +459,6 @@ verify_jwt = true
 
 [functions.discover_youtube_creators]
 verify_jwt = true
+
+[functions.blog_outreach]
+verify_jwt = true
