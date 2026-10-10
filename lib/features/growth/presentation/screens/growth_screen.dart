@@ -159,6 +159,7 @@ class _GrowthScreenState extends State<GrowthScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       showDragHandle: true,
       builder: (_) =>
           ChangeNotifierProvider.value(value: p, child: const _AddSheet()),
@@ -201,7 +202,7 @@ class _TaskSheetState extends State<_TaskSheet> {
     final finished = t.bucket(DateTime.now()) == TaskBucket.finished;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(t.creatorName, style: Theme.of(context).textTheme.titleLarge),
@@ -339,7 +340,7 @@ class _ApplicationSheetState extends State<_ApplicationSheet> {
     final a = widget.app;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(a.name, style: Theme.of(context).textTheme.titleLarge),
@@ -484,14 +485,15 @@ class _AddSheetState extends State<_AddSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Add creator', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Name')),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _platform,
             decoration: const InputDecoration(labelText: 'Platform'),
@@ -504,6 +506,7 @@ class _AddSheetState extends State<_AddSheet> {
               _channel = OutreachChannel.forPlatform(_platform);
             }),
           ),
+          const SizedBox(height: 16),
           DropdownButtonFormField<OutreachChannel>(
             key: ValueKey(_channel),
             initialValue: _channel,
@@ -514,12 +517,15 @@ class _AddSheetState extends State<_AddSheet> {
             ],
             onChanged: (v) => setState(() => _channel = v ?? _channel),
           ),
+          const SizedBox(height: 16),
           TextField(
               controller: _handle,
               decoration: const InputDecoration(labelText: 'Handle')),
+          const SizedBox(height: 16),
           TextField(
               controller: _url,
               decoration: const InputDecoration(labelText: 'Profile link')),
+          const SizedBox(height: 16),
           TextField(
             controller: _info,
             maxLines: 3,
@@ -540,12 +546,13 @@ class _AddSheetState extends State<_AddSheet> {
             Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text('Fit: $_fitReason')),
+          const SizedBox(height: 16),
           TextField(
             controller: _draft,
             maxLines: 6,
             decoration: const InputDecoration(labelText: 'Message draft'),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
