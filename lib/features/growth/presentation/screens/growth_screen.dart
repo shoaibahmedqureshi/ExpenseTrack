@@ -46,11 +46,20 @@ class _GrowthScreenState extends State<GrowthScreen> {
                         : 'Applications'),
               ]),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _openAdd(context),
-          icon: const Icon(Icons.add),
-          label: const Text('Add creator'),
-        ),
+        // Adds to the queue, so it only belongs on the Queue tab.
+        floatingActionButton: Builder(builder: (ctx) {
+          final tabs = DefaultTabController.of(ctx);
+          return AnimatedBuilder(
+            animation: tabs.animation!,
+            builder: (_, __) => tabs.animation!.value < 0.5
+                ? FloatingActionButton.extended(
+                    onPressed: () => _openAdd(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add creator'),
+                  )
+                : const SizedBox.shrink(),
+          );
+        }),
         body: p.isLoading && p.tasks.isEmpty && p.applications.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : TabBarView(children: [_queue(p), _applications(p)]),
