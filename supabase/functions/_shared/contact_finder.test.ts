@@ -36,3 +36,8 @@ test('reads TikTok bio and link', () => {
   assert.equal(parseTikTokProfile('<html>login</html>').present, false);
   assert.deepEqual(extractEmails(p.bio), ['a@b.com']);
 });
+
+import { extractUrls } from './contact_finder.ts';
+test('finds links in free text and trims punctuation', () => {
+  assert.deepEqual(extractUrls('Site: https://jane.com/shop. IG https://instagram.com/jane, bye'), ['https://jane.com/shop', 'https://instagram.com/jane']);
+});

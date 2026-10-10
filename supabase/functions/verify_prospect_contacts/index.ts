@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 import { requireServiceRole } from "../_shared/service_auth.ts";
 import {
-  contactPaths, extractEmails, extractLinks, followable, isLinkInBio, isSafeUrl, parseTikTokProfile, pickEmail,
+  contactPaths, extractEmails, extractLinks, extractUrls, followable, isLinkInBio, isSafeUrl, parseTikTokProfile, pickEmail,
 } from "../_shared/contact_finder.ts";
 
 const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
@@ -49,18 +49,8 @@ async function fetchPage(url: string): Promise<{ url: string; text: string } | n
 
 interface Outcome { email: string | null; source: string | null; note: string }
 
-async function verifyHandle(handle: string): Promise<Outcome> {
-  const profileUrl = `https://www.tiktok.com/@${encodeURIComponent(handle)}`;
-  const profile = await fetchPage(profileUrl);
-  if (!profile) return { email: null, source: null, note: "profile page not readable (blocked or not found)" };
-
-  const { present, bio, link } = parseTikTokProfile(profile.text);
-  if (!present) return { email: null, source: null, note: "TikTok returned no profile data to automated readers; needs manual lookup or an official API" };
-  const inBio = pickEmail(extractEmails(bio));
-  if (inBio) return { email: inBio, source: profileUrl, note: "found in TikTok bio" };
-  if (!link) return { email: null, source: null, note: "profile readable but no email or bio link" };
-
-  const sites = followable(extractLinks(`<a href="${link}">`, profileUrl));
+/** Reads the creator's own linked pages (site, contact page, link-in-bio) for a published address. */
+async function readSites(sites: string[]): Promise<Outcome> {
   const visited = new Set<string>();
   for (const site of sites) {
     const pages = [site, ...(isLinkInBio(site) ? [] : contactPaths(site))];
@@ -92,11 +82,34 @@ async function verifyHandle(handle: string): Promise<Outcome> {
   return { email: null, source: null, note: "bio link readable but no email found" };
 }
 
+/** YouTube: the channel description is public text the creator wrote. */
+async function verifyChannel(bio: string, channelUrl: string): Promise<Outcome> {
+  const inBio = pickEmail(extractEmails(bio));
+  if (inBio) return { email: inBio, source: channelUrl, note: "found in the channel description" };
+  const sites = followable(extractUrls(bio));
+  if (!sites.length) return { email: null, source: null, note: "channel description has no email or website" };
+  return await readSites(sites);
+}
+
+async function verifyHandle(handle: string): Promise<Outcome> {
+  const profileUrl = `https://www.tiktok.com/@${encodeURIComponent(handle)}`;
+  const profile = await fetchPage(profileUrl);
+  if (!profile) return { email: null, source: null, note: "profile page not readable (blocked or not found)" };
+
+  const { present, bio, link } = parseTikTokProfile(profile.text);
+  if (!present) return { email: null, source: null, note: "TikTok returned no profile data to automated readers; needs manual lookup or an official API" };
+  const inBio = pickEmail(extractEmails(bio));
+  if (inBio) return { email: inBio, source: profileUrl, note: "found in TikTok bio" };
+  if (!link) return { email: null, source: null, note: "profile readable but no email or bio link" };
+
+  return await readSites(followable(extractLinks(`<a href="${link}">`, profileUrl)));
+}
+
 async function main() {
   const { data: queue, error } = await supabase
     .from("influencer_prospects")
-    .select("id, handle, platform")
-    .eq("platform", "tiktok")
+    .select("id, handle, platform, bio, channel_url")
+    .in("platform", ["youtube", "tiktok"])
     .eq("email_status", "unverified")
     .order("verify_attempted_at", { ascending: true, nullsFirst: true })
     .limit(BATCH);
@@ -104,7 +117,7 @@ async function main() {
 
   const stats = { checked: 0, verified: 0, not_found: 0, drafts_updated: 0, failures: [] as string[] };
   for (const p of queue || []) {
-    const out = await verifyHandle(p.handle);
+    const out = p.platform === "youtube" ? await verifyChannel(p.bio || "", p.channel_url || "") : await verifyHandle(p.handle);
     stats.checked++;
     const now = new Date().toISOString();
     const patch = out.email

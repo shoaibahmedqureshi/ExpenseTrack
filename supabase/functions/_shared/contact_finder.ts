@@ -87,3 +87,13 @@ export function parseTikTokProfile(html: string): { present: boolean; bio: strin
   const un = (s: string) => { try { return JSON.parse(`"${s}"`) as string; } catch { return s; } };
   return { present: /"uniqueId":"/.test(html) && !!sig, bio: sig ? un(sig[1]) : "", link: link ? un(link[1]) : null };
 }
+
+/** https links written in free text (channel descriptions, bios). */
+export function extractUrls(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of decodeHtml(text).matchAll(/https?:\/\/[^\s<>"')\]]+/gi)) {
+    const u = m[0].replace(/[.,;:!?]+$/, "");
+    try { out.add(new URL(u).toString()); } catch { /* ignore */ }
+  }
+  return [...out];
+}
