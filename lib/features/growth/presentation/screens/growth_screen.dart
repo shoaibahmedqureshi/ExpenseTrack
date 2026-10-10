@@ -298,18 +298,23 @@ class _TaskSheetState extends State<_TaskSheet> {
                 child: const Text('Snooze 2d'),
               ),
             ]),
-          Row(children: [
-            TextButton(
-              onPressed: () =>
-                  _do(() => p.saveNotes(t, _notes.text), 'Notes saved'),
-              child: const Text('Save notes'),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () =>
+                      _do(() => p.saveNotes(t, _notes.text), 'Notes saved'),
+                  child: const Text('Save notes'),
+                ),
+                TextButton(
+                  onPressed: () => _do(() => p.deleteTask(t), 'Deleted'),
+                  child: const Text('Delete'),
+                ),
+              ],
             ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _do(() => p.deleteTask(t), 'Deleted'),
-              child: const Text('Delete'),
-            ),
-          ]),
+          ),
         ]),
       ),
     );
@@ -520,6 +525,7 @@ class _AddSheetState extends State<_AddSheet> {
               decoration: const InputDecoration(labelText: 'Name')),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _platform,
             decoration: const InputDecoration(labelText: 'Platform'),
             items: [
@@ -534,11 +540,14 @@ class _AddSheetState extends State<_AddSheet> {
           const SizedBox(height: 16),
           DropdownButtonFormField<OutreachChannel>(
             key: ValueKey(_channel),
+            isExpanded: true,
             initialValue: _channel,
             decoration: const InputDecoration(labelText: 'Send via'),
             items: [
               for (final c in OutreachChannel.values)
-                DropdownMenuItem(value: c, child: Text(c.label))
+                DropdownMenuItem(
+                    value: c,
+                    child: Text(c.label, overflow: TextOverflow.ellipsis))
             ],
             onChanged: (v) => setState(() => _channel = v ?? _channel),
           ),
