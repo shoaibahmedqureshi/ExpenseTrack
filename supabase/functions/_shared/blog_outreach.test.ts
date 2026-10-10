@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { collectSearchUrls, filterCandidates, normalize, offerLine, pageSummary, pitchPages } from './blog_outreach.ts';
+import { parseTrafficClaim, trafficFit, collectSearchUrls, filterCandidates, normalize, offerLine, pageSummary, pitchPages } from './blog_outreach.ts';
 
 const content = [
   { type: 'text', text: 'hi' },
@@ -36,4 +36,45 @@ test('offer names every product', () => {
   assert.match(offerLine(), /Outlay Pro/);
   assert.match(offerLine(), /Stitchify Premium/);
   assert.equal(normalize('https://a.com/x/#y'), 'https://a.com/x');
+});
+
+test('reads stated monthly visitors in several phrasings', () => {
+  assert.equal(parseTrafficClaim('<p>We reach 25,000 monthly visitors.</p>'), 25000);
+  assert.equal(parseTrafficClaim('Over 12k unique visitors per month'), 12000);
+  assert.equal(parseTrafficClaim('Monthly visitors: 8,500'), 8500);
+  assert.equal(parseTrafficClaim('1.2M readers a month'), 1200000);
+});
+test('ignores page views, tiny numbers and non-monthly claims', () => {
+  assert.equal(parseTrafficClaim('300,000 page views per month'), null);
+  assert.equal(parseTrafficClaim('5 visitors per month'), null);
+  assert.equal(parseTrafficClaim('We had 40,000 visitors last year'), null);
+  assert.equal(parseTrafficClaim('<script>var a="90,000 monthly visitors"</script>'), null);
+});
+test('fits the 1k-50k target', () => {
+  assert.equal(trafficFit(1000), 'in_range');
+  assert.equal(trafficFit(50000), 'in_range');
+  assert.equal(trafficFit(999), 'out_of_range');
+  assert.equal(trafficFit(120000), 'out_of_range');
+  assert.equal(trafficFit(null), 'unknown');
+});
+
+import { qualityFlags, templatePath } from './blog_outreach.ts';
+const rich = '<h2>a</h2><h2>b</h2><h3>c</h3>' + '<p>' + 'real article text about money and habits. '.repeat(60) + '</p>';
+test('a normal blog has no flags', () => {
+  assert.deepEqual(qualityFlags({ pages: [{ url: 'u', text: rich }], homeText: rich, siblingPaths: new Set() }), []);
+});
+test('paid-post pages and prices are flagged', () => {
+  const f = qualityFlags({ pages: [{ url: 'u', text: '<p>Guest post fee: $80 per post, permanent dofollow links</p>' }], homeText: rich, siblingPaths: new Set() });
+  assert.ok(f.includes('sells guest posts'));
+  assert.ok(f.includes('advertises do-follow links'));
+  assert.ok(f.includes('quotes prices for posts'));
+});
+test('thin sites and shared templates are flagged', () => {
+  const f = qualityFlags({ pages: [], homeText: '<p>tiny</p>', siblingPaths: new Set(['/submit-finance-guest-post']), guidelinesPath: '/submit-finance-guest-post' });
+  assert.ok(f.includes('thin home page'));
+  assert.ok(f.some((x) => x.includes('network')));
+});
+test('template path ignores deep or unrelated URLs', () => {
+  assert.equal(templatePath('https://a.com/submit-finance-guest-post/'), '/submit-finance-guest-post');
+  assert.equal(templatePath('https://a.com/2024/03/some-long-article'), undefined);
 });

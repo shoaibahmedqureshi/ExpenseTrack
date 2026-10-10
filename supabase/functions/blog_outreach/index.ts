@@ -3,7 +3,7 @@ import { requireServiceRole } from "../_shared/service_auth.ts";
 import { parseModelJson } from "../_shared/agent_run.ts";
 import { extractEmails, pickEmail } from "../_shared/contact_finder.ts";
 import { fetchPage } from "../_shared/safe_fetch.ts";
-import { collectSearchUrls, filterCandidates, offerLine, pageSummary, pitchPages, PRODUCTS, siteOf } from "../_shared/blog_outreach.ts";
+import { collectSearchUrls, filterCandidates, offerLine, pageSummary, parseTrafficClaim, pitchPages, PRODUCTS, qualityFlags, siteOf, templatePath, trafficFit } from "../_shared/blog_outreach.ts";
 
 const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
 const MODEL = Deno.env.get("BLOG_AGENT_MODEL") || "claude-haiku-4-5-20251001";
@@ -56,27 +56,48 @@ async function discover(topics: string[]) {
   return stats;
 }
 
-/** Reads the blog's own pages for a published contact address. */
+/** Reads the blog's own pages: contact address, stated traffic, and signs of a paid-link network. */
 async function verify(limit = 10) {
-  const stats = { checked: 0, verified: 0, not_found: 0, failures: [] as string[] };
+  const stats = { checked: 0, verified: 0, not_found: 0, in_range: 0, suspect: 0, failures: [] as string[] };
   const { data: queue } = await supabase.from("link_opportunities").select("id, url, guidelines_url, domain")
     .eq("email_status", "unverified").order("verify_attempted_at", { ascending: true, nullsFirst: true }).limit(limit);
+  const { data: others } = await supabase.from("link_opportunities").select("domain, guidelines_url");
   for (const o of queue || []) {
     stats.checked++;
-    let email: string | null = null, source: string | null = null, summary = "";
+    let email: string | null = null, source: string | null = null, summary = "", homeText = "", visitors: number | null = null, trafficSource: string | null = null;
+    const pages: Array<{ url: string; text: string }> = [];
     for (const page of pitchPages(o.url, o.guidelines_url)) {
       const p = await fetchPage(page);
       if (!p) continue;
-      if (!summary && page === o.url) summary = pageSummary(p.text);
-      const found = pickEmail(extractEmails(p.text), siteOf(o.url));
-      if (found) { email = found; source = p.url; break; }
+      pages.push(p);
+      if (page === o.url) { summary = pageSummary(p.text); homeText = p.text; }
+      if (!email) {
+        const found = pickEmail(extractEmails(p.text), siteOf(o.url));
+        if (found) { email = found; source = p.url; }
+      }
+      if (visitors == null) {
+        const v = parseTrafficClaim(p.text);
+        if (v != null) { visitors = v; trafficSource = p.url; }
+      }
     }
+    const mine = templatePath(o.guidelines_url) ?? templatePath(o.url);
+    const siblings = new Set((others || []).filter((x) => x.domain !== o.domain).map((x) => templatePath(x.guidelines_url)).filter((x): x is string => !!x));
+    const flags = qualityFlags({ pages, homeText, siblingPaths: siblings, guidelinesPath: mine });
+    const fit = trafficFit(visitors);
     const now = new Date().toISOString();
-    const patch = email
-      ? { email, email_status: "verified", email_source: source, email_verified_at: now, verify_attempted_at: now, verify_note: "found on the blog's own site", outreach_status: "verified", page_summary: summary || null }
-      : { email_status: "not_found", verify_attempted_at: now, verify_note: "no email on the blog's contact, about or guest-post pages", page_summary: summary || null };
+    const patch: Record<string, unknown> = {
+      verify_attempted_at: now, page_summary: summary || null,
+      claimed_monthly_visitors: visitors, traffic_source: trafficSource, traffic_fit: fit,
+      quality_status: flags.length ? "suspect" : "ok", quality_flags: flags,
+      ...(email
+        ? { email, email_status: "verified", email_source: source, email_verified_at: now, verify_note: "found on the blog's own site", outreach_status: "verified" }
+        : { email_status: "not_found", verify_note: "no email on the blog's contact, about or guest-post pages" }),
+    };
     const { error } = await supabase.from("link_opportunities").update(patch).eq("id", o.id);
-    if (error) stats.failures.push(`${o.domain}: ${error.message}`); else if (email) stats.verified++; else stats.not_found++;
+    if (error) { stats.failures.push(`${o.domain}: ${error.message}`); continue; }
+    if (email) stats.verified++; else stats.not_found++;
+    if (fit === "in_range") stats.in_range++;
+    if (flags.length) stats.suspect++;
     await new Promise((r) => setTimeout(r, 1000));
   }
   return stats;
@@ -86,7 +107,7 @@ async function verify(limit = 10) {
 async function draft(limit = 5) {
   const stats = { drafted: 0, failures: [] as string[] };
   const { data: ops } = await supabase.from("link_opportunities")
-    .select("id, url, blog_name, topic, page_summary, guidelines_url").eq("email_status", "verified").eq("outreach_status", "verified").limit(limit);
+    .select("id, url, blog_name, topic, page_summary, guidelines_url").eq("email_status", "verified").eq("outreach_status", "verified").eq("traffic_fit", "in_range").eq("quality_status", "ok").limit(limit);
   for (const o of ops || []) {
     try {
       const r = await claudeRequest({
