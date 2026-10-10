@@ -1,15 +1,14 @@
 name: Run AI Agents Daily
 
+# Scheduling is switched off: the SEO agent only logged placeholder rows and the influencer agent
+# had nothing to send. The daily work now runs in run-outreach-pipeline.yml. Run by hand if needed.
 on:
-  schedule:
-    - cron: '0 6 * * *'  # 6 AM UTC - SEO Agent
-    - cron: '0 8 * * *'  # 8 AM UTC - Influencer Agent
+  workflow_dispatch:
 
 jobs:
   seo-agent:
     runs-on: ubuntu-latest
-    if: github.event.schedule == '0 6 * * *'
-    steps:
+        steps:
       - name: Run SEO Agent
         env:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -21,8 +20,7 @@ jobs:
 
   influencer-agent:
     runs-on: ubuntu-latest
-    if: github.event.schedule == '0 8 * * *'
-    steps:
+        steps:
       - name: Run Influencer Agent
         env:
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

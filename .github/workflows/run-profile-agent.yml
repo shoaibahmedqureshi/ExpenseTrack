@@ -1,10 +1,9 @@
 name: Run Profile Automation Agent
 
+# Scheduling is switched off: 6 of 10 runs failed with no error text, and it needs the Gmail
+# credential that is being replaced. Run by hand once that is sorted.
 on:
-  schedule:
-    # Run daily at 6 AM UTC
-    - cron: '0 6 * * *'
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   run-agent:
