@@ -10,6 +10,7 @@ interface InfluencerProspect {
   engagement_rate?: number;
   niche: string;
   email?: string;
+  email_status?: string;
   contact_method: string;
 }
 
@@ -119,7 +120,7 @@ Hashtags to search: #photography #photoediting #contentcreator #visualcontent #p
                 follower_count: inf.estimated_followers || 0,
                 engagement_rate: 0.03, // Conservative estimate
                 niche: inf.niche || "photography",
-                email: inf.contact_email_guess || "",
+                email: undefined, // the model's guess is never used as a contact; verify_prospect_contacts finds a real one
                 contact_method: "email",
               });
             }
@@ -259,8 +260,8 @@ async function createEmailDraft(
   message: string,
   fitScore: number
 ) {
-  if (!prospect.email || !isPlausibleRecipient(prospect.email)) {
-    console.log(`⏭️ No usable email for @${prospect.handle}; not drafting outreach`);
+  if (!prospect.email || !isPlausibleRecipient(prospect.email) || prospect.email_status !== "verified") {
+    console.log(`⏭️ No verified email for @${prospect.handle}; not drafting outreach`);
     return;
   }
   try {
@@ -336,6 +337,13 @@ async function main() {
     // Step 2: Send each approved email
     if (approvedDrafts && approvedDrafts.length > 0) {
       for (const draft of approvedDrafts) {
+        const { data: owner } = await supabase
+          .from("influencer_prospects").select("email, email_status")
+          .eq("platform", draft.recipient_platform).eq("handle", draft.recipient_name).maybeSingle();
+        if (owner?.email_status !== "verified" || owner.email !== draft.recipient_email) {
+          console.log(`⏸️ Not sent for @${draft.recipient_name}: contact email is not verified`);
+          continue;
+        }
         const result = await sendEmail({
           to: draft.recipient_email,
           subject: draft.subject,

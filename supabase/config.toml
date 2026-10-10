@@ -453,3 +453,6 @@ verify_jwt = false
 [functions.google-subscription-webhook]
 verify_jwt = false
 
+
+[functions.verify_prospect_contacts]
+verify_jwt = true

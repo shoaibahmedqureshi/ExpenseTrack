@@ -32,11 +32,11 @@ async function main() {
     for (const email of approvedEmails) {
       const { data: prospect } = await supabase
         .from("influencer_prospects")
-        .select("email, handle")
+        .select("email, handle, email_status")
         .eq("id", email.prospect_id)
         .single();
 
-      if (!prospect?.email) {
+      if (!prospect?.email || prospect.email_status !== "verified") {
         failureCount++;
         continue;
       }
