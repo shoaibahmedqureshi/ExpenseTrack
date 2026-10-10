@@ -2,7 +2,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../domain/growth_models.dart';
 
 class DraftResult {
-  const DraftResult({this.niche, this.fits, required this.fitReason, required this.evidence, required this.draft});
+  const DraftResult(
+      {this.niche,
+      this.fits,
+      required this.fitReason,
+      required this.evidence,
+      required this.draft});
   final String? niche;
   final bool? fits;
   final String fitReason;
@@ -24,8 +29,11 @@ class GrowthRepository {
   }
 
   Future<List<OutreachTask>> tasks() async {
-    final rows = await _db.from('outreach_tasks').select().order('due_at').limit(500);
-    return (rows as List).map((r) => OutreachTask.fromJson(Map<String, dynamic>.from(r as Map))).toList();
+    final rows =
+        await _db.from('outreach_tasks').select().order('due_at').limit(500);
+    return (rows as List)
+        .map((r) => OutreachTask.fromJson(Map<String, dynamic>.from(r as Map)))
+        .toList();
   }
 
   Future<void> addTask({
@@ -60,18 +68,30 @@ class GrowthRepository {
   }
 
   Future<void> updateTask(int id, Map<String, dynamic> fields) async {
-    final done = await _db.from('outreach_tasks').update(fields).eq('id', id).select('id');
+    final done = await _db
+        .from('outreach_tasks')
+        .update(fields)
+        .eq('id', id)
+        .select('id');
     if ((done as List).isEmpty) throw Exception('Could not update this task');
   }
 
   Future<void> deleteTask(int id) async {
-    final done = await _db.from('outreach_tasks').delete().eq('id', id).select('id');
+    final done =
+        await _db.from('outreach_tasks').delete().eq('id', id).select('id');
     if ((done as List).isEmpty) throw Exception('Could not delete this task');
   }
 
   Future<List<CreatorApplication>> applications() async {
-    final rows = await _db.from('creator_applications').select().order('created_at', ascending: false).limit(300);
-    return (rows as List).map((r) => CreatorApplication.fromJson(Map<String, dynamic>.from(r as Map))).toList();
+    final rows = await _db
+        .from('creator_applications')
+        .select()
+        .order('created_at', ascending: false)
+        .limit(300);
+    return (rows as List)
+        .map((r) =>
+            CreatorApplication.fromJson(Map<String, dynamic>.from(r as Map)))
+        .toList();
   }
 
   Future<void> decide(int id, ApplicationStatus status, String? notes) async {
@@ -114,5 +134,6 @@ class GrowthRepository {
     );
   }
 
-  String? _blank(String? s) => (s == null || s.trim().isEmpty) ? null : s.trim();
+  String? _blank(String? s) =>
+      (s == null || s.trim().isEmpty) ? null : s.trim();
 }

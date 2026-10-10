@@ -6,7 +6,8 @@ import 'package:outlay/features/growth/presentation/providers/growth_provider.da
 import 'package:outlay/features/growth/presentation/screens/growth_screen.dart';
 import 'package:provider/provider.dart';
 
-const _long = 'A very long creator name that keeps going and going to test wrapping';
+const _long =
+    'A very long creator name that keeps going and going to test wrapping';
 final _task = OutreachTask(
   id: 1,
   creatorName: _long,
@@ -17,9 +18,12 @@ final _task = OutreachTask(
   handle: '@a_really_long_handle_name_for_testing',
   profileUrl: 'https://youtube.com/@a_really_long_handle_name_for_testing',
   niche: 'photography and editing and travel and more topics',
-  fitReason: 'Teaches photo editing to beginners and explains every step carefully. ' * 2,
+  fitReason:
+      'Teaches photo editing to beginners and explains every step carefully. ' *
+          2,
   evidence: 'Channel description: photo editing tutorials ' * 3,
-  draftMessage: 'Hi there, we would love to give you a free year of our apps. ' * 6,
+  draftMessage:
+      'Hi there, we would love to give you a free year of our apps. ' * 6,
 );
 final _app = CreatorApplication(
   id: 1,
@@ -47,7 +51,8 @@ class _Repo implements GrowthRepository {
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
-Future<void> _open(WidgetTester t, {required double scale, Brightness b = Brightness.light}) async {
+Future<void> _open(WidgetTester t,
+    {required double scale, Brightness b = Brightness.light}) async {
   t.view.physicalSize = const Size(320, 568) * 2;
   t.view.devicePixelRatio = 2;
   addTearDown(t.view.reset);

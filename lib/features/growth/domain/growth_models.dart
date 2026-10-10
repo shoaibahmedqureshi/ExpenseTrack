@@ -9,8 +9,8 @@ enum OutreachChannel {
   final String key;
   final String label;
 
-  static OutreachChannel parse(String? k) =>
-      OutreachChannel.values.firstWhere((c) => c.key == k, orElse: () => OutreachChannel.other);
+  static OutreachChannel parse(String? k) => OutreachChannel.values
+      .firstWhere((c) => c.key == k, orElse: () => OutreachChannel.other);
 
   /// Sensible default route for a platform. The official channels are manual, so this only
   /// pre-selects the field; a person still sends the message.
@@ -33,7 +33,8 @@ enum TaskStatus {
 
   const TaskStatus(this.key);
   final String key;
-  static TaskStatus parse(String? k) => TaskStatus.values.firstWhere((s) => s.key == k, orElse: () => TaskStatus.todo);
+  static TaskStatus parse(String? k) => TaskStatus.values
+      .firstWhere((s) => s.key == k, orElse: () => TaskStatus.todo);
 }
 
 enum TaskBucket { today, waiting, later, finished }
@@ -90,7 +91,9 @@ class OutreachTask {
         return dueAt.isAfter(now) ? TaskBucket.later : TaskBucket.today;
       case TaskStatus.sent:
         final f = followupAt;
-        return (f != null && !f.isAfter(now)) ? TaskBucket.today : TaskBucket.waiting;
+        return (f != null && !f.isAfter(now))
+            ? TaskBucket.today
+            : TaskBucket.waiting;
       case TaskStatus.todo:
         return dueAt.isAfter(now) ? TaskBucket.later : TaskBucket.today;
     }
@@ -98,7 +101,9 @@ class OutreachTask {
 
   /// A sent task that is back in "today" because its follow-up date passed.
   bool needsFollowUp(DateTime now) =>
-      status == TaskStatus.sent && followupAt != null && !followupAt!.isAfter(now);
+      status == TaskStatus.sent &&
+      followupAt != null &&
+      !followupAt!.isAfter(now);
 
   factory OutreachTask.fromJson(Map<String, dynamic> j) => OutreachTask(
         id: j['id'] as int,
@@ -113,8 +118,12 @@ class OutreachTask {
         fitReason: j['fit_reason'] as String?,
         evidence: j['evidence'] as String?,
         draftMessage: j['draft_message'] as String?,
-        followupAt: j['followup_at'] == null ? null : DateTime.parse(j['followup_at'] as String).toLocal(),
-        sentAt: j['sent_at'] == null ? null : DateTime.parse(j['sent_at'] as String).toLocal(),
+        followupAt: j['followup_at'] == null
+            ? null
+            : DateTime.parse(j['followup_at'] as String).toLocal(),
+        sentAt: j['sent_at'] == null
+            ? null
+            : DateTime.parse(j['sent_at'] as String).toLocal(),
         notes: j['notes'] as String?,
         source: (j['source'] as String?) ?? 'manual',
         applicationId: j['application_id'] as int?,
@@ -152,7 +161,8 @@ enum ApplicationStatus {
   final String key;
   final String label;
   static ApplicationStatus parse(String? k) =>
-      ApplicationStatus.values.firstWhere((s) => s.key == k, orElse: () => ApplicationStatus.pendingConfirmation);
+      ApplicationStatus.values.firstWhere((s) => s.key == k,
+          orElse: () => ApplicationStatus.pendingConfirmation);
 }
 
 const audienceBandLabels = {
@@ -205,7 +215,8 @@ class CreatorApplication {
 
   bool get awaitingDecision => status == ApplicationStatus.confirmed;
 
-  factory CreatorApplication.fromJson(Map<String, dynamic> j) => CreatorApplication(
+  factory CreatorApplication.fromJson(Map<String, dynamic> j) =>
+      CreatorApplication(
         id: j['id'] as int,
         name: j['name'] as String,
         email: j['email'] as String,

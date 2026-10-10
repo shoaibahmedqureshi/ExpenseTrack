@@ -62,9 +62,32 @@ class _GrowthScreenState extends State<GrowthScreen> {
         }),
         body: p.isLoading && p.tasks.isEmpty && p.applications.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : TabBarView(children: [_queue(p), _applications(p)]),
+            : Column(children: [
+                if (p.loadFailed &&
+                    (p.tasks.isNotEmpty || p.applications.isNotEmpty))
+                  MaterialBanner(
+                    content: Text('Could not refresh: ${p.error}'),
+                    actions: [
+                      TextButton(
+                          onPressed: p.load, child: const Text('Try again'))
+                    ],
+                  ),
+                Expanded(
+                    child: TabBarView(children: [_queue(p), _applications(p)])),
+              ]),
       ),
     );
+  }
+
+  /// An empty list says so, but a failed load says why and offers a retry.
+  Widget _emptyState(GrowthProvider p, String empty) {
+    if (!p.loadFailed) return Center(child: Text(empty));
+    return Column(children: [
+      Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(p.error!, textAlign: TextAlign.center)),
+      TextButton(onPressed: p.load, child: const Text('Try again')),
+    ]);
   }
 
   Widget _queue(GrowthProvider p) {
@@ -75,9 +98,7 @@ class _GrowthScreenState extends State<GrowthScreen> {
         onRefresh: p.load,
         child: ListView(children: [
           const SizedBox(height: 120),
-          Center(
-              child:
-                  Text(p.error ?? 'Nothing queued. Add a creator to start.')),
+          _emptyState(p, 'Nothing queued. Add a creator to start.'),
         ]),
       );
     }
@@ -131,9 +152,9 @@ class _GrowthScreenState extends State<GrowthScreen> {
     if (p.applications.isEmpty) {
       return RefreshIndicator(
         onRefresh: p.load,
-        child: ListView(children: const [
-          SizedBox(height: 120),
-          Center(child: Text('No applications yet.'))
+        child: ListView(children: [
+          const SizedBox(height: 120),
+          _emptyState(p, 'No applications yet.'),
         ]),
       );
     }
@@ -426,6 +447,7 @@ class _AddSheet extends StatefulWidget {
 }
 
 class _AddSheetState extends State<_AddSheet> {
+  bool _nameMissing = false;
   final _name = TextEditingController();
   final _handle = TextEditingController();
   final _url = TextEditingController();
@@ -481,7 +503,10 @@ class _AddSheetState extends State<_AddSheet> {
   }
 
   Future<void> _save() async {
-    if (_name.text.trim().isEmpty) return;
+    if (_name.text.trim().isEmpty) {
+      setState(() => _nameMissing = true);
+      return;
+    }
     setState(() => _busy = true);
     final p = context.read<GrowthProvider>();
     final nav = Navigator.of(context);
@@ -522,7 +547,13 @@ class _AddSheetState extends State<_AddSheet> {
           const SizedBox(height: 16),
           TextField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Name')),
+              onChanged: (_) {
+                if (_nameMissing) setState(() => _nameMissing = false);
+              },
+              decoration: InputDecoration(
+                  labelText: 'Name',
+                  errorText:
+                      _nameMissing ? 'Enter the creator\'s name' : null)),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             isExpanded: true,
