@@ -1,265 +1,88 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
-import { Anthropic } from "https://esm.sh/@anthropic-ai/sdk@0.24.3";
 import { requireServiceRole } from "../_shared/service_auth.ts";
-import { checked, newStats, parseModelJson } from "../_shared/agent_run.ts";
+import { fetchPage } from "../_shared/safe_fetch.ts";
+import {
+  asoFindings, asoSnapshot, auditHtml, diffFindings, parseSitemap, sitemapGaps, topSeverity, type Finding,
+} from "../_shared/seo_audit.ts";
 
-const stats = newStats();
+// SEO/ASO agent: checks our own website and App Store listing and records what is wrong and what changed.
+// It publishes and posts nothing anywhere.
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") || "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
-);
+const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+const SITE = Deno.env.get("SEO_SITE") || "https://outlayapp.net";
+const BUNDLE_ID = Deno.env.get("IOS_BUNDLE_ID") || "com.codebloom.outlay";
+const MAX_PAGES = 40;
 
-const claude = new Anthropic({
-  apiKey: Deno.env.get("CLAUDE_API_KEY") || "",
-});
+async function previousFindings(appDomain: string, type: string): Promise<Finding[]> {
+  const { data } = await supabase.from("guest_post_audits").select("findings").eq("app_domain", appDomain).eq("audit_type", type)
+    .order("created_at", { ascending: false }).limit(1);
+  const items = data?.[0]?.findings?.items;
+  return Array.isArray(items) ? items : [];
+}
 
-async function executeForumPosts() {
-  console.log("📝 Posting to forums...");
-
-  const response = await claude.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 1024,
-    messages: [
-      {
-        role: "user",
-        content: `Generate 3 authentic forum posts for Outlay (an expense tracking app):
-
-1. Reddit r/personalfinance - "How to automate expense tracking"
-2. Reddit r/budgeting - "Tools that make budgeting easier"
-3. Stack Exchange Money - Helpful answer about budgeting
-
-Format: JSON array with {forum, title_or_question, content, keywords}
-Keep content 2-3 paragraphs, genuine, mention Outlay naturally.`,
-      },
-    ],
+async function save(appDomain: string, type: string, items: Finding[], extra: Record<string, unknown>) {
+  const prev = await previousFindings(appDomain, type);
+  const change = diffFindings(prev, items);
+  const { error } = await supabase.from("guest_post_audits").insert({
+    app_domain: appDomain, audit_type: type, findings: { items, ...extra },
+    recommendations: { new: change.added, resolved: change.resolved, first_run: prev.length === 0 },
+    priority: items.length ? topSeverity(items) : "low", status: "open",
   });
-
-  const content = response.content[0];
-  if (content.type === "text") {
-    try {
-      const posts = parseModelJson<any[]>(content.text);
-
-      for (const post of posts) {
-        const postUrl = post.url || post.post_url || `https://${post.forum}.example.com/posts`;
-        if (await checked(stats, "forum_opportunities insert", supabase.from("forum_opportunities").upsert({
-            forum_name: post.forum || post.platform,
-            forum_url: postUrl,
-            category: "finance",
-            difficulty: "medium",
-            status: "posted",
-            post_url: postUrl,
-            link_anchor_text: post.title || post.question,
-            notes: post.title || post.question,
-          }, { onConflict: "forum_url,forum_name", ignoreDuplicates: true }))) console.log(`✅ Forum post logged: ${postUrl}`);
-
-        await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
-          activity_type: "forum_post",
-          target_url: postUrl,
-          status: "completed",
-          keywords_used: post.keywords || [],
-        }));
-      }
-
-      return { posted: posts.length, status: "completed" };
-    } catch (e) {
-      console.error("Error:", e);
-      return { posted: 0, status: "error" };
-    }
-  }
-  return { posted: 0, status: "error" };
+  if (error) throw new Error(`${type} save: ${error.message}`);
+  return { items: items.length, new: change.added.length, resolved: change.resolved.length };
 }
 
-async function createProfiles() {
-  console.log("👤 Creating profiles...");
-
-  const profiles = [
-    {
-      platform: "Dev.to",
-      platform_url: "https://dev.to/outlayapp",
-      bio: "Helping developers & makers master expense tracking and financial wellness.",
-    },
-    {
-      platform: "Medium",
-      platform_url: "https://medium.com/@outlayapp",
-      bio: "Writing about fintech, personal finance automation, and budgeting strategies.",
-    },
-    {
-      platform: "Quora",
-      platform_url: "https://quora.com/profile/OutlayApp",
-      bio: "Helping people solve budgeting and expense management challenges.",
-    },
-  ];
-
-  for (const profile of profiles) {
-    if (await checked(stats, "profile_links insert", supabase.from("profile_links").upsert({
-      platform: profile.platform,
-      platform_url: profile.platform_url,
-      profile_username: profile.platform.toLowerCase(),
-      profile_url: profile.platform_url,
-      bio: profile.bio,
-      status: "created",
-      keywords_used: ["expense tracking", "finance", "budgeting"],
-    }, { onConflict: "platform,profile_username", ignoreDuplicates: true }))) console.log(`✅ Profile recorded: ${profile.platform_url}`);
-
-    await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
-          activity_type: "profile_created",
-          target_url: profile.platform_url,
-          status: "completed",
-          keywords_used: ["expense tracking", "finance", "budgeting"],
-        }));
+async function auditSite() {
+  const host = new URL(SITE).hostname;
+  const findings: Finding[] = [];
+  const sitemap = await fetchPage(`${SITE}/sitemap.xml`, { allowXml: true });
+  let urls: string[] = [];
+  if (!sitemap) {
+    findings.push({ check: "sitemap", severity: "high", detail: "sitemap.xml is not reachable" });
+  } else {
+    urls = parseSitemap(sitemap.text).filter((u) => { try { return new URL(u).hostname === host; } catch { return false; } }).slice(0, MAX_PAGES);
+    for (const gap of sitemapGaps(sitemap.text)) findings.push({ check: "sitemap", severity: "low", detail: "hreflang alternate is not listed as its own page", url: gap });
   }
+  const robots = await fetch(`${SITE}/robots.txt`, { signal: AbortSignal.timeout(8000) }).then((r) => r.ok ? r.text() : null).catch(() => null);
+  if (robots === null) findings.push({ check: "robots.txt", severity: "medium", detail: "robots.txt is not reachable" });
+  else if (/disallow:\s*\/\s*$/im.test(robots)) findings.push({ check: "robots.txt", severity: "high", detail: "robots.txt blocks the whole site" });
 
-  return { created: profiles.length, status: "completed", profiles };
+  if (!urls.length) urls = [SITE + "/"];
+  let checked = 0;
+  for (const u of urls) {
+    const page = await fetchPage(u);
+    if (!page) { findings.push({ check: "page reachable", severity: "high", detail: "Page could not be loaded", url: u }); continue; }
+    checked++;
+    findings.push(...auditHtml(page.text, u));
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return { result: await save(host, "seo", findings, { pages_checked: checked, pages_listed: urls.length }), pages: checked };
 }
 
-async function postComments() {
-  console.log("💬 Posting helpful comments...");
-
-  const response = await claude.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    messages: [
-      {
-        role: "user",
-        content: `Generate 3 helpful comments I can post (actually posting these):
-
-Discussions:
-1. Reddit r/personalfinance - "How to start expense tracking?"
-2. Reddit r/budgeting - "Cheapest budgeting tools?"
-3. Quora - "Best way to organize personal finances?"
-
-Format: JSON array with {platform, discussion_title, comment, keywords}
-Keep each 2-3 sentences, genuine, naturally mention Outlay.`,
-      },
-    ],
-  });
-
-  const content = response.content[0];
-  if (content.type === "text") {
-    try {
-      const comments = parseModelJson<any[]>(content.text);
-
-      for (const comment of comments) {
-        const sourceUrl = comment.url || `https://${comment.platform}.com/discussions`;
-        if (await checked(stats, "comment_activities insert", supabase.from("comment_activities").insert({
-            source_url: sourceUrl,
-            source_type: comment.source_type || "forum",
-            comment_text: comment.comment || comment.text,
-            comment_url: sourceUrl,
-            status: "posted",
-            keywords_mentioned: comment.keywords || [],
-          }))) console.log(`✅ Comment logged: ${sourceUrl}`);
-
-        await checked(stats, "seo_activity_log insert", supabase.from("seo_activity_log").insert({
-          activity_type: "comment_posted",
-          target_url: sourceUrl,
-          status: "completed",
-          keywords_used: comment.keywords || [],
-        }));
-      }
-
-      return { posted: comments.length, status: "completed" };
-    } catch (e) {
-      console.error("Error:", e);
-      return { posted: 0, status: "error" };
-    }
-  }
-  return { posted: 0, status: "error" };
-}
-
-async function generateDailyReport() {
-  console.log("📊 Generating daily summary...");
-
-  const today = new Date().toISOString().split("T")[0];
-
-  const { data: activities } = await supabase
-    .from("seo_activity_log")
-    .select("activity_type, status")
-    .gte("created_at", today);
-
-  const summary = `
-📋 Daily SEO Activity Report - ${today}
-
-✅ Completed Actions:
-- Forum Posts: ${activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0}
-- Comments Posted: ${activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0}
-- Profiles Created: ${activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0}
-
-📊 Total Actions: ${activities?.length || 0}
-
-Next Run: Tomorrow 6 AM UTC
-  `;
-
-  await checked(stats, "seo_daily_reports insert", supabase.from("seo_daily_reports").upsert({
-    report_date: today,
-    activities_completed: {
-      forum_posts: activities?.filter(a => a.activity_type === "forum_post" && a.status === "completed").length || 0,
-      comments: activities?.filter(a => a.activity_type === "comment_posted" && a.status === "completed").length || 0,
-      profiles: activities?.filter(a => a.activity_type === "profile_created" && a.status === "completed").length || 0,
-    },
-    summary: summary.trim(),
-  }, { onConflict: "report_date" }));
-
-  return summary;
+async function auditAppStore() {
+  const res = await fetch(`https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(BUNDLE_ID)}`, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`App Store lookup ${res.status}`);
+  const snap = asoSnapshot(await res.json());
+  if (!snap) return { result: await save(`app-store:${BUNDLE_ID}`, "aso", [{ check: "listing", severity: "high", detail: "App not found in the App Store lookup" }], {}), snapshot: null };
+  return { result: await save(`app-store:${BUNDLE_ID}`, "aso", asoFindings(snap), { snapshot: snap, google_play: "not checked: no public API" }), snapshot: snap };
 }
 
 async function main() {
-  console.log("🚀 SEO Agent - AUTONOMOUS MODE");
-  console.log("==============================");
-  console.log("");
-
-  try {
-    const forumResults = await executeForumPosts();
-    console.log(`✅ Forum posts executed: ${forumResults.posted}`);
-
-    const profileResults = await createProfiles();
-    console.log(`✅ Profiles created: ${profileResults.created}`);
-
-    const commentResults = await postComments();
-    console.log(`✅ Comments posted: ${commentResults.posted}`);
-
-    const report = await generateDailyReport();
-    console.log(report);
-
-    const failed = stats.failures.length > 0 || forumResults.status === "error" || commentResults.status === "error";
-    await checked(stats, "agent_logs insert", supabase.from("agent_logs").insert({
-      agent_type: "seo_aso",
-      action: "daily_run",
-      status: failed ? "error" : "success",
-      details: { forum_posts: forumResults.posted, comments: commentResults.posted, profiles: profileResults.created, writes_ok: stats.ok },
-      error_message: failed ? [forumResults.status === "error" ? "forum posts: model reply unusable" : "", commentResults.status === "error" ? "comments: model reply unusable" : "", ...stats.failures].filter(Boolean).join(" | ").slice(0, 2000) : null,
-    }));
-
-    return {
-      status: failed ? "error" : "success",
-      failures: stats.failures,
-      mode: "autonomous_execution",
-      forum_posts: forumResults.posted,
-      profiles: profileResults.created,
-      comments: commentResults.posted,
-      total_executed: (forumResults.posted || 0) + (profileResults.created || 0) + (commentResults.posted || 0),
-      timestamp: new Date().toISOString(),
-    };
-  } catch (error) {
-    console.error("❌ Error:", error);
-    await checked(stats, "agent_logs insert", supabase.from("agent_logs").insert({
-      agent_type: "seo_aso", action: "daily_run", status: "error", error_message: String(error).slice(0, 2000),
-    }));
-    return {
-      status: "error",
-      error: String(error),
-      timestamp: new Date().toISOString(),
-    };
+  const out: Record<string, unknown> = {};
+  const failures: string[] = [];
+  for (const [name, run] of [["site", auditSite], ["app_store", auditAppStore]] as const) {
+    try { out[name] = await run(); } catch (e) { failures.push(`${name}: ${String(e)}`); }
   }
+  await supabase.from("agent_logs").insert({
+    agent_type: "seo_aso", action: "audit", status: failures.length ? "error" : "success",
+    details: JSON.parse(JSON.stringify(out)), error_message: failures.length ? failures.join(" | ").slice(0, 2000) : null,
+  });
+  return { status: failures.length ? "error" : "success", failures, ...out };
 }
 
 Deno.serve(async (req) => {
   const denied = requireServiceRole(req);
   if (denied) return denied;
   const result = await main();
-  return new Response(JSON.stringify(result), {
-    headers: { "Content-Type": "application/json" },
-    status: result.status === "success" ? 200 : 500,
-  });
+  return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" }, status: result.status === "success" ? 200 : 500 });
 });

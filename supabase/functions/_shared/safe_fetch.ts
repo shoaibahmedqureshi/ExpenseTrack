@@ -4,7 +4,7 @@ const MAX_BYTES = 1_000_000;
 const UA = "Mozilla/5.0 (compatible; OutlayContactCheck/1.0; +https://outlayapp.net)";
 
 /** GET a public https page; follows up to 3 redirects, re-checking every hop. */
-export async function fetchPage(url: string): Promise<{ url: string; text: string } | null> {
+export async function fetchPage(url: string, opts: { allowXml?: boolean } = {}): Promise<{ url: string; text: string } | null> {
   let current = url;
   for (let hop = 0; hop < 4; hop++) {
     if (!isSafeUrl(current)) return null;
@@ -20,7 +20,7 @@ export async function fetchPage(url: string): Promise<{ url: string; text: strin
         current = new URL(loc, current).toString();
         continue;
       }
-      if (!res.ok || !(res.headers.get("content-type") || "").includes("text/html")) return null;
+      if (!res.ok || !(((res.headers.get("content-type") || "").includes("text/html")) || (opts.allowXml && /xml|text\/plain/.test(res.headers.get("content-type") || "")))) return null;
       const reader = res.body?.getReader();
       if (!reader) return null;
       const chunks: Uint8Array[] = [];
