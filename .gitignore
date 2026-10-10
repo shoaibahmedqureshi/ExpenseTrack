@@ -53,3 +53,7 @@ app.*.map.json
 .env.*
 !.env.example
 **/.env
+
+# Archived old deployment notes and scripts (kept locally, not tracked)
+_archived_old_docs/
+agent_draft_review.md
