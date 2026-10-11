@@ -54,14 +54,14 @@ const _accountOnly = [
 const _featuresOnly = [
   'Accounts',
   'Transactions',
-  'Budgets',
   'Reports',
   'Family sharing (MAX)',
   'Pending Invitations',
 ];
 
-Future<void> _pumpMore(WidgetTester t, {bool admin = false}) async {
-  SharedPreferences.setMockInitialValues({});
+Future<void> _pumpMore(WidgetTester t,
+    {bool admin = false, bool max = false}) async {
+  SharedPreferences.setMockInitialValues({if (max) 'sub_plan': 'max'});
   final prefs = await SharedPreferences.getInstance();
   final growth = GrowthProvider(repository: _Growth(admin));
   await growth.checkAdmin();
@@ -122,8 +122,7 @@ void main() {
   });
 
   group('Settings under Profile', () {
-    testWidgets(
-        'holds the legal pages, version and account actions',
+    testWidgets('holds the legal pages, version and account actions',
         (t) async {
       await _pumpAccount(t);
       expect(find.text('Settings'), findsOneWidget);

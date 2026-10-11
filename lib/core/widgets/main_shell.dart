@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../theme/app_theme.dart';
+import 'shell_tabs.dart';
 import '../../features/expenses/presentation/screens/expense_list_screen.dart';
 import '../../features/receipt_scanner/presentation/widgets/scan_fab.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -11,19 +12,9 @@ import '../../features/family_accounts/presentation/providers/family_provider.da
 import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../features/household/presentation/providers/household_provider.dart';
 import '../../features/household/presentation/screens/household_screen.dart';
+import '../../features/budgets/presentation/screens/budgets_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
-
-enum _Tab {
-  dashboard('Dashboard', Icons.home_outlined, Icons.home),
-  splits('Splits', Icons.people_outline, Icons.people),
-  family('Family', Icons.group_outlined, Icons.group),
-  more('More', Icons.menu, Icons.menu_open);
-
-  const _Tab(this.label, this.icon, this.activeIcon);
-  final String label;
-  final IconData icon;
-  final IconData activeIcon;
-}
+import '../../features/subscription/data/subscription_service.dart';
 
 /// Bottom-tab shell for the 4 main screens with the scan button docked in
 /// the centre notch. Accounts lives under More.
@@ -37,26 +28,28 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  _Tab _current = _Tab.dashboard;
+  ShellTab _current = ShellTab.dashboard;
 
-  void _select(_Tab tab) {
+  void _select(ShellTab tab) {
     setState(() => _current = tab);
     // IndexedStack keeps tabs alive, so refresh the ones that show server data when opened.
-    if (tab == _Tab.splits) context.read<ExpenseSplitProvider>().refresh();
-    if (tab == _Tab.family) context.read<FamilyProvider>().loadUserFamilies();
+    if (tab == ShellTab.splits) context.read<ExpenseSplitProvider>().refresh();
+    if (tab == ShellTab.family) context.read<FamilyProvider>().loadUserFamilies();
   }
 
   @override
   Widget build(BuildContext context) {
-    // The Family tab is always shown so the bar stays balanced. Without MAX it explains the benefit and
-    // offers the upgrade; creating a family and inviting people are what need MAX.
-    const tabs = _Tab.values;
-    final current = _current;
+    // The third tab is Family for MAX users and family members, Budgets for everyone else. The plan can
+    // change while the app is open (a purchase, an accepted invite), so the list is rebuilt each time.
+    final isMax = context.watch<SubscriptionService>().status.isMax;
+    final hasFamily = context.watch<FamilyProvider>().hasFamily;
+    final tabs = shellTabsFor(isMax: isMax, hasFamily: hasFamily);
+    final current = resolveCurrentTab(_current, tabs);
 
-    Widget screenFor(_Tab t) => switch (t) {
-          _Tab.dashboard => DashboardScreen(
-              onOpenSplits: () => _select(_Tab.splits),
-              onOpenFamily: () => _select(_Tab.family),
+    Widget screenFor(ShellTab t) => switch (t) {
+          ShellTab.dashboard => DashboardScreen(
+              onOpenSplits: () => _select(ShellTab.splits),
+              onOpenFamily: () => _select(ShellTab.family),
               onOpenHousehold: () {
                 final id = context.read<HouseholdProvider>().familyId;
                 if (id == null) return;
@@ -67,9 +60,10 @@ class _MainShellState extends State<MainShell> {
                 MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
               ),
             ),
-          _Tab.splits => const SplitsScreen(),
-          _Tab.family => const FamilySettingsScreen(),
-          _Tab.more => const MoreScreen(),
+          ShellTab.splits => const SplitsScreen(),
+          ShellTab.budgets => const BudgetsScreen(),
+          ShellTab.family => const FamilySettingsScreen(),
+          ShellTab.more => const MoreScreen(),
         };
 
     // Each screen's state is preserved across tab switches via IndexedStack; keys keep a tab's state
@@ -93,16 +87,16 @@ class _MainShellState extends State<MainShell> {
 }
 
 // BottomAppBar with equal-width tabs and a notch for the centred scan FAB:
-// Dashboard, Splits | scan | Family, Settings.
+// Dashboard, Splits | scan | Budgets or Family, More.
 class _NavBar extends StatelessWidget {
   const _NavBar(
       {required this.tabs, required this.current, required this.onTap});
 
-  final List<_Tab> tabs;
-  final _Tab current;
-  final void Function(_Tab) onTap;
+  final List<ShellTab> tabs;
+  final ShellTab current;
+  final void Function(ShellTab) onTap;
 
-  Widget _item(_Tab tab) {
+  Widget _item(ShellTab tab) {
     final active = tab == current;
     return Expanded(
       child: GestureDetector(

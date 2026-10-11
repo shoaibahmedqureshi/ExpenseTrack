@@ -18,6 +18,8 @@ import '../../../reports/presentation/screens/reports_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../sync/sync_service.dart';
 import '../widgets/household_summary_card.dart';
+import '../widgets/max_upsell_card.dart';
+import '../../../subscription/presentation/screens/paywall_screen.dart';
 import '../widgets/splits_summary_card.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
@@ -395,6 +397,9 @@ class _DashboardBody extends StatelessWidget {
         const SizedBox(height: 6),
         ..._buildGroupedTransactions(
             expenseProvider.expenses.take(_recentTransactionCount).toList()),
+        // After the user's own money, so an offer never pushes their data down the screen.
+        const SizedBox(height: 18),
+        MaxUpsellCard(onUpgrade: () => PaywallScreen.show(context, tier: PaywallTier.max)),
       ],
     );
   }

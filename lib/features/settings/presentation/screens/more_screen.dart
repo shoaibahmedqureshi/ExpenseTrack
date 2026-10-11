@@ -14,6 +14,7 @@ import '../../../subscription/presentation/screens/paywall_screen.dart';
 import '../../../family_accounts/presentation/screens/pending_invitations_screen.dart';
 import '../../../influencer_dashboard/presentation/screens/influencer_dashboard_screen.dart';
 
+import '../../../../core/widgets/shell_tabs.dart';
 import '../widgets_setting_tiles.dart';
 
 /// The "More" tab: the features that do not have a tab of their own (money screens, family,
@@ -27,6 +28,11 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final email = userEmail ?? _signedInEmail();
+    // Budgets has its own tab unless the third tab is Family, so it only needs a row here in that case.
+    final tabs = shellTabsFor(
+      isMax: context.watch<SubscriptionService>().status.isMax,
+      hasFamily: context.watch<FamilyProvider>().hasFamily,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -61,17 +67,18 @@ class MoreScreen extends StatelessWidget {
                   );
                 },
               ),
-              SettingTile(
-                icon: Icons.pie_chart,
-                title: 'Budgets',
-                subtitle: 'Monthly and category budgets',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const BudgetsScreen()),
-                  );
-                },
-              ),
+              if (!tabs.contains(ShellTab.budgets))
+                SettingTile(
+                  icon: Icons.pie_chart,
+                  title: 'Budgets',
+                  subtitle: 'Monthly and category budgets',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const BudgetsScreen()),
+                    );
+                  },
+                ),
               SettingTile(
                 icon: Icons.bar_chart,
                 title: 'Reports',

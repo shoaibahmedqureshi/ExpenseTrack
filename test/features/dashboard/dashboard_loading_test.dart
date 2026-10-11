@@ -3,6 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:outlay/features/family_accounts/domain/entities/family_group.dart';
+import 'package:outlay/features/family_accounts/domain/repositories/family_repository.dart';
+import 'package:outlay/features/family_accounts/presentation/providers/family_provider.dart';
+import 'package:outlay/features/subscription/data/subscription_service.dart';
 import 'package:outlay/features/auth/domain/entities/user_profile.dart';
 import 'package:outlay/features/auth/domain/repositories/auth_repository.dart';
 import 'package:outlay/features/auth/presentation/providers/auth_provider.dart';
@@ -25,6 +31,24 @@ import 'package:outlay/features/inbox/data/inbox_repository.dart';
 import 'package:outlay/features/inbox/presentation/providers/inbox_provider.dart';
 import 'package:outlay/features/sync/sync_service.dart';
 
+class _NoFamilies implements FamilyRepository {
+  @override
+  Future<List<FamilyGroup>> getUserFamilyGroups(String userId) async => [];
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+/// The Dashboard offers MAX to people without it, so it reads the plan and the family.
+Future<List<SingleChildWidget>> _planProviders() async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  return [
+    ChangeNotifierProvider<SubscriptionService>(create: (_) => SubscriptionService(prefs, debugProducts: const [])),
+    ChangeNotifierProvider<FamilyProvider>(
+        create: (_) => FamilyProvider(repository: _NoFamilies(), getCurrentUserId: () => 'me')),
+  ];
+}
+
 class _FakeAuthRepository implements AuthRepository {
   @override
   Stream<UserProfile?> get authStateChanges => const Stream.empty();
@@ -34,8 +58,7 @@ class _FakeAuthRepository implements AuthRepository {
   Future<UserProfile> signUpWithEmail(String e, String p, String n) async =>
       currentUser!;
   @override
-  Future<UserProfile> signInWithEmail(String e, String p) async =>
-      currentUser!;
+  Future<UserProfile> signInWithEmail(String e, String p) async => currentUser!;
   @override
   Future<UserProfile> signInWithGoogle() async => currentUser!;
   @override
@@ -124,7 +147,8 @@ void main() {
     final budgetProvider = BudgetProvider(
       getBudgets: GetBudgetsUsecase(_EmptyBudgetRepository()),
       manageBudget: ManageBudgetUsecase(_EmptyBudgetRepository()),
-      getExpenses: GetExpensesUsecase(_GatedExpenseRepository()..gate.complete([])),
+      getExpenses:
+          GetExpensesUsecase(_GatedExpenseRepository()..gate.complete([])),
     );
     final categoryProvider = CategoryProvider(_EmptyCategoryRepository());
     addTearDown(expenseProvider.dispose);
@@ -135,6 +159,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ...await _planProviders(),
           ChangeNotifierProvider.value(value: expenseProvider),
           ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider.value(value: budgetProvider),
@@ -216,7 +241,8 @@ void main() {
     final budgetProvider = BudgetProvider(
       getBudgets: GetBudgetsUsecase(_EmptyBudgetRepository()),
       manageBudget: ManageBudgetUsecase(_EmptyBudgetRepository()),
-      getExpenses: GetExpensesUsecase(_GatedExpenseRepository()..gate.complete([])),
+      getExpenses:
+          GetExpensesUsecase(_GatedExpenseRepository()..gate.complete([])),
     );
     final categoryProvider = CategoryProvider(_EmptyCategoryRepository());
     addTearDown(expenseProvider.dispose);
@@ -228,6 +254,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ...await _planProviders(),
           ChangeNotifierProvider.value(value: expenseProvider),
           ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider.value(value: budgetProvider),
