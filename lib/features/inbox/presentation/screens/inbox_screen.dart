@@ -5,7 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../domain/inbox_item.dart';
 import '../providers/inbox_provider.dart';
 
-/// Pops with a target key ('splits', 'family', 'invites') when a notification is tapped.
+/// Pops with a target key ('splits', 'family', 'invites', 'growth') when a notification is tapped.
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
@@ -27,41 +27,88 @@ class _InboxScreenState extends State<InboxScreen> {
     final inbox = context.watch<InboxProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: const Text('Notifications',
+            style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           if (inbox.unreadCount > 0)
             TextButton(
               onPressed: inbox.markAllRead,
-              child: const Text('Mark all read', style: TextStyle(color: Colors.white)),
+              child: const Text('Mark all read',
+                  style: TextStyle(color: Colors.white)),
             ),
         ],
       ),
       body: inbox.items.isEmpty
           ? (inbox.isLoading
-              ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor)))
-              : _empty(context))
-          : RefreshIndicator(
-              onRefresh: () => inbox.load(silent: true),
-              child: ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: inbox.items.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) => _tile(context, inbox, inbox.items[i]),
+              ? const Center(
+                  child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation(AppTheme.primaryColor)))
+              : inbox.error != null
+                  ? _failed(inbox)
+                  : _empty(context))
+          : Column(children: [
+              // A failed refresh keeps the notifications on screen but says they may be stale.
+              if (inbox.error != null)
+                MaterialBanner(
+                  content: const Text('Could not refresh notifications.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => inbox.load(silent: true),
+                        child: const Text('Try again'))
+                  ],
+                ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => inbox.load(silent: true),
+                  child: ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: inbox.items.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, i) =>
+                        _tile(context, inbox, inbox.items[i]),
+                  ),
+                ),
               ),
-            ),
+            ]),
     );
   }
 
+  /// Loading failed: say so, instead of claiming there is nothing new.
+  Widget _failed(InboxProvider inbox) => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.cloud_off_outlined,
+                size: 56, color: AppTheme.textSecondary),
+            const SizedBox(height: 16),
+            Text('Could not load notifications',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            const Text('Check your connection and try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.textSecondary)),
+            const SizedBox(height: 8),
+            TextButton(
+                onPressed: () => inbox.load(), child: const Text('Try again')),
+          ]),
+        ),
+      );
+
   Widget _empty(BuildContext context) => Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.notifications_none, size: 64, color: AppTheme.primaryColor.withOpacity(0.4)),
+          Icon(Icons.notifications_none,
+              size: 64, color: AppTheme.primaryColor.withOpacity(0.4)),
           const SizedBox(height: 16),
-          Text('You\'re all caught up', style: Theme.of(context).textTheme.titleLarge),
+          Text('You\'re all caught up',
+              style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 40),
-            child: Text('New splits, payments and family invitations will show up here.',
-                textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text(
+                'New splits, payments and family invitations will show up here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.textSecondary)),
           ),
         ]),
       );
@@ -83,13 +130,18 @@ class _InboxScreenState extends State<InboxScreen> {
           backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
           child: Icon(_icon(item.type), color: AppTheme.primaryColor, size: 20),
         ),
-        title: Text(item.title, style: TextStyle(fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w800)),
+        title: Text(item.title,
+            style: TextStyle(
+                fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w800)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(item.body),
             const SizedBox(height: 4),
-            Text(_ago(item.createdAt), style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(_ago(item.createdAt),
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.textSecondary)),
           ]),
         ),
         trailing: item.isRead
