@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../current_user_id.dart';
 import '../../domain/entities/revenue_report.dart';
 import '../providers/influencer_provider.dart';
 import 'revenue_details_screen.dart';
 
 class InfluencerDashboardScreen extends StatefulWidget {
-  const InfluencerDashboardScreen({Key? key}) : super(key: key);
+  /// Defaults to the signed-in user; tests pass one in.
+  final String? userId;
+
+  const InfluencerDashboardScreen({Key? key, this.userId}) : super(key: key);
 
   @override
   State<InfluencerDashboardScreen> createState() =>
@@ -20,7 +23,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    userId = Supabase.instance.client.auth.currentUser?.id ?? '';
+    userId = widget.userId ?? currentUserId();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDashboardData();
     });
@@ -215,19 +218,25 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
         children: [
           Icon(icon, color: Colors.blue, size: 32),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -269,19 +278,23 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
       child: ListTile(
         title: Text(code.code),
         subtitle: Text('${code.conversions} conversions'),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'PKR ${code.totalRevenue.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Avg: ${code.averageRevenue.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+        // Scales down instead of overflowing the ListTile's fixed height at large text sizes.
+        trailing: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'PKR ${code.totalRevenue.toStringAsFixed(2)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'Avg: ${code.averageRevenue.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         ),
         onTap: () {
           Navigator.push(
@@ -289,6 +302,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
             MaterialPageRoute(
               builder: (_) => RevenueDetailsScreen(
                 influencerCode: code.code,
+                userId: userId,
               ),
             ),
           );

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../current_user_id.dart';
 import '../../domain/entities/influencer_revenue.dart';
 import '../providers/influencer_provider.dart';
 
 class RevenueDetailsScreen extends StatefulWidget {
   final String influencerCode;
 
+  /// Defaults to the signed-in user; tests pass one in.
+  final String? userId;
+
   const RevenueDetailsScreen({
     Key? key,
     required this.influencerCode,
+    this.userId,
   }) : super(key: key);
 
   @override
@@ -22,8 +26,11 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    userId = Supabase.instance.client.auth.currentUser?.id ?? '';
-    _loadCodeRevenues();
+    userId = widget.userId ?? currentUserId();
+    // Not synchronously: the provider notifies listeners, which must not happen mid-build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadCodeRevenues();
+    });
   }
 
   void _loadCodeRevenues() {
@@ -93,9 +100,12 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
                                   .headlineLarge,
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                            SizedBox(
+                              width: double.infinity,
+                              child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              spacing: 16,
+                              runSpacing: 12,
                               children: [
                                 Column(
                                   crossAxisAlignment:
@@ -135,6 +145,7 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
                                 ),
                               ],
                             ),
+                            ),
                           ],
                         ),
                       ),
@@ -161,7 +172,8 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(e.key),
+                                      Expanded(child: Text(e.key)),
+                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8,

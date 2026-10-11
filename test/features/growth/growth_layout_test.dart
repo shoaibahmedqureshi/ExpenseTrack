@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/real_fonts.dart';
 import 'package:outlay/features/growth/data/growth_repository.dart';
 import 'package:outlay/features/growth/domain/growth_models.dart';
 import 'package:outlay/features/growth/presentation/providers/growth_provider.dart';
@@ -59,7 +60,7 @@ Future<void> _open(WidgetTester t,
   final provider = GrowthProvider(repository: _Repo());
   await provider.checkAdmin();
   await t.pumpWidget(MaterialApp(
-    theme: ThemeData(brightness: b),
+    theme: ThemeData(brightness: b, fontFamily: 'Roboto'),
     builder: (c, child) => MediaQuery(
         data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)),
         child: child!),
@@ -70,6 +71,7 @@ Future<void> _open(WidgetTester t,
 }
 
 void main() {
+  setUpAll(loadRealFonts);
   for (final scale in [1.0, 1.5, 2.0]) {
     for (final b in [Brightness.light, Brightness.dark]) {
       testWidgets('no overflow: small phone, text x$scale, $b', (t) async {
