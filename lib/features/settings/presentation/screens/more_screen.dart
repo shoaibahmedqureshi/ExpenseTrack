@@ -31,7 +31,7 @@ class MoreScreen extends StatelessWidget {
     // Budgets has its own tab unless the third tab is Family, so it only needs a row here in that case.
     final tabs = shellTabsFor(
       isMax: context.watch<SubscriptionService>().status.isMax,
-      hasFamily: context.watch<FamilyProvider>().hasFamily,
+      hasFamily: context.watch<FamilyProvider>().likelyHasFamily,
     );
 
     return Scaffold(
@@ -95,7 +95,7 @@ class MoreScreen extends StatelessWidget {
           // Family: a MAX benefit. Members of a family on another plan can still reach it.
           Builder(builder: (context) {
             final isMax = context.watch<SubscriptionService>().status.isMax;
-            final inFamily = context.watch<FamilyProvider>().hasFamily;
+            final inFamily = context.watch<FamilyProvider>().likelyHasFamily;
             final canOpen = isMax || inFamily;
             return SettingSection(
               title: 'Family',

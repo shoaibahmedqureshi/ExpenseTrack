@@ -74,7 +74,7 @@ class _MaxUpsellCardState extends State<MaxUpsellCard> {
   @override
   Widget build(BuildContext context) {
     final isMax = context.watch<SubscriptionService>().status.isMax;
-    final hasFamily = context.watch<FamilyProvider>().hasFamily;
+    final hasFamily = context.watch<FamilyProvider>().likelyHasFamily;
     if (!_loaded ||
         !shouldShowMaxCard(
             isMax: isMax,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import '../../domain/entities/family_group.dart';
 import '../../domain/entities/family_member.dart';
@@ -12,7 +13,15 @@ class FamilyProvider extends ChangeNotifier {
   FamilyProvider({
     required this.repository,
     required this.getCurrentUserId,
-  });
+    SharedPreferences? prefs,
+  }) : _prefs = prefs;
+
+  final SharedPreferences? _prefs;
+
+  /// Whether the family list has been fetched since this provider started (or since sign-out).
+  bool _loadedOnce = false;
+
+  String get _hintKey => 'family_hint_${getCurrentUserId()}';
 
   String _msg(Object e) {
     if (e is PostgrestException) return e.message;
@@ -35,6 +44,17 @@ class FamilyProvider extends ChangeNotifier {
   String? get error => _error;
 
   bool get hasFamily => _currentFamily != null;
+
+  /// For deciding what to *show* (tabs, upsells) before the family has loaded: the last answer for this user,
+  /// remembered on the device, instead of "no family" for the first second or two. Screens that need the family
+  /// itself keep using [hasFamily] and [currentFamily], which are only set once it is really loaded.
+  bool get likelyHasFamily {
+    if (_loadedOnce) return hasFamily;
+    final id = getCurrentUserId();
+    if (id.isEmpty) return hasFamily;
+    return _prefs?.getBool(_hintKey) ?? hasFamily;
+  }
+
   bool get isFamilyAdmin {
     if (_currentFamily == null) return false;
     try {
@@ -90,6 +110,16 @@ class FamilyProvider extends ChangeNotifier {
       if (_userFamilies.isNotEmpty) {
         _currentFamily = _userFamilies.first;
         await loadFamilyMembers(_currentFamily!.id);
+      } else {
+        // Left or removed from the last family: do not keep showing the old one.
+        _currentFamily = null;
+        _familyMembers = [];
+      }
+      _loadedOnce = true;
+      try {
+        await _prefs?.setBool(_hintKey, _userFamilies.isNotEmpty);
+      } catch (_) {
+        // The hint is only a convenience.
       }
       _isLoading = false;
       notifyListeners();
@@ -285,6 +315,7 @@ class FamilyProvider extends ChangeNotifier {
 
   /// Clear all family data
   void clear() {
+    _loadedOnce = false;
     _currentFamily = null;
     _userFamilies = [];
     _familyMembers = [];

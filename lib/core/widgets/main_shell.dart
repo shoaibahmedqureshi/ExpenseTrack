@@ -42,7 +42,7 @@ class _MainShellState extends State<MainShell> {
     // The third tab is Family for MAX users and family members, Budgets for everyone else. The plan can
     // change while the app is open (a purchase, an accepted invite), so the list is rebuilt each time.
     final isMax = context.watch<SubscriptionService>().status.isMax;
-    final hasFamily = context.watch<FamilyProvider>().hasFamily;
+    final hasFamily = context.watch<FamilyProvider>().likelyHasFamily;
     final tabs = shellTabsFor(isMax: isMax, hasFamily: hasFamily);
     final current = resolveCurrentTab(_current, tabs);
 

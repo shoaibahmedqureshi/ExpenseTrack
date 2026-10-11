@@ -110,6 +110,21 @@ void main() {
       expect(find.text('Budget together with MAX'), findsNothing);
     });
 
+    testWidgets('is hidden from a remembered family member before their family has loaded', (t) async {
+      SharedPreferences.setMockInitialValues({'family_hint_me': true});
+      final p = await SharedPreferences.getInstance();
+      final fam = FamilyProvider(repository: _Family([]), getCurrentUserId: () => 'me', prefs: p); // not loaded
+      await t.pumpWidget(MultiProvider(
+        providers: [
+          ChangeNotifierProvider<SubscriptionService>(create: (_) => SubscriptionService(p, debugProducts: const [])),
+          ChangeNotifierProvider<FamilyProvider>.value(value: fam),
+        ],
+        child: MaterialApp(home: Scaffold(body: MaxUpsellCard(onUpgrade: () {}, now: () => _now))),
+      ));
+      await t.pumpAndSettle();
+      expect(find.text('Budget together with MAX'), findsNothing);
+    });
+
     testWidgets('tapping it opens the upgrade', (t) async {
       var upgrades = 0;
       SharedPreferences.setMockInitialValues({});

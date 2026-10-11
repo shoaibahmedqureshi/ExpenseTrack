@@ -113,6 +113,7 @@ void main() async {
           create: (_) => FamilyProvider(
             repository: FamilyRepositoryImpl(supabase: Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+            prefs: prefs,
           ),
         ),
         ChangeNotifierProvider(
