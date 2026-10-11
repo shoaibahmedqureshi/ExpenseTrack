@@ -129,23 +129,15 @@ class GrowthProvider extends ChangeNotifier {
   Future<bool> deleteTask(OutreachTask t) =>
       _do(() => repository.deleteTask(t.id));
 
-  Future<bool> approve(CreatorApplication a, String? notes) => _do(() async {
-        await repository.decide(a.id, ApplicationStatus.approved, notes);
-        await repository.addTask(
-          creatorName: a.name,
-          platform: 'email',
-          channel: OutreachChannel.email,
-          handle: a.handle,
-          profileUrl: a.profileUrl,
-          niche: a.niche,
-          draftMessage: welcomeDraft(a.name),
-          notes:
-              'Approved application. Create the store offers and the influencer_codes row first, '
-              'put the code in the message, then email ${a.email}.',
-          source: 'application',
-          applicationId: a.id,
-        );
-      });
+  Future<bool> approve(CreatorApplication a, String? notes) =>
+      _do(() => repository.approveApplication(
+            id: a.id,
+            notes: notes,
+            draftMessage: welcomeDraft(a.name),
+            taskNotes:
+                'Approved application. Create the store offers and the influencer_codes row first, '
+                'put the code in the message, then email ${a.email}.',
+          ));
 
   Future<bool> reject(CreatorApplication a, String? notes) =>
       _do(() => repository.decide(a.id, ApplicationStatus.rejected, notes));

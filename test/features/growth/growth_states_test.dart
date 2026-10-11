@@ -14,6 +14,8 @@ class _Repo implements GrowthRepository {
   Completer<void>? gate;
   Object? writeError;
   Object? draftError;
+  Object? approveError;
+  final calls = <String>[];
   List<OutreachTask> tasksList = [];
   List<CreatorApplication> appsList = [];
 
@@ -54,6 +56,38 @@ class _Repo implements GrowthRepository {
         evidence: 'e',
         draft: 'Hello there');
   }
+
+  @override
+  Future<void> approveApplication({
+    required int id,
+    String? notes,
+    required String draftMessage,
+    required String taskNotes,
+  }) async {
+    calls.add('approve:$id');
+    if (approveError != null) throw approveError!;
+  }
+
+  @override
+  Future<void> decide(int id, ApplicationStatus status, String? notes) async =>
+      calls.add('decide:$id');
+
+  @override
+  Future<void> addTask({
+    required String creatorName,
+    required String platform,
+    required OutreachChannel channel,
+    String? handle,
+    String? profileUrl,
+    String? niche,
+    String? fitReason,
+    String? evidence,
+    String? draftMessage,
+    String? notes,
+    String source = 'manual',
+    int? applicationId,
+  }) async =>
+      calls.add('addTask');
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -187,5 +221,35 @@ void main() {
     await t.tap(find.text('Mark sent'));
     await t.pumpAndSettle();
     expect(find.textContaining('Could not refresh'), findsNothing);
+  });
+
+  group('approving an application', () {
+    final app = CreatorApplication(
+      id: 7,
+      name: 'Sam Lee',
+      email: 'sam@example.com',
+      platform: 'tiktok',
+      handle: '@sam',
+      audienceBand: '10k_50k',
+      niche: 'finance',
+      status: ApplicationStatus.confirmed,
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    test('is a single repository call, never decide plus addTask', () async {
+      final repo = _Repo();
+      final p = GrowthProvider(repository: repo);
+      expect(await p.approve(app, 'good fit'), isTrue);
+      expect(repo.calls.where((c) => c != 'approve:7'), isEmpty);
+      expect(repo.calls, contains('approve:7'));
+    });
+
+    test('a failure reports the error and changes nothing else', () async {
+      final repo = _Repo()..approveError = Exception('could not queue');
+      final p = GrowthProvider(repository: repo);
+      expect(await p.approve(app, null), isFalse);
+      expect(p.error, 'could not queue');
+      expect(repo.calls, ['approve:7']);
+    });
   });
 }

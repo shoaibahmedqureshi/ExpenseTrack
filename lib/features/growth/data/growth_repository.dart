@@ -108,6 +108,22 @@ class GrowthRepository {
     if ((done as List).isEmpty) throw Exception('Could not save the decision');
   }
 
+  /// Approves a confirmed application and queues its follow-up task in one database
+  /// transaction, so a failure can never leave it approved with nothing to do.
+  Future<void> approveApplication({
+    required int id,
+    String? notes,
+    required String draftMessage,
+    required String taskNotes,
+  }) async {
+    await _db.rpc('admin_approve_application', params: {
+      'p_id': id,
+      'p_notes': notes ?? '',
+      'p_draft': draftMessage,
+      'p_task_notes': taskNotes,
+    });
+  }
+
   Future<DraftResult> draft({
     required String creatorName,
     required String platform,
