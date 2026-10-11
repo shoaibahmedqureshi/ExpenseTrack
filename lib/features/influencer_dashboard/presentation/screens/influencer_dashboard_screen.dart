@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/currency_totals.dart';
 import '../../domain/revenue_period.dart';
 import '../current_user_id.dart';
 import '../../domain/entities/revenue_report.dart';
@@ -81,8 +82,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
                     children: [
                       _buildSummaryCard(
                         title: 'Total Revenue',
-                        value:
-                            'PKR ${report.totalRevenue.toStringAsFixed(2)}',
+                        values: formatTotals(report.totalsByCurrency),
                         icon: Icons.trending_up,
                       ),
                       const SizedBox(height: 12),
@@ -91,16 +91,14 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
                           Expanded(
                             child: _buildMetricCard(
                               title: 'This Month',
-                              value:
-                                  'PKR ${report.monthlyRevenue.toStringAsFixed(2)}',
+                              values: formatTotals(report.monthlyByCurrency),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildMetricCard(
                               title: 'This Year',
-                              value:
-                                  'PKR ${report.yearlyRevenue.toStringAsFixed(2)}',
+                              values: formatTotals(report.yearlyByCurrency),
                             ),
                           ),
                         ],
@@ -111,16 +109,15 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
                           Expanded(
                             child: _buildMetricCard(
                               title: 'Conversions',
-                              value:
-                                  '${report.totalConversions}',
+                              values: ['${report.totalConversions}'],
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildMetricCard(
                               title: 'Avg per Conversion',
-                              value:
-                                  'PKR ${report.averageRevenuePerConversion.toStringAsFixed(2)}',
+                              values:
+                                  formatTotals(report.averageByCurrencyTotals),
                             ),
                           ),
                         ],
@@ -201,7 +198,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
 
   Widget _buildSummaryCard({
     required String title,
-    required String value,
+    required List<String> values,
     required IconData icon,
   }) {
     return Container(
@@ -224,14 +221,15 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    style: Theme.of(context).textTheme.headlineSmall,
+                for (final v in values)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      v,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -242,7 +240,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
 
   Widget _buildMetricCard({
     required String title,
-    required String value,
+    required List<String> values,
   }) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -258,15 +256,21 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
+          for (final v in values)
+            Text(
+              v,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
         ],
       ),
     );
+  }
+
+  String _codeSubtitle(CodeRevenue code) {
+    final avg = formatTotals(code.averageByCurrencyTotals).join(', ');
+    return '${code.conversions} conversions · avg $avg';
   }
 
   Widget _buildCodeListItem(BuildContext context, CodeRevenue code) {
@@ -274,7 +278,7 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         title: Text(code.code),
-        subtitle: Text('${code.conversions} conversions'),
+        subtitle: Text(_codeSubtitle(code)),
         // Scales down instead of overflowing the ListTile's fixed height at large text sizes.
         trailing: FittedBox(
           fit: BoxFit.scaleDown,
@@ -282,14 +286,11 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                'PKR ${code.totalRevenue.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Avg: ${code.averageRevenue.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              for (final line in formatTotals(code.totalsByCurrency))
+                Text(
+                  line,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
             ],
           ),
         ),

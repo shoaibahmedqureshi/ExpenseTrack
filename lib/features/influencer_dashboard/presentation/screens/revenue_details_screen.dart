@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/currency_totals.dart';
 import '../current_user_id.dart';
 import '../../domain/entities/influencer_revenue.dart';
 import '../providers/influencer_provider.dart';
@@ -62,8 +63,8 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
           }
 
           // Calculate metrics
-          final totalRevenue =
-              revenues.fold(0.0, (sum, r) => sum + r.revenueAmount);
+          final totals = sumByCurrency(revenues);
+          final averages = averageByCurrency(totals, countByCurrency(revenues));
           final planCounts = <String, int>{};
           for (var revenue in revenues) {
             planCounts[revenue.subscriptionPlan] =
@@ -93,12 +94,17 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              'PKR ${totalRevenue.toStringAsFixed(2)}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineLarge,
-                            ),
+                            for (final line in formatTotals(totals))
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  line,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge,
+                                ),
+                              ),
                             const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
@@ -135,12 +141,13 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
                                           .textTheme
                                           .bodySmall,
                                     ),
-                                    Text(
-                                      'PKR ${(totalRevenue / revenues.length).toStringAsFixed(2)}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge,
-                                    ),
+                                    for (final line in formatTotals(averages))
+                                      Text(
+                                        line,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge,
+                                      ),
                                   ],
                                 ),
                               ],
@@ -258,7 +265,7 @@ class _RevenueDetailsScreenState extends State<RevenueDetailsScreen> {
           revenue.transactionDate.toString().split(' ')[0],
         ),
         trailing: Text(
-          'PKR ${revenue.revenueAmount.toStringAsFixed(2)}',
+          formatMoney(revenue.revenueAmount, normalizeCurrency(revenue.currency)),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 14,

@@ -1,7 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../domain/currency_totals.dart';
 import '../../domain/entities/influencer_revenue.dart';
 import '../../domain/entities/revenue_report.dart';
 import '../../domain/repositories/influencer_repository.dart';
+import '../../domain/revenue_report_builder.dart';
 import '../models/influencer_revenue_model.dart';
 
 class InfluencerRepositoryImpl implements InfluencerRepository {
@@ -48,7 +50,8 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .eq('influencer_code', code);
 
     if (startDate != null) {
-      query = query.gte('transaction_date', startDate.toUtc().toIso8601String());
+      query =
+          query.gte('transaction_date', startDate.toUtc().toIso8601String());
     }
     if (endDate != null) {
       query = query.lte('transaction_date', endDate.toUtc().toIso8601String());
@@ -66,13 +69,12 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    var query = supabase
-        .from('influencer_revenue')
-        .select()
-        .eq('user_id', userId);
+    var query =
+        supabase.from('influencer_revenue').select().eq('user_id', userId);
 
     if (startDate != null) {
-      query = query.gte('transaction_date', startDate.toUtc().toIso8601String());
+      query =
+          query.gte('transaction_date', startDate.toUtc().toIso8601String());
     }
     if (endDate != null) {
       query = query.lte('transaction_date', endDate.toUtc().toIso8601String());
@@ -90,53 +92,10 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    final revenues = await getAllRevenue(userId,
-        startDate: startDate, endDate: endDate);
+    final revenues =
+        await getAllRevenue(userId, startDate: startDate, endDate: endDate);
 
-    if (revenues.isEmpty) {
-      return RevenueReport(
-        totalRevenue: 0,
-        monthlyRevenue: 0,
-        yearlyRevenue: 0,
-        totalConversions: 0,
-        revenueByCode: [],
-        monthlyTrends: [],
-        generatedAt: DateTime.now(),
-      );
-    }
-
-    // Calculate totals
-    double totalRevenue =
-        revenues.fold(0, (sum, r) => sum + r.revenueAmount);
-    int totalConversions = revenues.length;
-
-    // Calculate monthly and yearly
-    final now = DateTime.now();
-    final thisMonth = revenues
-        .where((r) =>
-            r.transactionDate.toLocal().year == now.year &&
-            r.transactionDate.toLocal().month == now.month)
-        .fold(0.0, (sum, r) => sum + r.revenueAmount);
-
-    final thisYear = revenues
-        .where((r) => r.transactionDate.toLocal().year == now.year)
-        .fold(0.0, (sum, r) => sum + r.revenueAmount);
-
-    // Group by code
-    final revenueByCode = _groupByCode(revenues);
-
-    // Calculate monthly trends
-    final monthlyTrends = _calculateMonthlyTrends(revenues);
-
-    return RevenueReport(
-      totalRevenue: totalRevenue,
-      monthlyRevenue: thisMonth,
-      yearlyRevenue: thisYear,
-      totalConversions: totalConversions,
-      revenueByCode: revenueByCode,
-      monthlyTrends: monthlyTrends,
-      generatedAt: DateTime.now(),
-    );
+    return buildRevenueReport(revenues, DateTime.now());
   }
 
   @override
@@ -163,13 +122,10 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    final revenues = await getAllRevenue(userId,
-        startDate: startDate, endDate: endDate);
+    final revenues =
+        await getAllRevenue(userId, startDate: startDate, endDate: endDate);
 
-    final grouped = _groupByCode(revenues);
-    grouped.sort((a, b) => b.totalRevenue.compareTo(a.totalRevenue));
-
-    return grouped.take(limit).toList();
+    return groupRevenueByCode(revenues).take(limit).toList();
   }
 
   @override
@@ -178,15 +134,15 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    final report = await generateReport(userId,
-        startDate: startDate, endDate: endDate);
+    final report =
+        await generateReport(userId, startDate: startDate, endDate: endDate);
 
     return {
-      'totalRevenue': report.totalRevenue,
-      'monthlyRevenue': report.monthlyRevenue,
-      'yearlyRevenue': report.yearlyRevenue,
+      'totalsByCurrency': report.totalsByCurrency,
+      'monthlyByCurrency': report.monthlyByCurrency,
+      'yearlyByCurrency': report.yearlyByCurrency,
       'totalConversions': report.totalConversions,
-      'avgPerConversion': report.averageRevenuePerConversion,
+      'avgPerConversionByCurrency': report.averageByCurrencyTotals,
       'topCode': report.revenueByCode.isNotEmpty
           ? report.revenueByCode.first.code
           : 'N/A',
@@ -195,20 +151,8 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
   }
 
   @override
-  Future<String> exportToCSV(RevenueReport report) async {
-    final buffer = StringBuffer();
-
-    // Header
-    buffer.writeln('Influencer Code,Total Revenue,Conversions,Avg Revenue');
-
-    // Data rows
-    for (final code in report.revenueByCode) {
-      buffer.writeln(
-          '${code.code},${code.totalRevenue},${code.conversions},${code.averageRevenue}');
-    }
-
-    return buffer.toString();
-  }
+  Future<String> exportToCSV(RevenueReport report) async =>
+      revenueReportCsv(report);
 
   @override
   Future<String> exportToPDF(RevenueReport report) async {
@@ -217,46 +161,38 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
   }
 
   @override
-  Future<double> getTotalRevenue(String userId) async {
+  Future<CurrencyTotals> getTotalRevenue(String userId) async {
     final response = await supabase
         .from('influencer_revenue')
-        .select('revenue_amount')
+        .select('revenue_amount, currency')
         .eq('user_id', userId);
-
-    return (response as List).fold<double>(
-        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
+    return _sum(response as List);
   }
 
   @override
-  Future<double> getMonthlyRevenue(String userId) async {
+  Future<CurrencyTotals> getMonthlyRevenue(String userId) async {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
 
-    var query = supabase
+    final response = await supabase
         .from('influencer_revenue')
-        .select('revenue_amount')
+        .select('revenue_amount, currency')
         .eq('user_id', userId)
         .gte('transaction_date', startOfMonth.toUtc().toIso8601String());
-
-    final response = await query;
-    return (response as List).fold<double>(
-        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
+    return _sum(response as List);
   }
 
   @override
-  Future<double> getYearlyRevenue(String userId) async {
+  Future<CurrencyTotals> getYearlyRevenue(String userId) async {
     final now = DateTime.now();
     final startOfYear = DateTime(now.year, 1, 1);
 
-    var query = supabase
+    final response = await supabase
         .from('influencer_revenue')
-        .select('revenue_amount')
+        .select('revenue_amount, currency')
         .eq('user_id', userId)
         .gte('transaction_date', startOfYear.toUtc().toIso8601String());
-
-    final response = await query;
-    return (response as List).fold<double>(
-        0.0, (double sum, dynamic r) => sum + (r['revenue_amount'] as num).toDouble());
+    return _sum(response as List);
   }
 
   @override
@@ -270,52 +206,12 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
   }
 
   // Helper methods
-  List<CodeRevenue> _groupByCode(List<InfluencerRevenue> revenues) {
-    final grouped = <String, List<InfluencerRevenue>>{};
-
-    for (final revenue in revenues) {
-      grouped.putIfAbsent(revenue.influencerCode, () => []).add(revenue);
+  CurrencyTotals _sum(List rows) {
+    final out = <String, double>{};
+    for (final r in rows) {
+      final c = normalizeCurrency(r['currency'] as String?);
+      out[c] = (out[c] ?? 0) + (r['revenue_amount'] as num).toDouble();
     }
-
-    return grouped.entries.map((e) {
-      final code = e.key;
-      final items = e.value;
-      final total = items.fold(0.0, (sum, r) => sum + r.revenueAmount);
-      final plans = items.map((r) => r.subscriptionPlan).toSet().toList();
-
-      return CodeRevenue(
-        code: code,
-        totalRevenue: total,
-        conversions: items.length,
-        subscriptionPlans: plans,
-        averageRevenue: total / items.length,
-        firstConversion: items.last.transactionDate,
-        lastConversion: items.first.transactionDate,
-      );
-    }).toList();
-  }
-
-  List<MonthlyTrend> _calculateMonthlyTrends(
-      List<InfluencerRevenue> revenues) {
-    final grouped = <DateTime, List<InfluencerRevenue>>{};
-
-    for (final revenue in revenues) {
-      final monthStart =
-          DateTime(revenue.transactionDate.year, revenue.transactionDate.month);
-      grouped.putIfAbsent(monthStart, () => []).add(revenue);
-    }
-
-    return grouped.entries.map((e) {
-      final month = e.key;
-      final items = e.value;
-      final revenue = items.fold(0.0, (sum, r) => sum + r.revenueAmount);
-
-      return MonthlyTrend(
-        month: month,
-        revenue: revenue,
-        conversions: items.length,
-      );
-    }).toList()
-      ..sort((a, b) => a.month.compareTo(b.month));
+    return out;
   }
 }

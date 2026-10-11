@@ -1,55 +1,60 @@
+import '../currency_totals.dart';
+
 class RevenueReport {
-  final double totalRevenue;
-  final double monthlyRevenue;
-  final double yearlyRevenue;
-  final int totalConversions;
+  final CurrencyTotals totalsByCurrency;
+  final Map<String, int> conversionsByCurrency;
+  final CurrencyTotals monthlyByCurrency;
+  final CurrencyTotals yearlyByCurrency;
   final List<CodeRevenue> revenueByCode;
   final List<MonthlyTrend> monthlyTrends;
   final DateTime generatedAt;
 
   RevenueReport({
-    required this.totalRevenue,
-    required this.monthlyRevenue,
-    required this.yearlyRevenue,
-    required this.totalConversions,
+    required this.totalsByCurrency,
+    required this.conversionsByCurrency,
+    required this.monthlyByCurrency,
+    required this.yearlyByCurrency,
     required this.revenueByCode,
     required this.monthlyTrends,
     required this.generatedAt,
   });
 
-  double get averageRevenuePerConversion =>
-      totalConversions > 0 ? totalRevenue / totalConversions : 0;
+  int get totalConversions =>
+      conversionsByCurrency.values.fold(0, (a, b) => a + b);
 
-  double get conversionRate => totalConversions.toDouble();
+  /// Average per conversion in each currency.
+  CurrencyTotals get averageByCurrencyTotals =>
+      averageByCurrency(totalsByCurrency, conversionsByCurrency);
 }
 
 class CodeRevenue {
   final String code;
-  final double totalRevenue;
-  final int conversions;
+  final CurrencyTotals totalsByCurrency;
+  final Map<String, int> conversionsByCurrency;
   final List<String> subscriptionPlans;
-  final double averageRevenue;
   final DateTime firstConversion;
   final DateTime lastConversion;
 
   CodeRevenue({
     required this.code,
-    required this.totalRevenue,
-    required this.conversions,
+    required this.totalsByCurrency,
+    required this.conversionsByCurrency,
     required this.subscriptionPlans,
-    required this.averageRevenue,
     required this.firstConversion,
     required this.lastConversion,
   });
 
+  int get conversions => conversionsByCurrency.values.fold(0, (a, b) => a + b);
+
+  CurrencyTotals get averageByCurrencyTotals =>
+      averageByCurrency(totalsByCurrency, conversionsByCurrency);
+
   factory CodeRevenue.fromJson(Map<String, dynamic> json) {
     return CodeRevenue(
       code: json['code'] as String,
-      totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      conversions: json['conversions'] as int,
-      subscriptionPlans:
-          List<String>.from(json['subscriptionPlans'] as List),
-      averageRevenue: (json['averageRevenue'] as num).toDouble(),
+      totalsByCurrency: _doubles(json['totalsByCurrency']),
+      conversionsByCurrency: _ints(json['conversionsByCurrency']),
+      subscriptionPlans: List<String>.from(json['subscriptionPlans'] as List),
       firstConversion: DateTime.parse(json['firstConversion'] as String),
       lastConversion: DateTime.parse(json['lastConversion'] as String),
     );
@@ -58,10 +63,9 @@ class CodeRevenue {
   Map<String, dynamic> toJson() {
     return {
       'code': code,
-      'totalRevenue': totalRevenue,
-      'conversions': conversions,
+      'totalsByCurrency': totalsByCurrency,
+      'conversionsByCurrency': conversionsByCurrency,
       'subscriptionPlans': subscriptionPlans,
-      'averageRevenue': averageRevenue,
       'firstConversion': firstConversion.toIso8601String(),
       'lastConversion': lastConversion.toIso8601String(),
     };
@@ -70,19 +74,19 @@ class CodeRevenue {
 
 class MonthlyTrend {
   final DateTime month;
-  final double revenue;
+  final CurrencyTotals revenueByCurrency;
   final int conversions;
 
   MonthlyTrend({
     required this.month,
-    required this.revenue,
+    required this.revenueByCurrency,
     required this.conversions,
   });
 
   factory MonthlyTrend.fromJson(Map<String, dynamic> json) {
     return MonthlyTrend(
       month: DateTime.parse(json['month'] as String),
-      revenue: (json['revenue'] as num).toDouble(),
+      revenueByCurrency: _doubles(json['revenueByCurrency']),
       conversions: json['conversions'] as int,
     );
   }
@@ -90,8 +94,18 @@ class MonthlyTrend {
   Map<String, dynamic> toJson() {
     return {
       'month': month.toIso8601String(),
-      'revenue': revenue,
+      'revenueByCurrency': revenueByCurrency,
       'conversions': conversions,
     };
   }
 }
+
+CurrencyTotals _doubles(Object? o) => {
+      for (final e in (o as Map? ?? const {}).entries)
+        e.key as String: (e.value as num).toDouble(),
+    };
+
+Map<String, int> _ints(Object? o) => {
+      for (final e in (o as Map? ?? const {}).entries)
+        e.key as String: (e.value as num).toInt(),
+    };

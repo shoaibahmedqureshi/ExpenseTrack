@@ -45,39 +45,41 @@ class _Repo implements InfluencerRepository {
 
 const _long = 'A_VERY_LONG_INFLUENCER_CODE_FOR_TESTING_WRAPPING_20';
 
-CodeRevenue _code(String c, double total) => CodeRevenue(
+CodeRevenue _code(String c, double total, {double usd = 0}) => CodeRevenue(
       code: c,
-      totalRevenue: total,
-      conversions: 12,
+      totalsByCurrency: {'PKR': total, if (usd > 0) 'USD': usd},
+      conversionsByCurrency: {'PKR': 12, if (usd > 0) 'USD': 2},
       subscriptionPlans: const ['pro_annual'],
-      averageRevenue: total / 12,
       firstConversion: DateTime(2026, 1, 1),
       lastConversion: DateTime(2026, 2, 1),
     );
 
 RevenueReport _report({List<CodeRevenue>? codes}) => RevenueReport(
-      totalRevenue: 123456.78,
-      monthlyRevenue: 4000,
-      yearlyRevenue: 99999.5,
-      totalConversions: 12,
-      revenueByCode: codes ?? [_code('SARA20', 5000), _code(_long, 800)],
+      totalsByCurrency: {'PKR': 123456.78, 'USD': 41.5},
+      conversionsByCurrency: {'PKR': 9, 'USD': 3},
+      monthlyByCurrency: {'PKR': 4000},
+      yearlyByCurrency: {'PKR': 99999.5, 'USD': 41.5},
+      revenueByCode:
+          codes ?? [_code('SARA20', 5000, usd: 30), _code(_long, 800)],
       monthlyTrends: const [],
       generatedAt: DateTime(2026, 10, 10),
     );
 
-InfluencerRevenue _rev(int i) => InfluencerRevenue(
+InfluencerRevenue _rev(int i, {String currency = 'PKR'}) => InfluencerRevenue(
       id: 'r$i',
       userId: 'u1',
       influencerCode: 'SARA20',
       subscriptionPlan: i.isEven ? 'expense_tracker_pro_annual' : 'monthly',
       revenueAmount: 100.0 * i,
-      currency: 'PKR',
+      currency: currency,
       transactionDate: DateTime(2026, 10, i + 1),
       createdAt: DateTime(2026, 10, i + 1),
     );
 
 Future<void> _pump(WidgetTester t, _Repo repo, Widget screen,
-    {double scale = 1, Brightness b = Brightness.light, bool settle = true}) async {
+    {double scale = 1,
+    Brightness b = Brightness.light,
+    bool settle = true}) async {
   t.view.physicalSize = const Size(320, 568) * 2;
   t.view.devicePixelRatio = 2;
   addTearDown(t.view.reset);
@@ -101,7 +103,8 @@ Future<void> _pump(WidgetTester t, _Repo repo, Widget screen,
 void main() {
   setUpAll(loadRealFonts);
   group('InfluencerDashboardScreen', () {
-    testWidgets('loads for the given user and shows the totals and codes', (t) async {
+    testWidgets('loads for the given user and shows the totals and codes',
+        (t) async {
       final repo = _Repo()..report = _report();
       await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'));
       expect(repo.calls, ['report:u1:all']);
@@ -110,11 +113,23 @@ void main() {
       expect(find.text('Top Influencer Codes'), findsOneWidget);
     });
 
+    testWidgets('shows each currency on its own line, never one mixed total',
+        (t) async {
+      final repo = _Repo()..report = _report();
+      await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'));
+      expect(find.text('PKR 123456.78'), findsOneWidget);
+      expect(find.text('USD 41.50'), findsWidgets);
+      // The code row lists both of its currencies and per-currency averages.
+      expect(find.textContaining('avg PKR'), findsWidgets);
+      expect(find.textContaining('USD 15.00'), findsOneWidget);
+    });
+
     testWidgets('shows a spinner while loading', (t) async {
       final repo = _Repo()
         ..report = _report()
         ..gate = Completer<void>();
-      await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'), settle: false);
+      await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'),
+          settle: false);
       await t.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       repo.gate!.complete();
@@ -143,7 +158,8 @@ void main() {
       expect(repo.calls.last, 'report:u1:range');
     });
 
-    testWidgets('This Year and This Month start on calendar boundaries', (t) async {
+    testWidgets('This Year and This Month start on calendar boundaries',
+        (t) async {
       final repo = _Repo()..report = _report();
       await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'));
       final now = DateTime.now();
@@ -171,18 +187,43 @@ void main() {
   });
 
   group('RevenueDetailsScreen', () {
-    testWidgets('lists the transactions with a total and plan counts', (t) async {
+    testWidgets('lists the transactions with a total and plan counts',
+        (t) async {
       final repo = _Repo()..revenues = [_rev(1), _rev(2), _rev(3)];
-      await _pump(t, repo, const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
+      await _pump(t, repo,
+          const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
       expect(repo.calls, ['code:u1:SARA20']);
       expect(find.text('PKR 600.00'), findsOneWidget);
       expect(find.text('Recent Transactions'), findsOneWidget);
       expect(find.text('Conversions by Plan'), findsOneWidget);
     });
 
+    testWidgets('keeps currencies apart in totals, averages and rows',
+        (t) async {
+      final repo = _Repo()
+        ..revenues = [
+          _rev(1),
+          _rev(2),
+          _rev(3, currency: 'USD'),
+          _rev(4, currency: 'usd')
+        ];
+      await _pump(t, repo,
+          const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
+      expect(find.text('PKR 300.00'), findsOneWidget); // 100 + 200
+      expect(find.text('USD 700.00'),
+          findsOneWidget); // 300 + 400, code case ignored
+      expect(find.text('PKR 150.00'),
+          findsOneWidget); // average of the two PKR rows
+      expect(
+          find.text('USD 350.00'), findsWidgets); // average of the two USD rows
+      expect(find.text('PKR 1000.00'), findsNothing, reason: 'no mixed total');
+    });
+
     testWidgets('shows a spinner, then the empty state', (t) async {
       final repo = _Repo()..gate = Completer<void>();
-      await _pump(t, repo, const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'), settle: false);
+      await _pump(t, repo,
+          const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'),
+          settle: false);
       await t.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       repo.gate!.complete();
@@ -192,13 +233,16 @@ void main() {
 
     testWidgets('shows the error when loading fails', (t) async {
       final repo = _Repo()..error = Exception('boom');
-      await _pump(t, repo, const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
+      await _pump(t, repo,
+          const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
       expect(find.textContaining('boom'), findsOneWidget);
     });
 
-    testWidgets('export is announced as coming soon, not silently ignored', (t) async {
+    testWidgets('export is announced as coming soon, not silently ignored',
+        (t) async {
       final repo = _Repo()..revenues = [_rev(1)];
-      await _pump(t, repo, const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
+      await _pump(t, repo,
+          const RevenueDetailsScreen(influencerCode: 'SARA20', userId: 'u1'));
       await t.ensureVisible(find.text('Export Data'));
       await t.tap(find.text('Export Data'));
       await t.pumpAndSettle();
@@ -214,7 +258,8 @@ void main() {
         final repo = _Repo()
           ..report = _report()
           ..revenues = List.generate(4, _rev);
-        await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'), scale: scale, b: b);
+        await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'),
+            scale: scale, b: b);
         expect(t.takeException(), isNull, reason: 'dashboard');
         await t.ensureVisible(find.text('SARA20'));
         await t.tap(find.text('SARA20'));

@@ -113,139 +113,80 @@ void main() {
   });
 
   group('CodeRevenue Entity', () {
-    test('creates instance with all fields', () {
-      final firstDate = DateTime(2026, 8, 28);
-      final lastDate = DateTime(2026, 9, 28);
+    CodeRevenue sample() => CodeRevenue(
+          code: 'CODE001',
+          totalsByCurrency: {'PKR': 5000.00, 'USD': 30.00},
+          conversionsByCurrency: {'PKR': 5, 'USD': 3},
+          subscriptionPlans: ['proMonthly', 'proAnnual'],
+          firstConversion: DateTime(2026, 8, 28),
+          lastConversion: DateTime(2026, 9, 28),
+        );
 
-      final code = CodeRevenue(
-        code: 'CODE001',
-        totalRevenue: 5000.00,
-        conversions: 5,
-        subscriptionPlans: ['proMonthly', 'proAnnual'],
-        averageRevenue: 1000.00,
-        firstConversion: firstDate,
-        lastConversion: lastDate,
-      );
-
+    test('keeps each currency separate', () {
+      final code = sample();
       expect(code.code, 'CODE001');
-      expect(code.totalRevenue, 5000.00);
-      expect(code.conversions, 5);
-      expect(code.averageRevenue, 1000.00);
+      expect(code.totalsByCurrency, {'PKR': 5000.00, 'USD': 30.00});
+      expect(code.conversions, 8);
+    });
+
+    test('averages per currency, never across currencies', () {
+      expect(sample().averageByCurrencyTotals, {'PKR': 1000.00, 'USD': 10.00});
     });
 
     test('toJson and fromJson round trip', () {
-      final firstDate = DateTime(2026, 8, 28);
-      final lastDate = DateTime(2026, 9, 28);
-
-      final original = CodeRevenue(
-        code: 'CODE001',
-        totalRevenue: 5000.00,
-        conversions: 5,
-        subscriptionPlans: ['proMonthly'],
-        averageRevenue: 1000.00,
-        firstConversion: firstDate,
-        lastConversion: lastDate,
-      );
-
-      final json = original.toJson();
-      final restored = CodeRevenue.fromJson(json);
-
-      expect(restored.code, original.code);
-      expect(restored.totalRevenue, original.totalRevenue);
-      expect(restored.conversions, original.conversions);
+      final restored = CodeRevenue.fromJson(sample().toJson());
+      expect(restored.code, 'CODE001');
+      expect(restored.totalsByCurrency, {'PKR': 5000.00, 'USD': 30.00});
+      expect(restored.conversionsByCurrency, {'PKR': 5, 'USD': 3});
+      expect(restored.conversions, 8);
     });
   });
 
   group('MonthlyTrend Entity', () {
-    test('creates instance correctly', () {
-      final month = DateTime(2026, 9);
-
-      final trend = MonthlyTrend(
-        month: month,
-        revenue: 5000.00,
-        conversions: 5,
-      );
-
-      expect(trend.month, month);
-      expect(trend.revenue, 5000.00);
-      expect(trend.conversions, 5);
-    });
-
     test('toJson and fromJson round trip', () {
-      final month = DateTime(2026, 9);
-
       final original = MonthlyTrend(
-        month: month,
-        revenue: 5000.00,
+        month: DateTime(2026, 9),
+        revenueByCurrency: {'PKR': 5000.00, 'USD': 12.5},
         conversions: 5,
       );
-
-      final json = original.toJson();
-      final restored = MonthlyTrend.fromJson(json);
-
-      expect(restored.month.year, original.month.year);
-      expect(restored.month.month, original.month.month);
-      expect(restored.revenue, original.revenue);
-      expect(restored.conversions, original.conversions);
+      final restored = MonthlyTrend.fromJson(original.toJson());
+      expect(restored.month.year, 2026);
+      expect(restored.month.month, 9);
+      expect(restored.revenueByCurrency, {'PKR': 5000.00, 'USD': 12.5});
+      expect(restored.conversions, 5);
     });
   });
 
   group('RevenueReport Entity', () {
-    test('calculates average revenue per conversion', () {
-      final report = RevenueReport(
-        totalRevenue: 5000.00,
-        monthlyRevenue: 500.00,
-        yearlyRevenue: 5000.00,
-        totalConversions: 5,
-        revenueByCode: [],
-        monthlyTrends: [],
-        generatedAt: DateTime.now(),
-      );
+    RevenueReport report({
+      Map<String, double> totals = const {},
+      Map<String, int> counts = const {},
+    }) =>
+        RevenueReport(
+          totalsByCurrency: totals,
+          conversionsByCurrency: counts,
+          monthlyByCurrency: const {},
+          yearlyByCurrency: const {},
+          revenueByCode: [],
+          monthlyTrends: [],
+          generatedAt: DateTime(2026, 10, 12),
+        );
 
-      expect(report.averageRevenuePerConversion, 1000.00);
+    test('averages per conversion in each currency', () {
+      final r = report(
+          totals: {'PKR': 5000, 'USD': 30}, counts: {'PKR': 5, 'USD': 3});
+      expect(r.averageByCurrencyTotals, {'PKR': 1000.0, 'USD': 10.0});
+      expect(r.totalConversions, 8);
     });
 
-    test('handles zero conversions for average', () {
-      final report = RevenueReport(
-        totalRevenue: 0,
-        monthlyRevenue: 0,
-        yearlyRevenue: 0,
-        totalConversions: 0,
-        revenueByCode: [],
-        monthlyTrends: [],
-        generatedAt: DateTime.now(),
-      );
-
-      expect(report.averageRevenuePerConversion, 0);
-    });
-
-    test('conversionRate equals totalConversions', () {
-      final report = RevenueReport(
-        totalRevenue: 5000.00,
-        monthlyRevenue: 500.00,
-        yearlyRevenue: 5000.00,
-        totalConversions: 5,
-        revenueByCode: [],
-        monthlyTrends: [],
-        generatedAt: DateTime.now(),
-      );
-
-      expect(report.conversionRate, 5.0);
+    test('no conversions means no averages', () {
+      final r = report();
+      expect(r.averageByCurrencyTotals, isEmpty);
+      expect(r.totalConversions, 0);
     });
 
     test('stores generated timestamp', () {
-      final now = DateTime.now();
-      final report = RevenueReport(
-        totalRevenue: 0,
-        monthlyRevenue: 0,
-        yearlyRevenue: 0,
-        totalConversions: 0,
-        revenueByCode: [],
-        monthlyTrends: [],
-        generatedAt: now,
-      );
-
-      expect(report.generatedAt, now);
+      expect(report().generatedAt, DateTime(2026, 10, 12));
     });
   });
 }

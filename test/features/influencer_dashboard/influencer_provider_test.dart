@@ -61,41 +61,45 @@ class MockInfluencerRepository implements InfluencerRepository {
     DateTime? endDate,
   }) async {
     if (shouldThrow) throw Exception('Mock error');
-    return mockReport ?? RevenueReport(
-      totalRevenue: 0,
-      monthlyRevenue: 0,
-      yearlyRevenue: 0,
-      totalConversions: 0,
-      revenueByCode: [],
-      monthlyTrends: [],
-      generatedAt: DateTime.now(),
-    );
+    return mockReport ??
+        RevenueReport(
+          totalsByCurrency: {},
+          conversionsByCurrency: {},
+          monthlyByCurrency: {},
+          yearlyByCurrency: {},
+          revenueByCode: [],
+          monthlyTrends: [],
+          generatedAt: DateTime.now(),
+        );
   }
 
   @override
-  Future<RevenueReport> generateMonthlyReport(String userId, int month, int year) async {
-    return mockReport ?? RevenueReport(
-      totalRevenue: 0,
-      monthlyRevenue: 0,
-      yearlyRevenue: 0,
-      totalConversions: 0,
-      revenueByCode: [],
-      monthlyTrends: [],
-      generatedAt: DateTime.now(),
-    );
+  Future<RevenueReport> generateMonthlyReport(
+      String userId, int month, int year) async {
+    return mockReport ??
+        RevenueReport(
+          totalsByCurrency: {},
+          conversionsByCurrency: {},
+          monthlyByCurrency: {},
+          yearlyByCurrency: {},
+          revenueByCode: [],
+          monthlyTrends: [],
+          generatedAt: DateTime.now(),
+        );
   }
 
   @override
   Future<RevenueReport> generateYearlyReport(String userId, int year) async {
-    return mockReport ?? RevenueReport(
-      totalRevenue: 0,
-      monthlyRevenue: 0,
-      yearlyRevenue: 0,
-      totalConversions: 0,
-      revenueByCode: [],
-      monthlyTrends: [],
-      generatedAt: DateTime.now(),
-    );
+    return mockReport ??
+        RevenueReport(
+          totalsByCurrency: {},
+          conversionsByCurrency: {},
+          monthlyByCurrency: {},
+          yearlyByCurrency: {},
+          revenueByCode: [],
+          monthlyTrends: [],
+          generatedAt: DateTime.now(),
+        );
   }
 
   @override
@@ -124,13 +128,13 @@ class MockInfluencerRepository implements InfluencerRepository {
   Future<String> exportToPDF(RevenueReport report) async => '';
 
   @override
-  Future<double> getTotalRevenue(String userId) async => 0;
+  Future<Map<String, double>> getTotalRevenue(String userId) async => {};
 
   @override
-  Future<double> getMonthlyRevenue(String userId) async => 0;
+  Future<Map<String, double>> getMonthlyRevenue(String userId) async => {};
 
   @override
-  Future<double> getYearlyRevenue(String userId) async => 0;
+  Future<Map<String, double>> getYearlyRevenue(String userId) async => {};
 
   @override
   Future<int> getTotalConversions(String userId) async => 0;
@@ -189,10 +193,10 @@ void main() {
 
     test('generateReport creates report', () async {
       final testReport = RevenueReport(
-        totalRevenue: 5000.00,
-        monthlyRevenue: 500.00,
-        yearlyRevenue: 5000.00,
-        totalConversions: 5,
+        totalsByCurrency: {'PKR': 5000.00},
+        conversionsByCurrency: {'PKR': 5},
+        monthlyByCurrency: {'PKR': 500.00},
+        yearlyByCurrency: {'PKR': 5000.00},
         revenueByCode: [],
         monthlyTrends: [],
         generatedAt: DateTime.now(),
@@ -203,7 +207,7 @@ void main() {
       await provider.generateReport('user_123');
 
       expect(provider.currentReport, testReport);
-      expect(provider.currentReport!.totalRevenue, 5000.00);
+      expect(provider.currentReport!.totalsByCurrency['PKR'], 5000.00);
     });
 
     test('loadCodeRevenues filters by code', () async {

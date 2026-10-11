@@ -1,3 +1,4 @@
+import '../currency_totals.dart';
 import '../entities/influencer_revenue.dart';
 import '../entities/revenue_report.dart';
 
@@ -31,7 +32,8 @@ abstract class InfluencerRepository {
     DateTime? endDate,
   });
 
-  Future<RevenueReport> generateMonthlyReport(String userId, int month, int year);
+  Future<RevenueReport> generateMonthlyReport(
+      String userId, int month, int year);
 
   Future<RevenueReport> generateYearlyReport(String userId, int year);
 
@@ -55,11 +57,11 @@ abstract class InfluencerRepository {
   Future<String> exportToPDF(RevenueReport report);
 
   // Summary
-  Future<double> getTotalRevenue(String userId);
+  Future<CurrencyTotals> getTotalRevenue(String userId);
 
-  Future<double> getMonthlyRevenue(String userId);
+  Future<CurrencyTotals> getMonthlyRevenue(String userId);
 
-  Future<double> getYearlyRevenue(String userId);
+  Future<CurrencyTotals> getYearlyRevenue(String userId);
 
   Future<int> getTotalConversions(String userId);
 }
