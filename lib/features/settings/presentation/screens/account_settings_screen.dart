@@ -98,23 +98,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
       body: ListView(
         children: [
-          SettingSection(
-            title: 'App',
-            children: [
-              SettingTile(
-                icon: Icons.language,
-                title: 'Language',
-                subtitle: 'English',
-                onTap: () {},
-              ),
-              SettingTile(
-                icon: Icons.dark_mode,
-                title: 'Theme',
-                subtitle: 'System',
-                onTap: () {},
-              ),
-            ],
-          ),
+          // Language and Theme are hidden until they do something (they were placeholders).
           SettingSection(
             title: 'About',
             children: [

@@ -46,8 +46,6 @@ class _Growth implements GrowthRepository {
 }
 
 const _accountOnly = [
-  'Language',
-  'Theme',
   'Privacy Policy',
   'Terms of Service',
   'Delete Account',
@@ -125,7 +123,7 @@ void main() {
 
   group('Settings under Profile', () {
     testWidgets(
-        'holds language, theme, legal pages, version and account actions',
+        'holds the legal pages, version and account actions',
         (t) async {
       await _pumpAccount(t);
       expect(find.text('Settings'), findsOneWidget);
@@ -133,6 +131,13 @@ void main() {
         expect(find.text(f), findsOneWidget, reason: f);
       }
       expect(find.text(AppConstants.versionLabel), findsOneWidget);
+    });
+
+    testWidgets('hides Language and Theme until they do something', (t) async {
+      await _pumpAccount(t);
+      expect(find.text('Language'), findsNothing);
+      expect(find.text('Theme'), findsNothing);
+      expect(find.text('App'), findsNothing, reason: 'no empty App section');
     });
 
     testWidgets('does not list the feature screens', (t) async {
