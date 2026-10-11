@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/revenue_period.dart';
 import '../current_user_id.dart';
 import '../../domain/entities/revenue_report.dart';
 import '../providers/influencer_provider.dart';
@@ -32,14 +33,10 @@ class _InfluencerDashboardScreenState extends State<InfluencerDashboardScreen> {
   void _loadDashboardData() {
     final influencerProvider =
         Provider.of<InfluencerProvider>(context, listen: false);
-    DateTime? startDate;
-    DateTime? endDate = DateTime.now();
-
-    if (_selectedPeriod == 1) {
-      startDate = DateTime.now().subtract(Duration(days: 365));
-    } else if (_selectedPeriod == 2) {
-      startDate = DateTime.now().subtract(Duration(days: 30));
-    }
+    final now = DateTime.now();
+    final startDate =
+        revenuePeriodStart(RevenuePeriod.values[_selectedPeriod], now);
+    final endDate = now;
 
     influencerProvider.generateReport(
       userId,

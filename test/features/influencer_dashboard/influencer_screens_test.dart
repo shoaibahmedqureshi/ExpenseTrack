@@ -18,9 +18,12 @@ class _Repo implements InfluencerRepository {
   List<InfluencerRevenue> revenues = [];
   final calls = <String>[];
 
+  final starts = <DateTime?>[];
+
   @override
   Future<RevenueReport> generateReport(String userId,
       {DateTime? startDate, DateTime? endDate}) async {
+    starts.add(startDate);
     calls.add('report:$userId:${startDate == null ? 'all' : 'range'}');
     await gate?.future;
     if (error != null) throw error!;
@@ -138,6 +141,21 @@ void main() {
       await t.tap(find.widgetWithText(ElevatedButton, 'This Year'));
       await t.pumpAndSettle();
       expect(repo.calls.last, 'report:u1:range');
+    });
+
+    testWidgets('This Year and This Month start on calendar boundaries', (t) async {
+      final repo = _Repo()..report = _report();
+      await _pump(t, repo, const InfluencerDashboardScreen(userId: 'u1'));
+      final now = DateTime.now();
+      await t.tap(find.widgetWithText(ElevatedButton, 'This Year'));
+      await t.pumpAndSettle();
+      expect(repo.starts.last, DateTime(now.year, 1, 1));
+      await t.tap(find.widgetWithText(ElevatedButton, 'This Month'));
+      await t.pumpAndSettle();
+      expect(repo.starts.last, DateTime(now.year, now.month, 1));
+      await t.tap(find.widgetWithText(ElevatedButton, 'All Time'));
+      await t.pumpAndSettle();
+      expect(repo.starts.last, isNull);
     });
 
     testWidgets('opening a code shows its details for that code', (t) async {

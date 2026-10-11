@@ -48,10 +48,10 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .eq('influencer_code', code);
 
     if (startDate != null) {
-      query = query.gte('transaction_date', startDate.toIso8601String());
+      query = query.gte('transaction_date', startDate.toUtc().toIso8601String());
     }
     if (endDate != null) {
-      query = query.lte('transaction_date', endDate.toIso8601String());
+      query = query.lte('transaction_date', endDate.toUtc().toIso8601String());
     }
 
     final response = await query.order('transaction_date', ascending: false);
@@ -72,10 +72,10 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .eq('user_id', userId);
 
     if (startDate != null) {
-      query = query.gte('transaction_date', startDate.toIso8601String());
+      query = query.gte('transaction_date', startDate.toUtc().toIso8601String());
     }
     if (endDate != null) {
-      query = query.lte('transaction_date', endDate.toIso8601String());
+      query = query.lte('transaction_date', endDate.toUtc().toIso8601String());
     }
 
     final response = await query.order('transaction_date', ascending: false);
@@ -114,12 +114,12 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
     final now = DateTime.now();
     final thisMonth = revenues
         .where((r) =>
-            r.transactionDate.year == now.year &&
-            r.transactionDate.month == now.month)
+            r.transactionDate.toLocal().year == now.year &&
+            r.transactionDate.toLocal().month == now.month)
         .fold(0.0, (sum, r) => sum + r.revenueAmount);
 
     final thisYear = revenues
-        .where((r) => r.transactionDate.year == now.year)
+        .where((r) => r.transactionDate.toLocal().year == now.year)
         .fold(0.0, (sum, r) => sum + r.revenueAmount);
 
     // Group by code
@@ -236,7 +236,7 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .from('influencer_revenue')
         .select('revenue_amount')
         .eq('user_id', userId)
-        .gte('transaction_date', startOfMonth.toIso8601String());
+        .gte('transaction_date', startOfMonth.toUtc().toIso8601String());
 
     final response = await query;
     return (response as List).fold<double>(
@@ -252,7 +252,7 @@ class InfluencerRepositoryImpl implements InfluencerRepository {
         .from('influencer_revenue')
         .select('revenue_amount')
         .eq('user_id', userId)
-        .gte('transaction_date', startOfYear.toIso8601String());
+        .gte('transaction_date', startOfYear.toUtc().toIso8601String());
 
     final response = await query;
     return (response as List).fold<double>(
