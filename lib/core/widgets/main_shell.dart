@@ -11,13 +11,13 @@ import '../../features/family_accounts/presentation/providers/family_provider.da
 import '../../features/family_accounts/presentation/screens/family_settings_screen.dart';
 import '../../features/household/presentation/providers/household_provider.dart';
 import '../../features/household/presentation/screens/household_screen.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/more_screen.dart';
 
 enum _Tab {
   dashboard('Dashboard', Icons.home_outlined, Icons.home),
   splits('Splits', Icons.people_outline, Icons.people),
   family('Family', Icons.group_outlined, Icons.group),
-  settings('Settings', Icons.settings_outlined, Icons.settings);
+  more('More', Icons.menu, Icons.menu_open);
 
   const _Tab(this.label, this.icon, this.activeIcon);
   final String label;
@@ -26,7 +26,7 @@ enum _Tab {
 }
 
 /// Bottom-tab shell for the 4 main screens with the scan button docked in
-/// the centre notch. Accounts lives under Settings.
+/// the centre notch. Accounts lives under More.
 /// Each tab keeps its own Scaffold/AppBar unchanged — this only adds
 /// the persistent IndexedStack + nav bar around them.
 class MainShell extends StatefulWidget {
@@ -69,7 +69,7 @@ class _MainShellState extends State<MainShell> {
             ),
           _Tab.splits => const SplitsScreen(),
           _Tab.family => const FamilySettingsScreen(),
-          _Tab.settings => const SettingsScreen(),
+          _Tab.more => const MoreScreen(),
         };
 
     // Each screen's state is preserved across tab switches via IndexedStack; keys keep a tab's state

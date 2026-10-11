@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../settings/presentation/screens/account_settings_screen.dart';
 import '../../../subscription/data/subscription_service.dart';
 import '../../../subscription/presentation/screens/paywall_screen.dart';
 
@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _openSettings() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      MaterialPageRoute(builder: (_) => const AccountSettingsScreen()),
     );
   }
 
@@ -172,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // entry point for managing or upgrading a
                       // subscription, since duplicating it in Settings too
                       // just gave the two places a chance to drift out of
-                      // sync (see settings_screen.dart, which no longer has
+                      // sync (see account_settings_screen.dart, which no longer has
                       // its own Manage Subscription row).
                       onTap: () => PaywallScreen.show(context),
                       leading: Icon(
