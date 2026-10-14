@@ -15,6 +15,14 @@ class UserProfile {
   final String currency;
   final bool onboardingDone;
 
+  /// The name to show to the user, or null when none is set. A stored name
+  /// that is really an email address (it contains '@') counts as not set.
+  String? get displayName {
+    final trimmed = name?.trim();
+    if (trimmed == null || trimmed.isEmpty || trimmed.contains('@')) return null;
+    return trimmed;
+  }
+
   UserProfile copyWith({
     String? name,
     String? avatarUrl,

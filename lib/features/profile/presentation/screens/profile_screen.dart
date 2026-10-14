@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     final profile = context.read<AuthProvider>().profile;
-    _nameCtrl.text = profile?.name ?? '';
+    _nameCtrl.text = profile?.displayName ?? '';
     _currency = profile?.currency ?? 'USD';
   }
 
@@ -83,8 +83,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   radius: 48,
                   backgroundColor: AppTheme.primaryColor.withOpacity(.15),
                   child: Text(
-                    (profile?.name?.isNotEmpty == true
-                            ? profile!.name![0]
+                    (profile?.displayName != null
+                            ? profile!.displayName![0]
                             : profile?.email[0] ?? '?')
                         .toUpperCase(),
                     style: const TextStyle(
@@ -132,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       : _InfoRow(
                           icon: Icons.person_outline,
                           label: 'Name',
-                          value: profile?.name ?? 'Not set'),
+                          value: profile?.displayName ?? 'Not set'),
                   const Divider(height: 24),
                   _editing
                       ? DropdownButtonFormField<String>(

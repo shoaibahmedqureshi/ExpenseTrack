@@ -142,8 +142,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           InboxBell(onTarget: _openFromInbox),
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
-              final initial = (auth.profile?.name?.isNotEmpty == true
-                      ? auth.profile!.name![0]
+              final initial = (auth.profile?.displayName != null
+                      ? auth.profile!.displayName![0]
                       : auth.profile?.email[0] ?? '?')
                   .toUpperCase();
               return Padding(
@@ -299,9 +299,9 @@ class _DashboardBody extends StatelessWidget {
       children: [
         Consumer<AuthProvider>(
           builder: (context, auth, _) {
-            final name = auth.profile?.name;
+            final name = auth.profile?.displayName;
             return Text(
-              (name != null && name.isNotEmpty) ? 'Hi, $name' : 'Welcome back',
+              name != null ? 'Hi, $name' : 'Welcome back',
               // headline-sm: 20px/600, color on-surface-variant.
               style: const TextStyle(
                   fontSize: 20,
