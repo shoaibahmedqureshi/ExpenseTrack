@@ -78,6 +78,7 @@ class SubscriptionService extends ChangeNotifier {
   final SharedPreferences _prefs;
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
+  StreamSubscription<AuthState>? _authSub;
 
   // Product IDs — must match exactly what you register in App Store Connect
   // and Google Play Console.
@@ -195,6 +196,16 @@ class SubscriptionService extends ChangeNotifier {
       onError: (e) => debugPrint('[IAP] stream error: $e'),
     );
 
+    // The first sync above often runs before anyone is signed in, so there is nobody to attach the entitlement to.
+    // Run it again when a user signs in.
+    try {
+      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((state) {
+        if (state.event == AuthChangeEvent.signedIn) unawaited(refreshEntitlement());
+      });
+    } catch (e) {
+      debugPrint('[SubscriptionService] auth listener unavailable: $e');
+    }
+
     await _loadProducts();
     // Without this, a real subscriber's local "Pro" flag only ever gets set
     // by actually completing a purchase in this exact app session — on iOS,
@@ -212,6 +223,19 @@ class SubscriptionService extends ChangeNotifier {
     await _refreshScanCount();
     _loading = false;
     notifyListeners();
+  }
+
+  /// Tells the server what the store says this account holds, so a family can be tied to its admin's MAX. The body
+  /// is proof the server checks with the store itself (Apple's signed transaction, or Play's purchase token), never
+  /// a plan the app asserts. Best effort: it must not affect the local plan, and runs again on the next sync.
+  Future<void> _reportEntitlement(Map<String, dynamic> body) async {
+    try {
+      final client = Supabase.instance.client;
+      if (client.auth.currentSession == null) return;
+      await client.functions.invoke('sync-entitlement', body: body);
+    } catch (e) {
+      debugPrint('[SubscriptionService] sync-entitlement failed: $e');
+    }
   }
 
   /// Authoritative iOS entitlement check via StoreKit2 (see AppDelegate's
@@ -245,6 +269,10 @@ class SubscriptionService extends ChangeNotifier {
       final plan = planFromProductId(productId);
       if (plan != null) {
         await _prefs.setString(_kPlan, plan.name);
+        final signedTransaction = result['signedTransaction'] as String?;
+        if (signedTransaction != null) {
+          unawaited(_reportEntitlement({'store': 'apple', 'signedTransaction': signedTransaction}));
+        }
       }
       _willAutoRenew = result['willAutoRenew'] as bool?;
       final millis = result['expirationDateMillis'] as num?;
@@ -358,6 +386,11 @@ class SubscriptionService extends ChangeNotifier {
         final plan = planFromProductId(best.productID)!;
         await _prefs.setString(_kPlan, plan.name);
         _willAutoRenew = best.billingClientPurchase.isAutoRenewing;
+        unawaited(_reportEntitlement({
+          'store': 'google',
+          'productId': best.productID,
+          'purchaseToken': best.billingClientPurchase.purchaseToken,
+        }));
         if (_pendingPlan == plan) {
           _pendingPlan = null;
           await _prefs.remove(_kPendingPlan);
@@ -703,6 +736,7 @@ class SubscriptionService extends ChangeNotifier {
   @override
   void dispose() {
     _purchaseSub?.cancel();
+    _authSub?.cancel();
     super.dispose();
   }
 }

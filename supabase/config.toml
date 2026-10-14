@@ -417,6 +417,9 @@ enabled = true
 [functions.send_family_invitation]
 verify_jwt = true
 
+[functions.sync-entitlement]
+verify_jwt = true
+
 # Back-office functions: only our own scheduled jobs (service-role key) may call these. The platform checks the token's
 # signature; the function itself then requires the service-role identity (see functions/_shared/service_auth.ts).
 [functions.seo_aso_agent]

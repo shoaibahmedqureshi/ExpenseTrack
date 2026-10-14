@@ -35,7 +35,7 @@ LedgerView watchLedgerViewOnce(BuildContext context) => _resolve(
 
 LedgerView _resolve(FamilyProvider family, SplitGroupProvider groups, ExpenseSplitProvider sp) {
 
-  final familyLedger = family.hasFamily
+  final familyLedger = family.hasFamily && !family.isFamilyLocked
       ? Ledger(LedgerKind.family, int.tryParse(family.currentFamily!.id) ?? 0, family.currentFamily!.name)
       : null;
   final available = availableLedgers(family: familyLedger, groups: groups.groups);

@@ -47,6 +47,10 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
             return _buildNoFamilyState(context);
           }
 
+          if (provider.isFamilyLocked) {
+            return _buildLockedState(context, provider);
+          }
+
           final family = provider.currentFamily!;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -182,6 +186,43 @@ class _FamilySettingsScreenState extends State<FamilySettingsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// A member of a family whose admin's MAX has lapsed. Nothing is deleted; sharing resumes when the admin renews.
+  Widget _buildLockedState(BuildContext context, FamilyProvider provider) {
+    final ended = provider.adminMaxExpiresAt;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lock_outline, size: 64, color: AppTheme.primaryColor.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text('This family is paused', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              ended == null
+                  ? "The family admin's MAX plan has ended, so family sharing is paused for everyone."
+                  : "The family admin's MAX plan ended on ${ended.day}/${ended.month}/${ended.year}, so family sharing is paused for everyone.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Nothing has been deleted. Everything comes back when the admin renews.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              onPressed: () => _confirmLeave(context, provider),
+              child: const Text('Leave family'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -108,6 +108,9 @@ import StoreKit
               "willAutoRenew": renewalInfo.willAutoRenew,
               "expirationDateMillis": expirationMillis as Any,
               "autoRenewProductId": renewalInfo.autoRenewPreference as Any,
+              // Apple's signed record of this transaction. The server checks its signature against Apple's
+              // certificate chain, so the plan it reports can't be forged by the app.
+              "signedTransaction": status.transaction.jwsRepresentation,
             ])
             return
           }

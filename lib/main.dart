@@ -28,6 +28,7 @@ import 'features/notifications/data/repositories/notification_repository_impl.da
 import 'features/notifications/presentation/providers/notification_provider.dart';
 
 import 'features/family_accounts/data/repositories/family_repository_impl.dart';
+import 'features/family_accounts/domain/entities/family_access.dart';
 import 'features/family_accounts/presentation/providers/family_provider.dart';
 import 'features/expense_split/data/expense_split_repository.dart';
 import 'features/inbox/data/inbox_repository.dart';
@@ -114,6 +115,11 @@ void main() async {
             repository: FamilyRepositoryImpl(supabase: Supabase.instance.client),
             getCurrentUserId: () => Supabase.instance.client.auth.currentUser?.id ?? '',
             prefs: prefs,
+            loadAccess: (familyId) async {
+              final res = await Supabase.instance.client
+                  .rpc('family_access', params: {'p_family_id': int.parse(familyId)});
+              return FamilyAccess.fromJson(Map<String, dynamic>.from(res as Map));
+            },
           ),
         ),
         ChangeNotifierProvider(
@@ -317,7 +323,9 @@ class _RootRouterState extends State<_RootRouter> {
   /// Learns whether the user shares their monthly totals with their family and, if so, refreshes them.
   void _syncHousehold() {
     if (!mounted) return;
-    final family = context.read<FamilyProvider>().currentFamily;
+    final familyProvider = context.read<FamilyProvider>();
+    // A paused family (its admin's MAX lapsed) shares nothing, so the household view is switched off for members.
+    final family = familyProvider.isFamilyLocked ? null : familyProvider.currentFamily;
     // The expense list lives further down the provider tree than the household provider, so it is hooked up here.
     context.read<HouseholdProvider>()
       ..attachExpenses(context.read<ExpenseProvider>())

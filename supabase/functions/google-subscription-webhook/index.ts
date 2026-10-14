@@ -10,6 +10,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createRemoteJWKSet, jwtVerify } from 'npm:jose@5';
 import { GoogleAuth } from 'npm:google-auth-library@9';
 import { computeOrderPayout, parseVoidedPurchase, type PlayOrder } from '../_shared/play_order.ts';
+import { entitlementFromGooglePurchase } from '../_shared/entitlement.ts';
+import { endEntitlement, refreshEntitlement } from '../_shared/entitlement_store.ts';
 
 // Pub/Sub push subscriptions configured with "Enable authentication"
 // send a Google-signed OIDC token in the Authorization header. Verifying
@@ -102,6 +104,11 @@ Deno.serve(async (req) => {
         p_order_id: voided.orderId ?? null,
       });
       if (voidError) throw voidError;
+      try {
+        await endEntitlement(admin, 'google', voided.purchaseToken);
+      } catch (entitlementErr) {
+        console.error('[google-subscription-webhook] ending entitlement failed:', entitlementErr);
+      }
       console.log('[google-subscription-webhook] voided purchase:', outcome);
       return new Response(`OK (void: ${outcome})`, { status: 200 });
     }
@@ -119,6 +126,21 @@ Deno.serve(async (req) => {
     const notificationType = String(subNotification.notificationType);
 
     const purchase = await fetchSubscriptionPurchase(packageName, purchaseToken);
+
+    // Keep the server's record of the subscriber's plan current (it feeds the family-requires-MAX rule). Best effort,
+    // separate from referral attribution below.
+    try {
+      const entitlement = entitlementFromGooglePurchase(purchase, productId, purchaseToken);
+      if (entitlement) {
+        const entitlementAdmin = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+        );
+        await refreshEntitlement(entitlementAdmin, 'google', entitlement);
+      }
+    } catch (entitlementErr) {
+      console.error('[google-subscription-webhook] entitlement refresh failed:', entitlementErr);
+    }
 
     // Defensive extraction — Play's exact response shape for a given
     // line item can vary, and the full raw response is stored below

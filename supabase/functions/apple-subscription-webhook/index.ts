@@ -17,11 +17,26 @@
 // before it replaced the official library here.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { verifyAndDecodeAppleJWS } from '../_shared/apple_jws_verify.ts';
+import { entitlementFromAppleTransaction } from '../_shared/entitlement.ts';
+import { refreshEntitlement } from '../_shared/entitlement_store.ts';
 
 const APPLE_BUNDLE_ID = Deno.env.get('APPLE_BUNDLE_ID') ?? 'com.codebloom.outlay';
 // Outlay's numeric Apple App ID — only present on notification payloads
 // once the environment is Production (Sandbox payloads omit it entirely).
 const APPLE_APP_ID = 6790199113;
+
+// Keeps the server's record of a subscriber's plan current (it feeds the family-requires-MAX rule). Best effort and
+// separate from referral attribution: a failure here must never block that or make Apple retry.
+async function refreshEntitlementFromNotification(
+  transactionInfo: Record<string, unknown>,
+  signedRenewalInfo: string | undefined,
+): Promise<void> {
+  const renewal = signedRenewalInfo ? await verifyAndDecodeAppleJWS(signedRenewalInfo) : null;
+  const entitlement = entitlementFromAppleTransaction(transactionInfo, renewal);
+  if (!entitlement) return;
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  await refreshEntitlement(admin, 'apple', entitlement);
+}
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -39,7 +54,7 @@ Deno.serve(async (req) => {
     // genuinely from Apple rather than an arbitrary POST to this URL.
     const payload = await verifyAndDecodeAppleJWS(signedPayload);
     const data = payload.data as
-      | { bundleId?: string; appAppleId?: number; environment?: string; signedTransactionInfo?: string }
+      | { bundleId?: string; appAppleId?: number; environment?: string; signedTransactionInfo?: string; signedRenewalInfo?: string }
       | undefined;
 
     if (data?.bundleId && data.bundleId !== APPLE_BUNDLE_ID) {
@@ -69,6 +84,12 @@ Deno.serve(async (req) => {
       // Notification types we don't care about (e.g. CONSENT_REVOKED,
       // TEST) carry no transaction — nothing to attribute, ack and exit.
       return new Response('OK (no transaction)', { status: 200 });
+    }
+
+    try {
+      await refreshEntitlementFromNotification(transactionInfo, data?.signedRenewalInfo);
+    } catch (entitlementErr) {
+      console.error('[apple-subscription-webhook] entitlement refresh failed:', entitlementErr);
     }
 
     // A refunded (or revoked) transaction drops out of what the creator is owed; a reversed refund

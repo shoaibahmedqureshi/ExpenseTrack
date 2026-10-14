@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import '../../domain/entities/family_access.dart';
 import '../../domain/entities/family_group.dart';
 import '../../domain/entities/family_member.dart';
 import '../../domain/entities/family_invitation.dart';
@@ -14,7 +15,12 @@ class FamilyProvider extends ChangeNotifier {
     required this.repository,
     required this.getCurrentUserId,
     SharedPreferences? prefs,
+    this.loadAccess,
   }) : _prefs = prefs;
+
+  /// Asks the server whether a family currently works. Null (as in tests) means every family is treated as active.
+  final Future<FamilyAccess> Function(String familyId)? loadAccess;
+  FamilyAccess? _access;
 
   final SharedPreferences? _prefs;
 
@@ -44,6 +50,26 @@ class FamilyProvider extends ChangeNotifier {
   String? get error => _error;
 
   bool get hasFamily => _currentFamily != null;
+
+  /// False while the admin's MAX has lapsed. Unknown (not loaded, or the check failed) counts as active: the server
+  /// enforces the rule, this only decides what to show.
+  bool get isFamilyActive => _access?.active ?? true;
+
+  /// A member (not the admin) of a family whose admin's MAX has lapsed: the family shows as paused for them.
+  bool get isFamilyLocked => hasFamily && _access != null && !_access!.active && !_access!.isOwner;
+
+  /// When the admin's MAX ends or ended, if known.
+  DateTime? get adminMaxExpiresAt => _access?.adminMaxExpiresAt;
+
+  Future<FamilyAccess?> _fetchAccess(String familyId) async {
+    final load = loadAccess;
+    if (load == null) return null;
+    try {
+      return await load(familyId);
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// For deciding what to *show* (tabs, upsells) before the family has loaded: the last answer for this user,
   /// remembered on the device, instead of "no family" for the first second or two. Screens that need the family
@@ -109,11 +135,13 @@ class FamilyProvider extends ChangeNotifier {
       _userFamilies = await repository.getUserFamilyGroups(userId);
       if (_userFamilies.isNotEmpty) {
         _currentFamily = _userFamilies.first;
+        _access = await _fetchAccess(_currentFamily!.id);
         await loadFamilyMembers(_currentFamily!.id);
       } else {
         // Left or removed from the last family: do not keep showing the old one.
         _currentFamily = null;
         _familyMembers = [];
+        _access = null;
       }
       _loadedOnce = true;
       try {
@@ -136,6 +164,7 @@ class FamilyProvider extends ChangeNotifier {
       final family = await repository.getFamilyGroup(familyGroupId);
       if (family != null) {
         _currentFamily = family;
+        _access = await _fetchAccess(familyGroupId);
         await loadFamilyMembers(familyGroupId);
         notifyListeners();
       }
@@ -317,6 +346,7 @@ class FamilyProvider extends ChangeNotifier {
   void clear() {
     _loadedOnce = false;
     _currentFamily = null;
+    _access = null;
     _userFamilies = [];
     _familyMembers = [];
     _pendingInvitations = [];
