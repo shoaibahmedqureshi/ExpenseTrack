@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/subscription_service.dart';
 import '../../../family_accounts/presentation/providers/family_provider.dart';
@@ -279,7 +280,10 @@ class _SubscriptionManagementScreenState
             child: Card(
               child: ListTile(
                 title: const Text('Outlay Pro Monthly'),
-                subtitle: const Text('PKR 999/month • Unlimited accounts'),
+                subtitle: Text(_priceLabel(
+                  _subscriptionService.monthlyProduct,
+                  '/month • Unlimited accounts',
+                )),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () => _showUpgradeDialog(context, 'proMonthly'),
               ),
@@ -291,7 +295,10 @@ class _SubscriptionManagementScreenState
             child: Card(
               child: ListTile(
                 title: const Text('Outlay Pro Annual'),
-                subtitle: const Text('PKR 9,990/year • Save 17% • Unlimited accounts'),
+                subtitle: Text(_priceLabel(
+                  _subscriptionService.annualProduct,
+                  '/year${_savingsSuffix(_subscriptionService.monthlyProduct, _subscriptionService.annualProduct)} • Unlimited accounts',
+                )),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () => _showUpgradeDialog(context, 'proAnnual'),
               ),
@@ -306,9 +313,10 @@ class _SubscriptionManagementScreenState
               color: Colors.amber[50],
               child: ListTile(
                 title: const Text('Outlay Max Monthly'),
-                subtitle: const Text(
-                  'PKR 1,499/month • Family groups + Advanced features',
-                ),
+                subtitle: Text(_priceLabel(
+                  _subscriptionService.maxMonthlyProduct,
+                  '/month • Family groups + Advanced features',
+                )),
                 trailing: const Icon(Icons.star),
                 onTap: () => _showUpgradeDialog(context, 'maxMonthly'),
               ),
@@ -321,9 +329,10 @@ class _SubscriptionManagementScreenState
               color: Colors.amber[50],
               child: ListTile(
                 title: const Text('Outlay Max Annual'),
-                subtitle: const Text(
-                  'PKR 14,990/year • Save 17% • Family groups + Advanced features',
-                ),
+                subtitle: Text(_priceLabel(
+                  _subscriptionService.maxAnnualProduct,
+                  '/year${_savingsSuffix(_subscriptionService.maxMonthlyProduct, _subscriptionService.maxAnnualProduct)} • Family groups + Advanced features',
+                )),
                 trailing: const Icon(Icons.star),
                 onTap: () => _showUpgradeDialog(context, 'maxAnnual'),
               ),
@@ -361,6 +370,19 @@ class _SubscriptionManagementScreenState
         ],
       ),
     );
+  }
+
+  String _priceLabel(ProductDetails? product, String suffix) {
+    if (product == null) return 'Price unavailable';
+    return '${product.price}$suffix';
+  }
+
+  String _savingsSuffix(ProductDetails? monthly, ProductDetails? annual) {
+    if (monthly == null || annual == null) return '';
+    final monthlyTotal = monthly.rawPrice * 12;
+    if (monthlyTotal <= 0) return '';
+    final saving = ((monthlyTotal - annual.rawPrice) / monthlyTotal * 100).round();
+    return saving > 0 ? ' • Save $saving%' : '';
   }
 
   void _showUpgradeDialog(BuildContext context, String plan) {
