@@ -96,6 +96,17 @@ Deno.serve(async (req) => {
       return new Response('OK (no offer)', { status: 200 });
     }
 
+    // Payout is one-time per subscriber. A multi-month discount offer stamps the same offerIdentifier
+    // on every discounted renewal, each with a new transactionId; only the subscription's first
+    // transaction (transactionId === originalTransactionId) is recorded.
+    const originalTransactionId = transactionInfo.originalTransactionId;
+    if (
+      originalTransactionId !== undefined &&
+      String(originalTransactionId) !== String(transactionInfo.transactionId)
+    ) {
+      return new Response('OK (renewal, payout recorded on first transaction)', { status: 200 });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
