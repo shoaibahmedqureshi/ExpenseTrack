@@ -198,6 +198,15 @@
     .feature-grid { grid-template-columns: 1fr; }
     nav .links { display: none; }
   }
+
+  .how, .faq-sec, .blog-sec { max-width: 760px; margin: 56px auto 0; }
+  .how h2, .faq-sec h2, .blog-sec h2 { font-size: 28px; letter-spacing: -0.01em; margin-bottom: 14px; }
+  .how-steps { padding-left: 1.2em; display: grid; gap: 12px; color: var(--muted); }
+  .how-steps b { color: var(--ink); }
+  .faq-q { padding: 14px 0; border-top: 1px solid var(--line); }
+  .faq-q h3 { font-size: 17px; margin-bottom: 4px; }
+  .faq-q p { color: var(--muted); }
+  .blog-sec ul { list-style: none; display: grid; gap: 8px; margin-bottom: 12px; }
 </style>
 <script type="application/ld+json">
 {
@@ -220,6 +229,62 @@
   ]
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Outlay free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Outlay is free to download on iOS and Android. A free plan is available and no credit card is required to start."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the receipt scanner work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Take a photo of a receipt and Outlay reads the merchant, total, tax and date for you, so there is no typing."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Outlay work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can log and categorise income and expenses online or offline. Your data syncs across your devices automatically."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my financial data private?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your financial data is encrypted and never sold."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I set a budget?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Set monthly limits by category and see exactly how much you have left, in real time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I export my reports?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Monthly and yearly breakdowns can be exported whenever you need them."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
   <div class="wrap">
@@ -228,6 +293,7 @@
       <div class="links">
         <a href="#features">Features</a>
         <a href="tools/index.html">Free Tools</a>
+        <a href="blog/index.html">Blog</a>
         <a href="support.html">Support</a>
         <details class="lang-menu">
         <summary>🌐 English</summary>
@@ -321,6 +387,35 @@
          screenshots have real personal data in them (see project notes).
          Re-add a "screens" section here once clean demo screenshots exist. -->
 
+    <section class="how" id="how-it-works">
+      <h2>How Outlay works</h2>
+      <ol class="how-steps">
+        <li><b>Scan or add an expense.</b> Take a photo of a receipt and Outlay reads the merchant, total, tax and date. Or log it by hand in seconds, online or offline.</li>
+        <li><b>Set monthly budgets.</b> Choose a limit for each category and see how much you have left, in real time.</li>
+        <li><b>Review your reports.</b> Clear monthly and yearly breakdowns that you can export whenever you need them.</li>
+      </ol>
+    </section>
+
+    <section class="faq-sec" id="faq">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-q"><h3>Is Outlay free?</h3><p>Outlay is free to download on iOS and Android. A free plan is available and no credit card is required to start.</p></div>
+      <div class="faq-q"><h3>How does the receipt scanner work?</h3><p>Take a photo of a receipt and Outlay reads the merchant, total, tax and date for you, so there is no typing.</p></div>
+      <div class="faq-q"><h3>Does Outlay work offline?</h3><p>You can log and categorise income and expenses online or offline. Your data syncs across your devices automatically.</p></div>
+      <div class="faq-q"><h3>Is my financial data private?</h3><p>Your financial data is encrypted and never sold.</p></div>
+      <div class="faq-q"><h3>Can I set a budget?</h3><p>Yes. Set monthly limits by category and see exactly how much you have left, in real time.</p></div>
+      <div class="faq-q"><h3>Can I export my reports?</h3><p>Yes. Monthly and yearly breakdowns can be exported whenever you need them.</p></div>
+    </section>
+
+    <section class="blog-sec">
+      <h2>From the Outlay blog</h2>
+      <ul>
+        <li><a href="blog/how-to-track-your-expenses-in-five-minutes-a-week.html">How to track your expenses in five minutes a week</a></li>
+        <li><a href="blog/how-to-set-a-monthly-budget-by-category.html">How to set a monthly budget by category and stick to it</a></li>
+        <li><a href="blog/paper-receipts-what-to-keep-scan-or-throw-away.html">Paper receipts: what to keep, what to scan and what to throw away</a></li>
+      </ul>
+      <a href="blog/index.html">All articles</a>
+    </section>
+
     <section class="cta">
       <h2>Start tracking in under a minute</h2>
       <p>Free to download on iOS and Android.</p>
@@ -341,6 +436,7 @@
         <div>© 2026 Outlay. All rights reserved.</div>
         <div class="footer-links">
           <a href="tools/index.html">Free Tools</a>
+          <a href="blog/index.html">Blog</a>
           <a href="privacy.html">Privacy Policy</a>
           <a href="terms.html">Terms of Service</a>
           <a href="delete-account.html">Delete Account</a>

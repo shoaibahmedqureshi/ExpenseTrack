@@ -957,4 +957,20 @@
     <xhtml:link rel="alternate" hreflang="fil" href="https://outlayapp.net/fil/tools/invoice-generator.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://outlayapp.net/tools/invoice-generator.html" />
   </url>
+  <url>
+    <loc>https://outlayapp.net/blog/index.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://outlayapp.net/blog/how-to-track-your-expenses-in-five-minutes-a-week.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://outlayapp.net/blog/how-to-set-a-monthly-budget-by-category.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://outlayapp.net/blog/paper-receipts-what-to-keep-scan-or-throw-away.html</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
 </urlset>
