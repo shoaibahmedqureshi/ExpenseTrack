@@ -1,0 +1,66 @@
+name: Outreach pipeline (discover, verify, draft)
+
+# Finds creators and blogs, verifies contacts from their own pages, and drafts guest-post pitches.
+# It never sends email: cold outreach stays off until AGENT_EMAIL_ENABLED is set on Supabase.
+
+on:
+  schedule:
+    - cron: '30 7 * * *'  # 07:30 UTC daily
+  workflow_dispatch:
+
+env:
+  BASE: https://xgavxbuezmivnseyhkye.supabase.co/functions/v1
+  SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Discover YouTube creators
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/discover_youtube_creators" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{}'
+
+      - name: Discover guest-post blogs (one topic per day)
+        if: always()
+        run: |
+          topics=("personal finance and budgeting" "photography and photo editing" "productivity apps and tools")
+          topic="${topics[$(( $(date +%j | sed 's/^0*//') % 3 ))]}"
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/blog_outreach" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" \
+            -d "{\"action\":\"discover\",\"topics\":[\"$topic\"]}"
+
+      - name: Verify creator contacts
+        if: always()
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/verify_prospect_contacts" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{}'
+
+      - name: Verify blog contacts and quality
+        if: always()
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/blog_outreach" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{"action":"verify"}'
+
+      - name: Draft guest-post pitches (drafts only)
+        if: always()
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/blog_outreach" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{"action":"draft"}'
+
+      - name: Draft creator outreach (drafts only)
+        if: always()
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/draft_creator_outreach" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{}'
+
+      - name: SEO and App Store audit (Mondays)
+        if: always()
+        run: |
+          if [ "$(date +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            curl --fail-with-body --silent --show-error --max-time 300 -X POST "$BASE/seo_aso_agent" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" -H "Content-Type: application/json" -d '{}'
+          else
+            echo "Not Monday; skipping the audit."
+          fi
